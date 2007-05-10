@@ -1,11 +1,11 @@
-%define ghcver ghc66
+%define ghcver ghc661
 
 # speed up test builds by not building profiled libraries
 %define build_prof 1
 %define build_doc 1
 
 Name:		ghc
-Version:	6.6
+Version:	6.6.1
 Release:	1%{?dist}
 Summary:	Glasgow Haskell Compilation system
 License:	BSD style
@@ -89,6 +89,9 @@ echo "GhcRTSWays=thr debug" >> mk/build.mk
 %endif
 
 ./configure --prefix=%{_prefix} --libdir=%{_libdir}
+
+# drop truncated copy of header (#222865)
+rm libraries/network/include/Typeable.h
 
 make all
 %if %{build_doc}
@@ -175,7 +178,14 @@ fi
 
 
 %changelog
-* Thu Nov  9 2006 Jens Petersen <petersen@redhat.com> - 6.6-1
+* Wed May  9 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.6.1-1
+- update to 6.6.1 release
+
+* Mon Jan 22 2007 Jens Petersen <petersen@redhat.com> - 6.6-2
+- remove truncated duplicate Typeable.h header in network package
+  (Bryan O'Sullivan, #222865)
+
+* Fri Nov  3 2006 Jens Petersen <petersen@redhat.com> - 6.6-1
 - update to 6.6 release
 - buildrequire haddock >= 0.8
 - fix summary of ghcver package (Michel Salim, #209574)
