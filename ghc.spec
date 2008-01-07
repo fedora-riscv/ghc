@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	5%{?dist}
+Release:	6%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -29,7 +29,7 @@ Source1:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs
 URL:		http://haskell.org/ghc/
 Requires:	%{ghcver} = %{version}-%{release}, chkconfig
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  autoconf, ghc, happy, sed
+BuildRequires:  ghc, happy, sed
 BuildRequires:  gmp-devel, readline-devel
 BuildRequires:  libX11-devel, libXt-devel
 BuildRequires:  freeglut-devel, openal-devel
@@ -37,6 +37,8 @@ BuildRequires:  freeglut-devel, openal-devel
 # haddock generates docs in libraries
 BuildRequires: libxslt, docbook-style-xsl, haddock >= 0.8
 %endif
+# Work around http://hackage.haskell.org/trac/ghc/ticket/2020
+BuildRequires:  autoconf, automake
 
 %description
 GHC is a state-of-the-art programming suite for Haskell, a purely
@@ -109,6 +111,7 @@ echo "GhcLibWays=" >> mk/build.mk
 echo "GhcRTSWays=thr debug" >> mk/build.mk
 %endif
 
+# Work around http://hackage.haskell.org/trac/ghc/ticket/2020
 for c in configure libraries/*/configure; do
   (cd `dirname $c` && autoreconf)
 done
@@ -226,7 +229,7 @@ fi
 
 
 %changelog
-* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-5
+* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-6
 - Fix docdir
 
 * Tue Dec 12 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-1
