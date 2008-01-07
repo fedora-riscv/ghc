@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	7%{?dist}
+Release:	8%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -154,6 +154,10 @@ rm -f rpm-*-filelist rpm-*.files
 
 # make paths absolute (filter "./usr" to "/usr")
 sed -i -e "s|\.%{_prefix}|%{_prefix}|" rpm-*.files
+
+# fix haddock directories
+sed -i -e 's,%{_docdir}/%{name}/,%{_docdir}/%{name}-%{version}/,g' \
+  ${RPM_BUILD_ROOT}/%{_libdir}/%{name}-%{version}/package.conf
 
 cat rpm-dir.files rpm-lib.files > rpm-base-filelist
 %if %{build_prof}
