@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	4%{?dist}
+Release:	5%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -109,7 +109,10 @@ echo "GhcLibWays=" >> mk/build.mk
 echo "GhcRTSWays=thr debug" >> mk/build.mk
 %endif
 
-autoreconf
+for c in configure libraries/*/configure; do
+  (cd `dirname $c` && autoreconf)
+done
+
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
@@ -223,7 +226,7 @@ fi
 
 
 %changelog
-* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-4
+* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-5
 - Fix docdir
 
 * Tue Dec 12 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-1
