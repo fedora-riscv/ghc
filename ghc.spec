@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	3%{?dist}
+Release:	4%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -29,7 +29,7 @@ Source1:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs
 URL:		http://haskell.org/ghc/
 Requires:	%{ghcver} = %{version}-%{release}, chkconfig
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  ghc, happy, sed
+BuildRequires:  autoconf, ghc, happy, sed
 BuildRequires:  gmp-devel, readline-devel
 BuildRequires:  libX11-devel, libXt-devel
 BuildRequires:  freeglut-devel, openal-devel
@@ -109,6 +109,7 @@ echo "GhcLibWays=" >> mk/build.mk
 echo "GhcRTSWays=thr debug" >> mk/build.mk
 %endif
 
+autoreconf
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
@@ -222,7 +223,7 @@ fi
 
 
 %changelog
-* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-3
+* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-4
 - Fix docdir
 
 * Tue Dec 12 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-1
