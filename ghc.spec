@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	6%{?dist}
+Release:	7%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -121,7 +121,7 @@ done
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --docdir=%{_docdir}/%{name}-%{version}
+  --docdir=%{_docdir}/%{name}-%{version} --htmldir=%{_docdir}/%{name}-%{version}
 
 # drop truncated copy of header (#222865)
 rm libraries/network/include/Typeable.h
@@ -229,6 +229,9 @@ fi
 
 
 %changelog
+* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-7
+- More attempts to fix docdir
+
 * Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-6
 - Fix docdir
 
