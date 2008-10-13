@@ -15,8 +15,8 @@
 %define package_debugging 0
 
 Name:		ghc
-Version:	6.10.0.20081007
-Release:	2%{?dist}
+Version:	6.8.3
+Release:	7%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -25,14 +25,18 @@ Group:		Development/Languages
 Source0:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 Source1:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs.tar.bz2
 Source2:	ghc-rpm-macros.ghc
+Patch0:		ghc-6.8.3-libraries-config.patch
 URL:		http://haskell.org/ghc/
-Requires:	gcc, gmp-devel, libedit-devel
+Requires:	gcc, gmp-devel, readline-devel
+Requires(post): policycoreutils
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Obsoletes:      ghc682, ghc681, ghc661, ghc66, haddock <= 2.0.0.0
+Obsoletes:      ghc682, ghc681, ghc661, ghc66
 BuildRequires:  ghc, happy, sed
-BuildRequires:  gmp-devel, libedit-devel
+BuildRequires:  gmp-devel, readline-devel
+BuildRequires:  freeglut-devel, openal-devel
 %if %{build_doc}
-BuildRequires: libxslt, docbook-style-xsl
+# haddock generates docs in libraries, but haddock 2.0 is not compatible
+BuildRequires: libxslt, docbook-style-xsl, haddock09
 %endif
 
 %description
@@ -73,6 +77,7 @@ you like to have local access to the documentation in HTML format.
 
 %prep
 %setup -q -n %{name}-%{version} -b1
+%patch0 -p1 -b .0-haddock~
 
 %build
 # hack for building a local test package quickly from a prebuilt tree 
@@ -93,6 +98,8 @@ echo "GhcRTSWays=thr debug" >> mk/build.mk
 echo "XMLDocWays   = html" >> mk/build.mk
 echo "HADDOCK_DOCS = YES" >> mk/build.mk
 %endif
+
+export HaddockCmd=%{_bindir}/haddock-0.9
 
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
@@ -145,6 +152,9 @@ rm ${RPM_BUILD_ROOT}%{_bindir}/runhaskell
 rm -rf $RPM_BUILD_ROOT
 
 %post
+semanage fcontext -a -t unconfined_execmem_exec_t %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin} >/dev/null 2>&1 || :
+restorecon %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin}
+
 # Alas, GHC, Hugs, and nhc all come with different set of tools in
 # addition to a runFOO:
 #
@@ -193,17 +203,11 @@ fi
 
 
 %changelog
-* Sun Oct 12 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.0.20081007-2.fc10
-- Use libedit in preference to readline, for BSD license consistency
-- With haddock bundled now, obsolete standalone versions (but not haddock09)
-- Drop obsolete freeglut-devel, openal-devel, and haddock09 dependencies
+* Mon Oct 13 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-7.fc10
+- add selinux file context for unconfined_execmem following darcs package
 
-* Sun Oct 12 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.0.20081007-1.fc10
-- Update to 6.10.1 release candidate 1
-
-* Wed Oct  1 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.0.20080921-1.fc10
-- Drop unneeded haddock patch
-- Rename hsc2hs to hsc2hs-ghc so the alternatives symlink to it will work
+* Wed Oct  1 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-6.fc10
+* Rename hsc2hs to hsc2hs-ghc so the alternatives symlink to it will work
 
 * Wed Sep 24 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-5.fc10
 - bring back including haddock-generated lib docs, now under docdir/ghc
