@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	10%{?dist}
+Release:	11%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -26,13 +26,13 @@ License:	BSD
 Group:		Development/Languages
 Source0:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 Source1:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs.tar.bz2
+Source2:	ghc-rpm-macros.ghc
 URL:		http://haskell.org/ghc/
-Requires:	%{ghcver} = %{version}-%{release}, chkconfig
+Requires:	%{ghcver} = %{version}-%{release}
+Requires(post): policycoreutils
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  ghc, happy, sed
 BuildRequires:  gmp-devel, readline-devel
-# X11 is no longer in ghc extralibs
-#BuildRequires:  libX11-devel, libXt-devel
 BuildRequires:  freeglut-devel, openal-devel
 %if %{build_doc}
 # haddock generates docs in libraries
@@ -91,17 +91,17 @@ you like to have local access to the documentation in HTML format.
 
 # the debuginfo subpackage is currently empty anyway, so don't generate it
 %define debug_package %{nil}
-%define __spec_install_post /usr/lib/rpm/brp-compress
 
 %prep
 %setup -q -n %{name}-%{version} -b1
 
 %build
+# hack for building a local test package quickly from a prebuilt tree 
 %if %{package_debugging}
-cd ..
+pushd ..
 rm -rf %{name}-%{version}
 cp -al %{name}-%{version}.built %{name}-%{version}
-cd %{name}-%{version}
+popd
 exit 0
 %endif
 
@@ -110,44 +110,37 @@ echo "GhcLibWays=" >> mk/build.mk
 echo "GhcRTSWays=thr debug" >> mk/build.mk
 %endif
 
+%if %{build_doc}
+echo "XMLDocWays   = html" >> mk/build.mk
+echo "HADDOCK_DOCS = YES" >> mk/build.mk
+%endif
+
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir}
 
-cat <<HADDOCK_PATH_HACK >> mk/build.mk
-docdir  := %{_docdir}/%{name}-%{version}
-htmldir := $(docdir)
-dvidir  := $(docdir)
-pdfdir  := $(docdir)
-psdir   := $(docdir)
-HADDOCK_PATH_HACK
+make %{_smp_mflags}
+make %{_smp_mflags} -C libraries
 
-# drop truncated copy of header (#222865)
-rm libraries/network/include/Typeable.h
-
-make %{_smp_mflags} all
 %if %{build_doc}
 make %{_smp_mflags} html
-make %{_smp_mflags} -C libraries HADDOCK_DOCS=YES
-( cd libraries/Cabal && docbook2html doc/Cabal.xml --output doc/Cabal )
 %endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-make DESTDIR=${RPM_BUILD_ROOT} libdir=%{_libdir}/%{name}-%{version} install
+make DESTDIR=${RPM_BUILD_ROOT} install
 
 %if %{build_doc}
-make DESTDIR=${RPM_BUILD_ROOT} XMLDocWays="html" HADDOCK_DOCS=YES install-docs
-if [ -d ${RPM_BUILD_ROOT}/%{_docdir}/%{name}/libraries ]; then
-  mv ${RPM_BUILD_ROOT}/%{_docdir}/%{name}/libraries \
-    ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-%{version}
-fi
-cp libraries/*.html ${RPM_BUILD_ROOT}/%{_docdir}/%{name}-%{version}/libraries
+make DESTDIR=${RPM_BUILD_ROOT} install-docs
 %endif
 
+# install rpm macros
+mkdir -p ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm
+cp -p %{SOURCE2} ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm/macros.ghc
+			
 SRC_TOP=$PWD
 rm -f rpm-*-filelist rpm-*.files
 ( cd $RPM_BUILD_ROOT
@@ -165,15 +158,14 @@ cat rpm-dir.files rpm-prof.files > rpm-prof-filelist
 # create package.conf.old
 touch $RPM_BUILD_ROOT%{_libdir}/ghc-%{version}/package.conf.old
 
-mv ${RPM_BUILD_ROOT}%{_bindir}/hsc2hs ${RPM_BUILD_ROOT}%{_bindir}/hsc2hs-ghc
+# these are handled as alternatives
+rm ${RPM_BUILD_ROOT}%{_bindir}/hsc2hs
+rm ${RPM_BUILD_ROOT}%{_bindir}/runhaskell
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
 %post
-/usr/bin/chcon -t unconfined_execmem_exec_t %{_bindir}/{hasktags,runghc,runhaskell} >/dev/null 2>&1 || :
-
 # Alas, GHC, Hugs, and nhc all come with different set of tools in
 # addition to a runFOO:
 #
@@ -192,7 +184,8 @@ update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
   %{_bindir}/hsc2hs-ghc 500
 
 %post -n %{ghcver}
-/usr/bin/chcon -t unconfined_execmem_exec_t %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin} >/dev/null 2>&1 || :
+semanage fcontext -a -t unconfined_execmem_exec_t %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin} >/dev/null 2>&1 || :
+restorecon %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin}
 
 
 %preun
@@ -213,6 +206,7 @@ fi
 %defattr(-,root,root,-)
 %doc ANNOUNCE HACKING LICENSE README
 %{_bindir}/ghc*%{version}
+%{_sysconfdir}/rpm/macros.ghc
 %config(noreplace) %{_libdir}/ghc-%{version}/package.conf
 %ghost %{_libdir}/ghc-%{version}/package.conf.old
 
@@ -226,11 +220,21 @@ fi
 %if %{build_doc}
 %files doc
 %defattr(-,root,root,-)
-%{_docdir}/%{name}-%{version}
+%{_docdir}/%{name}
 %endif
 
 
 %changelog
+* Tue Oct 14 2008 Jens Petersen <petersen@redhat.com> - 6.8.2-11.fc9
+- add macros.ghc for new Haskell Packaging Guidelines (#460304)
+- add selinux file context for unconfined_execmem following darcs package
+- generate docs following upstream's instructions, now under docdir/ghc
+- setup docs building in build.mk
+- drop requires chkconfig
+- do not override __spec_install_post
+- no longer need to remove network/include/Typeable.h
+- remove runhaskell since it is an alternative
+
 * Tue Apr  8 2008 Jens Petersen <petersen@redhat.com> - 6.8.2-10
 - another rebuild attempt
 
