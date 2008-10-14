@@ -18,7 +18,7 @@
 
 Name:		ghc
 Version:	6.8.2
-Release:	11%{?dist}
+Release:	12%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -121,6 +121,8 @@ echo "HADDOCK_DOCS = YES" >> mk/build.mk
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir}
 
+# drop truncated copy of header (#222865)
+rm libraries/network/include/Typeable.h
 make %{_smp_mflags}
 make %{_smp_mflags} -C libraries
 
@@ -225,6 +227,9 @@ fi
 
 
 %changelog
+* Tue Oct 14 2008 Jens Petersen <petersen@redhat.com> - 6.8.2-12
+- remove network/include/Typeable.h again
+
 * Tue Oct 14 2008 Jens Petersen <petersen@redhat.com> - 6.8.2-11.fc9
 - add macros.ghc for new Haskell Packaging Guidelines (#460304)
 - add selinux file context for unconfined_execmem following darcs package
