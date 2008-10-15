@@ -16,7 +16,7 @@
 
 Name:		ghc
 Version:	6.8.3
-Release:	7%{?dist}
+Release:	8%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -172,6 +172,14 @@ update-alternatives --install %{_bindir}/runhaskell runhaskell \
 update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
   %{_bindir}/hsc2hs-ghc 500
 
+
+%post doc
+cd %{_docdir}/ghc/libraries && \
+haddock --gen-index --gen-contents -o . -t 'Haskell Hierarchical Libraries' \
+$(find . \( \( -path ./ghc -o -path ./ghc-prim \) -prune \) -o \( -name '*.haddock' -print \) \
+| sed 's!.*/\([^/]*\).haddock!--read-interface=\1,\0!')
+
+
 %preun
 if test "$1" = 0; then
   update-alternatives --remove runhaskell %{_bindir}/runghc
@@ -199,10 +207,21 @@ fi
 %files doc
 %defattr(-,root,root,-)
 %{_docdir}/%{name}
+%ghost %{_docdir}/%{name}/libraries/doc-index.html
+%ghost %{_docdir}/%{name}/libraries/haddock.css
+%ghost %{_docdir}/%{name}/libraries/haddock-util.js
+%ghost %{_docdir}/%{name}/libraries/haskell_icon.gif
+%ghost %{_docdir}/%{name}/libraries/index.html
+%ghost %{_docdir}/%{name}/libraries/minus.gif
+%ghost %{_docdir}/%{name}/libraries/plus.gif
 %endif
 
 
 %changelog
+* Tue Oct 14 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-8.fc10
+- Regenerate the haddock doc index automatically
+- Update macros to fit in with this scheme
+
 * Mon Oct 13 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-7.fc10
 - add selinux file context for unconfined_execmem following darcs package
 
