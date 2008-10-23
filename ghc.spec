@@ -178,7 +178,7 @@ update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
 
 
 %post doc
-cd %{_docdir}/ghc/libraries && ./gen_contents_index || :
+( cd %{_docdir}/ghc/libraries && ./gen_contents_index ) || :
 
 %preun
 if test "$1" = 0; then
@@ -221,7 +221,7 @@ fi
 
 
 %changelog
-* Wed Oct 22 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-9
+* Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-9
 - use gen_contents_index to re-index haddock
 - add %%pkg_docdir to cabal_configure
 - requires(post) haddock09 for doc
