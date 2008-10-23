@@ -16,7 +16,7 @@
 
 Name:		ghc
 Version:	6.8.3
-Release:	9%{?dist}
+Release:	10%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -221,6 +221,9 @@ fi
 
 
 %changelog
+* Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-10
+- remove redundant --haddockdir (interfacedir in Cabal-1.2) from cabal_configure
+
 * Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-9
 - use gen_contents_index to re-index haddock
 - add %%pkg_docdir to cabal_configure
