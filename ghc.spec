@@ -16,7 +16,7 @@
 
 Name:		ghc
 Version:	6.8.3
-Release:	8%{?dist}
+Release:	9%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -66,6 +66,7 @@ needed.
 Summary:	Documentation for GHC
 Group:		Development/Languages
 Requires:	%{name} = %{version}-%{release}
+Requires(post): haddock09
 
 %description doc
 Preformatted documentation for the Glorious Glasgow Haskell
@@ -130,7 +131,8 @@ cp -p %{SOURCE2} ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm/macros.ghc
 SRC_TOP=$PWD
 rm -f rpm-*-filelist rpm-*.files
 ( cd $RPM_BUILD_ROOT
-  find .%{_libdir}/%{name}-%{version} \( -type d -fprintf $SRC_TOP/rpm-dir.files "%%%%dir %%p\n" \) -o \( -type f \( -name '*.p_hi' -o -name '*_p.a' \) -fprint $SRC_TOP/rpm-prof.files \) -o \( -not -name 'package.conf' -fprint $SRC_TOP/rpm-lib.files \)
+  find .%{_libdir}/%{name}-%{version} \( -type d -fprintf $SRC_TOP/rpm-dir.files "%%%%dir %%p\n" \) -o \( -type f \( -name '*.p_hi' -o -name '*_p.a' \) -fprint $SRC_TOP/rpm-prof.files \) -o \( -not -name 'package.conf*' -fprint $SRC_TOP/rpm-lib.files \)
+  find .%{_docdir}/%{name}/* -type d ! -name libraries > $SRC_TOP/rpm-doc-dir.files
 )
 
 # make paths absolute (filter "./usr" to "/usr")
@@ -141,12 +143,14 @@ cat rpm-dir.files rpm-lib.files > rpm-base-filelist
 cat rpm-dir.files rpm-prof.files > rpm-prof-filelist
 %endif
 
-# create package.conf.old
-touch $RPM_BUILD_ROOT%{_libdir}/ghc-%{version}/package.conf.old
-
 # these are handled as alternatives
-mv ${RPM_BUILD_ROOT}%{_bindir}/hsc2hs ${RPM_BUILD_ROOT}%{_bindir}/hsc2hs-ghc
-rm ${RPM_BUILD_ROOT}%{_bindir}/runhaskell
+for i in hsc2hs runhaskell; do
+  if [ -x ${RPM_BUILD_ROOT}%{_bindir}/$i-ghc ]; then
+    rm ${RPM_BUILD_ROOT}%{_bindir}/$i
+  else
+    mv ${RPM_BUILD_ROOT}%{_bindir}/$i{,-ghc}
+  fi
+done
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -174,11 +178,7 @@ update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
 
 
 %post doc
-cd %{_docdir}/ghc/libraries && \
-haddock --gen-index --gen-contents -o . -t 'Haskell Hierarchical Libraries' \
-$(find . \( \( -path ./ghc -o -path ./ghc-prim \) -prune \) -o \( -name '*.haddock' -print \) \
-| sed 's!.*/\([^/]*\).haddock!--read-interface=\1,\0!')
-
+cd %{_docdir}/ghc/libraries && ./gen_contents_index || :
 
 %preun
 if test "$1" = 0; then
@@ -204,9 +204,12 @@ fi
 
 
 %if %{build_doc}
-%files doc
+%files doc -f rpm-doc-dir.files
 %defattr(-,root,root,-)
-%{_docdir}/%{name}
+%dir %{_docdir}/%{name}
+%{_docdir}/%{name}/index.html
+%{_docdir}/%{name}/libraries/gen_contents_index
+%dir %{_docdir}/%{name}/libraries
 %ghost %{_docdir}/%{name}/libraries/doc-index.html
 %ghost %{_docdir}/%{name}/libraries/haddock.css
 %ghost %{_docdir}/%{name}/libraries/haddock-util.js
@@ -218,17 +221,25 @@ fi
 
 
 %changelog
-* Tue Oct 14 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-8.fc10
+* Wed Oct 22 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-9
+- use gen_contents_index to re-index haddock
+- add %%pkg_docdir to cabal_configure
+- requires(post) haddock09 for doc
+- improve doc file lists
+- no longer need to create ghost package.conf.old
+- remove or rename alternatives files more consistently
+
+* Tue Oct 14 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-8
 - Regenerate the haddock doc index automatically
 - Update macros to fit in with this scheme
 
-* Mon Oct 13 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-7.fc10
+* Mon Oct 13 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-7
 - add selinux file context for unconfined_execmem following darcs package
 
-* Wed Oct  1 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-6.fc10
+* Wed Oct  1 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-6
 * Rename hsc2hs to hsc2hs-ghc so the alternatives symlink to it will work
 
-* Wed Sep 24 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-5.fc10
+* Wed Sep 24 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-5
 - bring back including haddock-generated lib docs, now under docdir/ghc
 - fix macros.ghc filepath (#460304)
 - spec file cleanups:
@@ -238,9 +249,9 @@ fi
 - setup docs building in build.mk
 - no longer need to remove network/include/Typeable.h
 - install binaries under libdir not libexec
-- remove hsc2hs and runhaskell binaries since are alternatives
+- remove hsc2hs and runhaskell binaries since they are alternatives
 
-* Wed Sep 17 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-4.fc10
+* Wed Sep 17 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-4
 - add macros.ghc for new Haskell Packaging Guidelines (#460304)
 
 * Wed Jun 18 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.3-3
