@@ -16,7 +16,7 @@
 
 Name:		ghc
 Version:	6.10.1
-Release:	1%{?dist}
+Release:	7%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -31,12 +31,15 @@ Requires(post): policycoreutils
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes:      ghc682, ghc681, ghc661, ghc66, haddock <= 2.0.0.0
 # introduced for f11 and to be removed for f13:
-Provides:       haddock = 2.2.2
+Provides:       haddock = 2.3.0
 BuildRequires:  ghc, happy, sed
 BuildRequires:  gmp-devel, libedit-devel
+# editline package requires ncurses to configure
+BuildRequires:  ncurses-devel
 %if %{build_doc}
 BuildRequires: libxslt, docbook-style-xsl
 %endif
+Patch1:        ghc-6.10.1-gen_contexts_index.patch
 
 %description
 GHC is a state-of-the-art programming suite for Haskell, a purely
@@ -66,7 +69,7 @@ Summary:	Documentation for GHC
 Group:		Development/Languages
 Requires:	%{name} = %{version}-%{release}
 # for haddock
-Requires(post): %{name} = %{version}-%{release}
+Requires(posttrans): %{name} = %{version}-%{release}
 
 %description doc
 Preformatted documentation for the Glorious Glasgow Haskell
@@ -78,6 +81,7 @@ you like to have local access to the documentation in HTML format.
 
 %prep
 %setup -q -n %{name}-%{version} -b1
+%patch1 -p1 -b .orig
 
 %build
 # hack for building a local test package quickly from a prebuilt tree 
@@ -124,7 +128,7 @@ make DESTDIR=${RPM_BUILD_ROOT} install-docs
 # install rpm macros
 mkdir -p ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm
 cp -p %{SOURCE2} ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm/macros.ghc
-			
+
 SRC_TOP=$PWD
 rm -f rpm-*-filelist rpm-*.files
 ( cd $RPM_BUILD_ROOT
@@ -137,7 +141,7 @@ sed -i -e "s|\.%{_prefix}|%{_prefix}|" rpm-*.files
 
 cat rpm-dir.files rpm-lib.files > rpm-base-filelist
 %if %{build_prof}
-cat rpm-dir.files rpm-prof.files > rpm-prof-filelist
+cat rpm-prof.files > rpm-prof-filelist
 %endif
 
 # these are handled as alternatives
@@ -173,11 +177,12 @@ update-alternatives --install %{_bindir}/runhaskell runhaskell \
 update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
   %{_bindir}/hsc2hs-ghc 500
 
-%post doc
+# posttrans to make sure any old documentation has been removed first
+%posttrans doc
 ( cd %{_docdir}/ghc/libraries && ./gen_contents_index ) || :
 
 %preun
-if test "$1" = 0; then
+if [ "$1" = 0 ]; then
   update-alternatives --remove runhaskell %{_bindir}/runghc
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
@@ -214,7 +219,39 @@ fi
 %endif
 
 %changelog
-* Fri Nov 07 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.1-1
+* Mon Jan 19 2009 Jens Petersen <petersen@redhat.com> - 6.10.1-7
+- buildrequire ncurses-devel to fix build of missing editline package needed
+  for ghci line-editing (#478466)
+- move spec templates to a haskell-packaging for easy updating
+- provide correct haddock version
+
+* Mon Dec  1 2008 Jens Petersen <petersen@redhat.com> - 6.10.1-6
+- update macros.ghc to latest proposed revised packaging guidelines:
+  - use runghc
+  - drop trivial cabal_build and cabal_haddock macros
+  - ghc_register_pkg and ghc_unregister_pkg replace ghc_preinst_script,
+    ghc_postinst_script, ghc_preun_script, and ghc_postun_script
+- library templates prof subpackage requires main library again
+- make cabal2spec work on .cabal files too, and
+  read and check name and version directly from .cabal file
+- ghc-prof does not need to own libraries dirs owned by main package
+
+* Tue Nov 25 2008 Jens Petersen <petersen@redhat.com> - 6.10.1-5
+- add cabal2spec and template files for easy cabal hackage packaging
+- simplify script macros: make ghc_preinst_script and ghc_postun_script no-ops
+  and ghc_preun_script only unregister for uninstall
+
+* Tue Nov 11 2008 Jens Petersen <petersen@redhat.com> - 6.10.1-4
+- fix broken urls to haddock docs created by gen_contents_index script
+- avoid haddock errors when upgrading by making doc post script posttrans
+
+* Wed Nov 05 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.1-3
+- libraries/prologue.txt should not have been ghosted
+
+* Tue Nov 04 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.1-2
+- Fix a minor packaging glitch
+
+* Tue Nov 04 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.10.1-1
 - Update to 6.10.1
 
 * Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.10.0.20081007-9
