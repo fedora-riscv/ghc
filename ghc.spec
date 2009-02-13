@@ -16,7 +16,7 @@
 
 Name:		ghc
 Version:	6.8.3
-Release:	10%{?dist}
+Release:	11%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
 ExcludeArch:	alpha ppc64
@@ -135,7 +135,7 @@ make DESTDIR=${RPM_BUILD_ROOT} install-docs
 # install rpm macros
 mkdir -p ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm
 cp -p %{SOURCE2} ${RPM_BUILD_ROOT}/%{_sysconfdir}/rpm/macros.ghc
-			
+
 SRC_TOP=$PWD
 rm -f rpm-*-filelist rpm-*.files
 ( cd $RPM_BUILD_ROOT
@@ -148,7 +148,7 @@ sed -i -e "s|\.%{_prefix}|%{_prefix}|" rpm-*.files
 
 cat rpm-dir.files rpm-lib.files > rpm-base-filelist
 %if %{build_prof}
-cat rpm-dir.files rpm-prof.files > rpm-prof-filelist
+cat rpm-prof.files > rpm-prof-filelist
 %endif
 
 # these are handled as alternatives
@@ -184,16 +184,14 @@ update-alternatives --install %{_bindir}/runhaskell runhaskell \
 update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
   %{_bindir}/hsc2hs-ghc 500
 
-
 %post doc
 ( cd %{_docdir}/ghc/libraries && ./gen_contents_index ) || :
 
 %preun
-if test "$1" = 0; then
+if [ "$1" = 0 ]; then
   update-alternatives --remove runhaskell %{_bindir}/runghc
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
-
 
 %files -f rpm-base-filelist
 %defattr(-,root,root,-)
@@ -204,7 +202,6 @@ fi
 %config(noreplace) %{_libdir}/ghc-%{version}/package.conf
 %ghost %{_libdir}/ghc-%{version}/package.conf.old
 
-
 %if %{build_prof}
 %files prof -f rpm-prof-filelist
 %defattr(-,root,root,-)
@@ -212,7 +209,6 @@ fi
 %files -n ghc682-prof
 %defattr(-,root,root,-)
 %endif
-
 
 %if %{build_doc}
 %files doc -f rpm-doc-dir.files
@@ -232,6 +228,17 @@ fi
 
 
 %changelog
+* Fri Feb 13 2009 Jens Petersen <petersen@redhat.com> - 6.8.3-11
+- backport latest macros.ghc:
+
+* Mon Dec  1 2008 Jens Petersen <petersen@redhat.com>
+- update macros.ghc to latest proposed revised packaging guidelines:
+  - use runghc
+  - drop trivial cabal_build and cabal_haddock macros
+  - ghc_register_pkg and ghc_unregister_pkg replace ghc_preinst_script,
+    ghc_postinst_script, ghc_preun_script, and ghc_postun_script
+- ghc-prof does not need to own libraries dirs owned by main package
+
 * Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-10.fc9
 - remove redundant --haddockdir (interfacedir in Cabal-1.2) from cabal_configure
 - add a ghc682-prof dummy package to stop ghc-prof and ghc682-prof obsoleting
