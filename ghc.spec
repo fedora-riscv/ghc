@@ -16,26 +16,25 @@
 
 Name:		ghc
 Version:	6.10.1
-Release:	7%{?dist}
+Release:	9%{?dist}
 Summary:	Glasgow Haskell Compilation system
-# See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
-ExcludeArch:	alpha ppc64
+# ghc has only been bootstrapped on the following archs for fedora:
+ExclusiveArch:  i386 x86_64 ppc
 License:	BSD
 Group:		Development/Languages
 Source0:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 Source1:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs.tar.bz2
 Source2:	ghc-rpm-macros.ghc
 URL:		http://haskell.org/ghc/
-Requires:	gcc, gmp-devel, libedit-devel
+# libedit-devel > 2.11-2 correctly requires ncurses-devel
+Requires:	gcc, gmp-devel, libedit-devel > 2.11-2
 Requires(post): policycoreutils
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Obsoletes:      ghc682, ghc681, ghc661, ghc66, haddock <= 2.0.0.0
 # introduced for f11 and to be removed for f13:
 Provides:       haddock = 2.3.0
 BuildRequires:  ghc, happy, sed
-BuildRequires:  gmp-devel, libedit-devel
-# editline package requires ncurses to configure
-BuildRequires:  ncurses-devel
+BuildRequires:  gmp-devel, libedit-devel > 2.11-2
 %if %{build_doc}
 BuildRequires: libxslt, docbook-style-xsl
 %endif
@@ -219,6 +218,13 @@ fi
 %endif
 
 %changelog
+* Fri Feb 13 2009 Jens Petersen <petersen@redhat.com> - 6.10.1-9
+- require and buildrequire libedit-devel > 2.11-2
+- protect ghc_register_pkg and ghc_unregister_pkg
+
+* Fri Jan 23 2009 Jens Petersen <petersen@redhat.com> - 6.10.1-8
+- fix to libedit means can drop ncurses-devel BR workaround (#481252)
+
 * Mon Jan 19 2009 Jens Petersen <petersen@redhat.com> - 6.10.1-7
 - buildrequire ncurses-devel to fix build of missing editline package needed
   for ghci line-editing (#478466)
