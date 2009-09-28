@@ -27,7 +27,7 @@
 %global package_debugging 0
 
 Name: ghc
-# part of haskell-platform
+# part of haskell-platform-2009.2.0.1
 Version: 6.10.3
 Release: 3%{?dist}
 Summary: Glasgow Haskell Compilation system
