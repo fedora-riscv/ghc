@@ -18,15 +18,13 @@
 # include colored html src
 %bcond_with hscolour
 
-%global haddock_version 2.5.0
-
 # the debuginfo subpackage is currently empty anyway, so don't generate it
 %global debug_package %{nil}
 
 Name: ghc
-# break of haskell-platform-2009.2.0.2
+# part of haskell-platform-2010.1.0.0
 Version: 6.12.1
-Release: 5%{?dist}
+Release: 6%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -38,11 +36,11 @@ Source1: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs
 %endif
 URL: http://haskell.org/ghc/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Obsoletes: ghc682, ghc681, haddock09
-# introduced for f11 and can be removed for f13:
-Obsoletes: haddock < %{haddock_version}, ghc-haddock-devel < %{haddock_version}
-Provides: haddock = %{haddock_version}
-BuildRequires: ghc, happy, ghc-rpm-macros >= 0.5.2
+# introduced for f11
+Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
+# added for f13
+Obsoletes: ghc-utf8-string-devel < 0.3.6-3
+BuildRequires: ghc, happy, ghc-rpm-macros >= 0.5.6
 BuildRequires: gmp-devel, ncurses-devel
 Requires: gcc, gmp-devel
 %if %{with shared}
@@ -74,7 +72,9 @@ Group: Development/Languages
 Requires: %{name} = %{version}-%{release}
 # for haddock
 Requires(posttrans): %{name} = %{version}-%{release}
-Obsoletes: ghc-haddock-doc < %{haddock_version}
+Obsoletes: ghc-haddock-doc < 2.4.2-3
+# added for f13
+Obsoletes: ghc-utf8-string-doc < 0.3.6-3
 
 %description doc
 Preformatted documentation for the Glorious Glasgow Haskell Compilation System
@@ -85,6 +85,8 @@ access to the documentation in HTML format.
 %package libs
 Summary: Shared libraries for GHC
 Group: Development/Libraries
+# added for f13
+Obsoletes: ghc-utf8-string < 0.3.6-3
 
 %description libs
 Shared libraries for Glorious Glasgow Haskell Compilation System (GHC).
@@ -95,8 +97,9 @@ Shared libraries for Glorious Glasgow Haskell Compilation System (GHC).
 Summary: Profiling libraries for GHC
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
-Obsoletes: ghc682-prof, ghc681-prof
-Obsoletes: ghc-haddock-prof < %{haddock_version}
+Obsoletes: ghc-haddock-prof < 2.4.2-3
+# added for f13
+Obsoletes: ghc-utf8-string-prof < 0.3.6-3
 
 %description prof
 Profiling libraries for Glorious Glasgow Haskell Compilation System (GHC).
@@ -231,7 +234,7 @@ fi
 
 %posttrans
 # (posttrans to make sure any old libs have been removed first)
-ghc-pkg recache
+%ghc_pkg_recache
 
 %posttrans doc
 # (posttrans to make sure any old docs have been removed first)
@@ -276,6 +279,13 @@ ghc-pkg recache
 %endif
 
 %changelog
+* Mon Apr 12 2010 Jens Petersen <petersen@redhat.com> - 6.12.1-6
+- ghc-6.12.1 is part of haskell-platform-2010.1.0.0
+- drop old ghc682, ghc681, haddock09 obsoletes
+- drop haddock_version and no longer provide haddock explicitly
+- add obsoletes for ghc-utf8-string (#571478, reported by Jochen Schmitt)
+- update ghc-rpm-macros BR to 0.5.6 for ghc_pkg_recache
+
 * Mon Jan 11 2010 Jens Petersen <petersen@redhat.com> - 6.12.1-5
 - drop ghc-6.12.1-no-filter-libs.patch and extras packages again
 - filter ghc-ghc-prof files from ghc-prof
