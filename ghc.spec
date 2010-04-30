@@ -38,8 +38,6 @@ URL: http://haskell.org/ghc/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 # introduced for f11
 Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
-# added for f13
-Obsoletes: ghc-utf8-string-devel < 0.3.6-3
 BuildRequires: ghc, happy, ghc-rpm-macros >= 0.5.6
 BuildRequires: gmp-devel, ncurses-devel
 Requires: gcc, gmp-devel
@@ -73,8 +71,6 @@ Requires: %{name} = %{version}-%{release}
 # for haddock
 Requires(posttrans): %{name} = %{version}-%{release}
 Obsoletes: ghc-haddock-doc < 2.4.2-3
-# added for f13
-Obsoletes: ghc-utf8-string-doc < 0.3.6-3
 
 %description doc
 Preformatted documentation for the Glorious Glasgow Haskell Compilation System
@@ -85,8 +81,6 @@ access to the documentation in HTML format.
 %package libs
 Summary: Shared libraries for GHC
 Group: Development/Libraries
-# added for f13
-Obsoletes: ghc-utf8-string < 0.3.6-3
 
 %description libs
 Shared libraries for Glorious Glasgow Haskell Compilation System (GHC).
@@ -98,8 +92,6 @@ Summary: Profiling libraries for GHC
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Obsoletes: ghc-haddock-prof < 2.4.2-3
-# added for f13
-Obsoletes: ghc-utf8-string-prof < 0.3.6-3
 
 %description prof
 Profiling libraries for Glorious Glasgow Haskell Compilation System (GHC).
@@ -279,6 +271,9 @@ fi
 %endif
 
 %changelog
+* Fri Apr 30 2010 Jens Petersen <petersen@redhat.com>
+- drop the ghc-utf8-string obsoletes (#571478)
+
 * Mon Apr 12 2010 Jens Petersen <petersen@redhat.com> - 6.12.1-6
 - ghc-6.12.1 is part of haskell-platform-2010.1.0.0
 - drop old ghc682, ghc681, haddock09 obsoletes
