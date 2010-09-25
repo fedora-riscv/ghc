@@ -1,6 +1,6 @@
 Name: ghc
 Version: 6.10.4
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: Glasgow Haskell Compilation system
 License: BSD
 Group: Development/Languages
@@ -11,7 +11,7 @@ URL: http://haskell.org/ghc/
 Requires: gcc, gmp-devel
 Requires(post): policycoreutils
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-ExclusiveArch: i386 ppc x86_64
+ExclusiveArch: %{ix86} x86_64 ppc
 
 %description
 GHC is a state-of-the-art programming suite for Haskell, a purely
@@ -61,5 +61,8 @@ fi
 %{_mandir}/man1/*
 
 %changelog
+* Sat Sep 25 2010 Jens Petersen <petersen@redhat.com> - 6.10.4-1
+- fix the arch for i686
+
 * Fri Sep 24 2010 Jens Petersen <petersen@redhat.com> - 6.10.4-0
 - bootstrap F12 ghc bin packages to EPEL 6
