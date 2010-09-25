@@ -33,7 +33,7 @@ interface.
 %install
 cd ${RPM_BUILD_ROOT}
 mkdir -p .%{_bindir} .%{_libdir} .%{_docdir} .%{_mandir}/man1
-rpm2cpio ${RPM_SOURCE_DIR}/%{name}-%{version}-2.fc12.%{_arch}.rpm | cpio --extract
+rpm2cpio ${RPM_SOURCE_DIR}/%{name}-%{version}-2.fc12.%{_target_cpu}.rpm | cpio --extract
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -62,7 +62,7 @@ fi
 
 %changelog
 * Sat Sep 25 2010 Jens Petersen <petersen@redhat.com> - 6.10.4-1
-- fix the arch for i686
+- fix the arch for i686 and use _target_cpu
 
 * Fri Sep 24 2010 Jens Petersen <petersen@redhat.com> - 6.10.4-0
 - bootstrap F12 ghc bin packages to EPEL 6
