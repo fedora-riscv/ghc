@@ -29,7 +29,7 @@
 Name: ghc
 # part of haskell-platform-2009.2.0.2
 Version: 6.10.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -47,7 +47,7 @@ Obsoletes: ghc682, ghc681, ghc661, ghc66, haddock09
 # introduced for f11 and can be removed for f13:
 Obsoletes: haddock < %{haddock_version}, ghc-haddock-devel < %{haddock_version}
 Provides: haddock = %{haddock_version}, ghc-haddock-devel = %{haddock_version}
-BuildRequires: ghc, happy, sed
+BuildRequires: ghc, sed
 BuildRequires: gmp-devel
 %if %{with shared}
 # not sure if this is actually needed
@@ -278,6 +278,9 @@ fi
 %endif
 
 %changelog
+* Mon Sep 27 2010 Jens Petersen <petersen@redhat.com> - 6.10.4-3
+- try building without happy for el6
+
 * Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 6.10.4-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
