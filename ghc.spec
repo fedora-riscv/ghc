@@ -12,7 +12,7 @@
 # run testsuite
 %bcond_without testsuite
 # include colored html src
-%bcond_without hscolour
+%bcond_with hscolour
 
 ## default disabled options ##
 # include extralibs
@@ -279,7 +279,7 @@ fi
 
 %changelog
 * Wed Sep 29 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-5.el6
-- build without happy
+- build without happy and hscolour
 
 * Thu Jul 15 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-4
 - merge ghc-doc into base package
