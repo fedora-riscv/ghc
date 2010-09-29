@@ -1,5 +1,2 @@
-ghc-6.12.3-src.tar.bz2
-testsuite-6.12.3.tar.bz2
-/ghc-6.10.1-9.fc10.i386.rpm
-/ghc-6.10.1-9.fc10.ppc.rpm
-/ghc-6.10.1-9.fc10.x86_64.rpm
+ghc-6.10.3-src.tar.bz2
+ghc-6.10.3-src-extralibs.tar.bz2
