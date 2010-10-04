@@ -9,7 +9,7 @@ Version:	6.6.1
 Release:	4%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
-ExcludeArch:	ppc64
+ExcludeArch:	ppc
 License:	BSD style
 Group:		Development/Languages
 Source0:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
@@ -186,6 +186,7 @@ fi
 * Mon Oct  4 2010 Jens Petersen <petersen@redhat.com> - 6.6.1-4.el4
 - turn off prof and doc for now
 - drop X, glut, and openal deps temporarily
+- exclude ppc
 
 * Thu May 10 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.6.1-3
 - install man page for ghc
