@@ -1,31 +1,29 @@
-%define ghcver ghc661
-
 # speed up test builds by not building profiled libraries
-%define build_prof 0
-%define build_doc 0
+%define build_prof 1
+%define build_doc 1
 
 Name:		ghc
-Version:	6.6.1
-Release:	4%{?dist}
+Version:	6.8.3
+Release:	12%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
-ExcludeArch:	ppc
-License:	BSD style
+ExcludeArch:	alpha ppc64
+License:	BSD
 Group:		Development/Languages
 Source0:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 Source1:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs.tar.bz2
 URL:		http://haskell.org/ghc/
-Requires:	%{ghcver} = %{version}-%{release}
+Requires:	gcc, gmp-devel, readline-devel
+Requires(post): policycoreutils
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Obsoletes:      ghc682, ghc681, ghc661, ghc66
 BuildRequires:  ghc, sed
-Buildrequires:  gmp-devel, readline-devel
-#Buildrequires:  libX11-devel, libXt-devel
-#Buildrequires:  freeglut-devel, openal-devel
+BuildRequires:  gmp-devel, readline-devel
+BuildRequires:  freeglut-devel, openal-devel
 %if %{build_doc}
 # haddock generates docs in libraries
-Buildrequires: libxslt, docbook-style-xsl, haddock >= 0.8
+BuildRequires: libxslt, docbook-style-xsl, haddock
 %endif
-Prefix:		%{_prefix}
 
 %description
 GHC is a state-of-the-art programming suite for Haskell, a purely
@@ -37,31 +35,14 @@ collection of libraries, and support for various language
 extensions, including concurrency, exceptions, and a foreign language
 interface.
 
-%package -n %{ghcver}
-Summary:	Glasgow Haskell Compilation system
-Group:		Development/Languages
-Requires:	gcc gmp-devel readline-devel
-
-%description -n %{ghcver}
-GHC is a state-of-the-art programming suite for Haskell, a purely
-functional programming language.  It includes an optimising compiler
-generating good code for a variety of platforms, together with an
-interactive system for convenient, quick development.  The
-distribution includes space and time profiling facilities, a large
-collection of libraries, and support for various language
-extensions, including concurrency, exceptions, and a foreign language
-interfaces.
-
-This package contains all the main files and libraries of version %{version}.
-
 %if %{build_prof}
-%package -n %{ghcver}-prof
+%package prof
 Summary:	Profiling libraries for GHC
 Group:		Development/Libraries
-Requires:	%{ghcver} = %{version}-%{release}
-Obsoletes:	ghc-prof
+Requires:	%{name} = %{version}-%{release}
+Obsoletes:	ghc682-prof, ghc681-prof, ghc661-prof, ghc66-prof
 
-%description -n %{ghcver}-prof
+%description prof
 Profiling libraries for Glorious Glasgow Haskell Compilation System
 (GHC).  They should be installed when GHC's profiling subsystem is
 needed.
@@ -70,7 +51,8 @@ needed.
 %package doc
 Summary:	Documentation for GHC
 Group:		Development/Languages
-Requires:	%{name}
+Requires:	%{name} = %{version}-%{release}
+Requires(post): haddock
 
 %description doc
 Preformatted documentation for the Glorious Glasgow Haskell
@@ -79,10 +61,9 @@ you like to have local access to the documentation in HTML format.
 
 # the debuginfo subpackage is currently empty anyway, so don't generate it
 %define debug_package %{nil}
-%define __spec_install_post /usr/lib/rpm/brp-compress
 
 %prep
-%setup -q -n ghc-%{version} -b1
+%setup -q -n %{name}-%{version} -b1
 
 %build
 %if !%{build_prof}
@@ -90,29 +71,40 @@ echo "GhcLibWays=" >> mk/build.mk
 echo "GhcRTSWays=thr debug" >> mk/build.mk
 %endif
 
-./configure --prefix=%{_prefix} --libdir=%{_libdir}
-
-# drop truncated copy of header (#222865)
-rm libraries/network/include/Typeable.h
-
-make all
 %if %{build_doc}
-make html
+echo "XMLDocWays   = html" >> mk/build.mk
+echo "HADDOCK_DOCS = YES" >> mk/build.mk
+%endif
+
+#export HaddockCmd=%{_bindir}/haddock-0.9
+
+./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
+  --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
+  --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
+  --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
+  --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir}
+
+make %{_smp_mflags}
+make %{_smp_mflags} -C libraries
+
+%if %{build_doc}
+make %{_smp_mflags} html
 %endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-make prefix=$RPM_BUILD_ROOT%{_prefix} libdir=$RPM_BUILD_ROOT%{_libdir}/%{name}-%{version} install
+make DESTDIR=${RPM_BUILD_ROOT} install
 
 %if %{build_doc}
-make mandir=$RPM_BUILD_ROOT%{_mandir} datadir=$RPM_BUILD_ROOT%{_docdir}/ghc-%{version} XMLDocWays="html" install-docs
+make DESTDIR=${RPM_BUILD_ROOT} install-docs
 %endif
 
 SRC_TOP=$PWD
 rm -f rpm-*-filelist rpm-*.files
 ( cd $RPM_BUILD_ROOT
-  find .%{_libdir}/%{name}-%{version} \( -type d -fprintf $SRC_TOP/rpm-dir.files "%%%%dir %%p\n" \) -o \( -type f \( -name '*.p_hi' -o -name '*_p.a' \) -fprint $SRC_TOP/rpm-prof.files \) -o \( -not -name 'package.conf' -fprint $SRC_TOP/rpm-lib.files \)
+  find .%{_libdir}/%{name}-%{version} \( -type d -fprintf $SRC_TOP/rpm-dir.files "%%%%dir %%p\n" \) -o \( -type f \( -name '*.p_hi' -o -name '*_p.a' \) -fprint $SRC_TOP/rpm-prof.files \) -o \( -not -name 'package.conf*' -fprint $SRC_TOP/rpm-lib.files \)
+  find .%{_docdir}/%{name}/* -type d ! -name libraries > $SRC_TOP/rpm-doc-dir.files
 )
 
 # make paths absolute (filter "./usr" to "/usr")
@@ -120,73 +112,182 @@ sed -i -e "s|\.%{_prefix}|%{_prefix}|" rpm-*.files
 
 cat rpm-dir.files rpm-lib.files > rpm-base-filelist
 %if %{build_prof}
-cat rpm-dir.files rpm-prof.files > rpm-prof-filelist
+cat rpm-prof.files > rpm-prof-filelist
 %endif
 
-# create package.conf.old
-touch $RPM_BUILD_ROOT%{_libdir}/ghc-%{version}/package.conf.old
-
+# these are handled as alternatives
+for i in hsc2hs runhaskell; do
+  if [ -x ${RPM_BUILD_ROOT}%{_bindir}/$i-ghc ]; then
+    rm ${RPM_BUILD_ROOT}%{_bindir}/$i
+  else
+    mv ${RPM_BUILD_ROOT}%{_bindir}/$i{,-ghc}
+  fi
+done
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
 %post
-## tweak prefix in drivers scripts if relocating
-if [ "${RPM_INSTALL_PREFIX}" != "%{_prefix}" ]; then
-  BINDIR=`echo %{_bindir} | sed -e "s|%{_prefix}|${RPM_INSTALL_PREFIX}|"`
-  sed -i "s|%{_prefix}|${RPM_INSTALL_PREFIX}|" ${BINDIR}/{ghcprof,hsc2hs}
+semanage fcontext -a -t unconfined_execmem_exec_t %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin} >/dev/null 2>&1 || :
+restorecon %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin}
+
+# Alas, GHC, Hugs, and nhc all come with different set of tools in
+# addition to a runFOO:
+#
+#   * GHC:  hsc2hs
+#   * Hugs: hsc2hs, cpphs
+#   * nhc:  cpphs
+#
+# Therefore it is currently not possible to use --slave below to form
+# link groups under a single name 'runhaskell'. Either these tools
+# should be disentangled from the Haskell implementations, or all
+# implementations should have the same set of tools. *sigh*
+
+update-alternatives --install %{_bindir}/runhaskell runhaskell \
+  %{_bindir}/runghc 500
+update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
+  %{_bindir}/hsc2hs-ghc 500
+
+%post doc
+( cd %{_docdir}/ghc/libraries && ./gen_contents_index ) || :
+
+%preun
+if [ "$1" = 0 ]; then
+  update-alternatives --remove runhaskell %{_bindir}/runghc
+  update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
 
-/usr/bin/chcon -t unconfined_execmem_exec_t %{_bindir}/{hasktags,runghc,runhaskell} >/dev/null 2>&1 || :
-
-
-%post -n %{ghcver}
-## tweak prefix in drivers scripts if relocating
-if [ "${RPM_INSTALL_PREFIX}" != "%{_prefix}" ]; then
-  BINDIR=`echo %{_bindir} | sed -e "s|%{_prefix}|${RPM_INSTALL_PREFIX}|"`
-  LIBDIR=`echo %{_libdir} | sed -e "s|%{_prefix}|${RPM_INSTALL_PREFIX}|"`
-  sed -i "s|%{_prefix}|${RPM_INSTALL_PREFIX}|" ${BINDIR}/ghc*-%{version} ${LIBDIR}/ghc-%{version}/package.conf
-fi
-
-/usr/bin/chcon -t unconfined_execmem_exec_t %{_libdir}/ghc-%{version}/{ghc-%{version},ghc-pkg.bin,hsc2hs-bin} >/dev/null 2>&1 || :
-
-
-%files
+%files -f rpm-base-filelist
 %defattr(-,root,root,-)
-%{_bindir}/*
-%exclude %{_bindir}/ghc*%{version}
+%doc ANNOUNCE HACKING LICENSE README
 %if %{build_doc}
 %doc %{_mandir}/man1/ghc.*
 %endif
-
-
-%files -n %{ghcver} -f rpm-base-filelist
-%defattr(-,root,root,-)
-%doc ANNOUNCE HACKING LICENSE README
-%{_bindir}/ghc*%{version}
+%{_bindir}/*
 %config(noreplace) %{_libdir}/ghc-%{version}/package.conf
 %ghost %{_libdir}/ghc-%{version}/package.conf.old
 
-
 %if %{build_prof}
-%files -n %{ghcver}-prof -f rpm-prof-filelist
+%files prof -f rpm-prof-filelist
 %defattr(-,root,root,-)
 %endif
 
-
-%if %{build_doc}
-%files doc
+%files doc -f rpm-doc-dir.files
 %defattr(-,root,root,-)
-%{_docdir}/%{name}-%{version}
+%dir %{_docdir}/%{name}
+%dir %{_docdir}/%{name}/libraries
+%if %{build_doc}
+%{_docdir}/%{name}/index.html
+%{_docdir}/%{name}/libraries/gen_contents_index
+%ghost %{_docdir}/%{name}/libraries/doc-index.html
+%ghost %{_docdir}/%{name}/libraries/haddock.css
+%ghost %{_docdir}/%{name}/libraries/haddock-util.js
+%ghost %{_docdir}/%{name}/libraries/haskell_icon.gif
+%ghost %{_docdir}/%{name}/libraries/index.html
+%ghost %{_docdir}/%{name}/libraries/minus.gif
+%ghost %{_docdir}/%{name}/libraries/plus.gif
 %endif
 
 
 %changelog
-* Mon Oct  4 2010 Jens Petersen <petersen@redhat.com> - 6.6.1-4.el4
-- turn off prof and doc for now
-- drop X, glut, and openal deps temporarily
-- exclude ppc
+* Fri Oct  1 2010 Jens Petersen <petersen@redhat.com> - 6.8.3-12.el4
+- build with haddock rather than haddock09 and
+  drop ghc-6.8.3-libraries-config.patch for haddock09
+- drop buildrequires on happy
+- drop macros.ghc from here
+
+* Fri Feb 13 2009 Jens Petersen <petersen@redhat.com> - 6.8.3-11
+- backport latest macros.ghc:
+
+* Mon Dec  1 2008 Jens Petersen <petersen@redhat.com>
+- update macros.ghc to latest proposed revised packaging guidelines:
+  - use runghc
+  - drop trivial cabal_build and cabal_haddock macros
+  - ghc_register_pkg and ghc_unregister_pkg replace ghc_preinst_script,
+    ghc_postinst_script, ghc_preun_script, and ghc_postun_script
+- ghc-prof does not need to own libraries dirs owned by main package
+
+* Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-10.fc9
+- remove redundant --haddockdir (interfacedir in Cabal-1.2) from cabal_configure
+- add a ghc682-prof dummy package to stop ghc-prof and ghc682-prof obsoleting
+  each other (reported by thingwath, #467893)
+
+* Thu Oct 23 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-9
+- use gen_contents_index to re-index haddock
+- add %%pkg_docdir to cabal_configure
+- requires(post) haddock09 for doc
+- improve doc file lists
+- no longer need to create ghost package.conf.old
+- remove or rename alternatives files more consistently
+
+* Tue Oct 14 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-8
+- Regenerate the haddock doc index automatically
+- Update macros to fit in with this scheme
+
+* Mon Oct 13 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-7
+- add selinux file context for unconfined_execmem following darcs package
+
+* Wed Oct  1 2008 Bryan O'Sullivan <bos@serpentine.com> 6.8.3-6
+* Rename hsc2hs to hsc2hs-ghc so the alternatives symlink to it will work
+
+* Wed Sep 24 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-5
+- bring back including haddock-generated lib docs, now under docdir/ghc
+- fix macros.ghc filepath (#460304)
+- spec file cleanups:
+- fix the source urls back
+- drop requires chkconfig
+- do not override __spec_install_post
+- setup docs building in build.mk
+- no longer need to remove network/include/Typeable.h
+- install binaries under libdir not libexec
+- remove hsc2hs and runhaskell binaries since they are alternatives
+
+* Wed Sep 17 2008 Jens Petersen <petersen@redhat.com> - 6.8.3-4
+- add macros.ghc for new Haskell Packaging Guidelines (#460304)
+
+* Wed Jun 18 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.3-3
+- Add symlinks from _libdir, where ghc looks, to _libexecdir
+- Patch libraries/gen_contents_index to use haddock-0.9
+
+* Wed Jun 18 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.3-2
+- Remove unnecessary dependency on alex
+
+* Wed Jun 18 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.3-1
+- Upgrade to 6.8.3
+- Drop the ghc682-style naming scheme, obsolete those packages
+- Manually strip binaries
+
+* Tue Apr  8 2008 Jens Petersen <petersen@redhat.com> - 6.8.2-10
+- another rebuild attempt
+
+* Thu Feb 14 2008 Jens Petersen <petersen@redhat.com> - 6.8.2-9
+- remove unrecognized --docdir and --htmldir from configure
+- drop old buildrequires on libX11-devel and libXt-devel
+- rebuild with gcc43
+
+* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-7
+- More attempts to fix docdir
+
+* Sun Jan 06 2008 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-6
+- Fix docdir
+
+* Tue Dec 12 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.2-1
+- Update to 6.8.2
+
+* Fri Nov 23 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.1-2
+- Exclude alpha
+
+* Thu Nov  8 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.1-2
+- Drop bit-rotted attempts at making package relocatable
+
+* Sun Nov  4 2007 Michel Salim <michel.sylvan@gmail.com> - 6.8.1-1
+- Update to 6.8.1
+
+* Sat Sep 29 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.0.20070928-2
+- add happy to BuildRequires
+
+* Sat Sep 29 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.8.0.20070928-1
+- prepare for GHC 6.8.1 by building a release candidate snapshot
 
 * Thu May 10 2007 Bryan O'Sullivan <bos@serpentine.com> - 6.6.1-3
 - install man page for ghc
