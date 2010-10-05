@@ -179,7 +179,7 @@ fi
 %if %{build_doc}
 %{_docdir}/%{name}/index.html
 %{_docdir}/%{name}/libraries/gen_contents_index
-%ghost %{_docdir}/%{name}/libraries/doc-index.html
+%ghost %{_docdir}/%{name}/libraries/doc-index*.html
 %ghost %{_docdir}/%{name}/libraries/haddock.css
 %ghost %{_docdir}/%{name}/libraries/haddock*.js
 %ghost %{_docdir}/%{name}/libraries/haskell_icon.gif
