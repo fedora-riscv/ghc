@@ -7,7 +7,7 @@ Version:	6.8.3
 Release:	12%{?dist}
 Summary:	Glasgow Haskell Compilation system
 # See https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239713
-ExcludeArch:	alpha ppc64
+ExcludeArch:	alpha ppc
 License:	BSD
 Group:		Development/Languages
 Source0:	http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
@@ -195,6 +195,7 @@ fi
   drop ghc-6.8.3-libraries-config.patch for haddock09
 - drop buildrequires on happy
 - drop macros.ghc from here
+- exclude ppc
 
 * Fri Feb 13 2009 Jens Petersen <petersen@redhat.com> - 6.8.3-11
 - backport latest macros.ghc:
