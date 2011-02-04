@@ -83,6 +83,12 @@ interface.
 %ghc_binlib_package bytestring 0.9.1.7
 %ghc_binlib_package containers 0.3.0.0
 %ghc_binlib_package directory 1.0.1.1
+%ghc_binlib_package dph-base 0.4.0
+%ghc_binlib_package dph-par 0.4.0
+%ghc_binlib_package dph-prim-interface 0.4.0
+%ghc_binlib_package dph-prim-par 0.4.0
+%ghc_binlib_package dph-prim-seq 0.4.0
+%ghc_binlib_package dph-seq 0.4.0
 %ghc_binlib_package extensible-exceptions 0.1.1.1
 %ghc_binlib_package filepath 1.1.0.4
 %ghc_binlib_package -x ghc %{ghc_version_override}
@@ -93,6 +99,7 @@ interface.
 %ghc_binlib_package pretty 1.0.1.1
 %ghc_binlib_package process 1.0.1.3
 %ghc_binlib_package random 1.0.0.2
+%ghc_binlib_package syb 0.1.0.2
 %ghc_binlib_package template-haskell 2.4.0.1
 %ghc_binlib_package time 1.1.4
 %ghc_binlib_package unix 2.4.0.2
@@ -167,11 +174,18 @@ make -j$RPM_BUILD_NCPUS
 %install
 make DESTDIR=${RPM_BUILD_ROOT} install
 
+%ghc_gen_filelists base 3.0.3.2
+for suff in {,-devel,-prof}.files; do
+  mv ghc-base{,3}$suff
+done
+
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
+if [ -r "libraries/$name/LICENSE" ]; then
 echo "%doc libraries/$name/LICENSE" >> ghc-$name.files
+fi
 done
 
 %ghc_gen_filelists ghc %{ghc_version_override}
@@ -183,17 +197,20 @@ done
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
 cat ghc-%1-prof.files >> ghc-%2-prof.files\
-cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
-echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
+if [ -r "libraries/%1/LICENSE" ]; then\
+  cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
+  echo "%doc libraries/LICENSE.%1" >> ghc-%2.files\
+fi
 
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
+%merge_filelist base3 base
 %merge_filelist ghc-binary bin-package-db
 
 %if %{with shared}
-ls $RPM_BUILD_ROOT%{ghclibdir}/libHSrts*.so >> ghc-base.files
+ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
 %endif
-ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHSrts*.a $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_rts.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
+ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a $RPM_BUILD_ROOT%{ghclibdir}/HS*.o $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base{,-devel}.files
 
 # these are handled as alternatives
@@ -318,7 +335,7 @@ fi
 %changelog
 * Sun Jan 30 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8
 - subpackage all the libraries with latest ghc-rpm-macros-0.10.50
-- put rts, integer-gmp and ghc-prim in base, and ghc-binary in bin-package-db
+- put rts, ffi, integer-gmp and ghc-prim in base, and ghc-binary in bin-package-db
 - drop the libs mega-subpackage
 - prof now a meta-package for backward compatibility
 - add devel meta-subpackage to easily install all ghc libraries
