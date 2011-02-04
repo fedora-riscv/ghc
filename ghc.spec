@@ -43,7 +43,7 @@ Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
 Obsoletes: ghc-haddock-doc < 2.4.2-3
 # introduced for f15
 Obsoletes: ghc-libs < 6.12.3-8
-BuildRequires: ghc, ghc-rpm-macros >= 0.10.50
+BuildRequires: ghc, ghc-rpm-macros >= 0.10.51
 BuildRequires: gmp-devel, libffi-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
