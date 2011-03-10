@@ -1,7 +1,7 @@
 ## default enabled options ##
-# haskell shared library support available in 6.12 and later for x86*
-%ifarch %{ix86} x86_64
-%bcond_without shared
+# haskell shared library support available from 6.12 for x86*
+%ifnarch %{ix86} x86_64
+%global without_shared 1
 %endif
 %bcond_without doc
 # test builds can made faster and smaller by disabling profiled libraries
@@ -18,13 +18,17 @@
 # quick build profile
 %bcond_with quick
 
-# the debuginfo subpackage is currently empty anyway, so don't generate it
+# ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
 
 Name: ghc
 # haskell-platform-2010.2.0.0
 Version: 6.12.3
-Release: 8%{?dist}
+# Since library subpackages are versioned:
+# - release can only be reset if all library versions get bumped simultaneously
+#   (eg for a major release)
+# - minor release numbers should be incremented monotonically
+Release: 8.1%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -45,6 +49,7 @@ Obsoletes: ghc-haddock-doc < 2.4.2-3
 Obsoletes: ghc-libs < 6.12.3-8
 BuildRequires: ghc, ghc-rpm-macros >= 0.10.51
 BuildRequires: gmp-devel, libffi-devel
+#BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
 Requires: gcc
@@ -79,7 +84,6 @@ interface.
 %ghc_binlib_package Cabal 1.8.0.6
 %ghc_binlib_package array 0.3.0.1
 %ghc_binlib_package -c gmp-devel base 4.2.0.2
-%ghc_binlib_package bin-package-db 0.0.0.0
 %ghc_binlib_package bytestring 0.9.1.7
 %ghc_binlib_package containers 0.3.0.0
 %ghc_binlib_package directory 1.0.1.1
@@ -91,7 +95,9 @@ interface.
 %ghc_binlib_package dph-seq 0.4.0
 %ghc_binlib_package extensible-exceptions 0.1.1.1
 %ghc_binlib_package filepath 1.1.0.4
+%define ghc_pkg_obsoletes ghc-bin-package-db < 0.0.0.0-8.1
 %ghc_binlib_package -x ghc %{ghc_version_override}
+%undefine ghc_pkg_obsoletes
 %ghc_binlib_package haskell98 1.0.1.1
 %ghc_binlib_package hpc 0.5.0.5
 %ghc_binlib_package old-locale 1.0.0.2
@@ -139,7 +145,7 @@ rm -r ghc-tarballs/{mingw,perl}
 
 %build
 cat > mk/build.mk << EOF
-GhcLibWays = v %{?with_prof:p} %{?with_shared:dyn} 
+GhcLibWays = v %{?with_prof:p} %{!?without_shared:dyn} 
 %if %{without doc}
 HADDOCK_DOCS = NO
 %endif
@@ -164,7 +170,7 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  %{?with_shared:--enable-shared}
+  %{!?without_shared:--enable-shared}
 
 # 4 cpus or more sometimes breaks build
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
@@ -184,17 +190,20 @@ name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
 if [ -r "libraries/$name/LICENSE" ]; then
-echo "%doc libraries/$name/LICENSE" >> ghc-$name.files
+echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?without_shared:-devel}.files
 fi
 done
 
+%ghc_gen_filelists bin-package-db 0.0.0.0
 %ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghc-binary 0.5.0.2
 %ghc_gen_filelists ghc-prim 0.2.0.0
 %ghc_gen_filelists integer-gmp 0.2.0.1
 
 %define merge_filelist()\
+%if 0%{!?without_shared:1}\
 cat ghc-%1.files >> ghc-%2.files\
+%endif\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
 cat ghc-%1-prof.files >> ghc-%2-prof.files\
 if [ -r "libraries/%1/LICENSE" ]; then\
@@ -205,13 +214,15 @@ fi
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
 %merge_filelist base3 base
-%merge_filelist ghc-binary bin-package-db
+%merge_filelist ghc-binary ghc
+%merge_filelist bin-package-db ghc
 
-%if %{with shared}
+%if 0%{!?without_shared:1}
 ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
+sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
 %endif
-ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a $RPM_BUILD_ROOT%{ghclibdir}/HS*.o $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
-sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base{,-devel}.files
+ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a $RPM_BUILD_ROOT%{ghclibdir}/HSffi.o $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
+sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
 
 # these are handled as alternatives
 for i in hsc2hs runhaskell; do
@@ -238,7 +249,7 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%if %{with shared}
+%if 0%{!?without_shared:1}
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
@@ -333,6 +344,10 @@ fi
 %endif
 
 %changelog
+* Thu Mar 10 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.1
+- fix without_shared build
+- move bin-package-db into ghc-ghc
+
 * Sun Jan 30 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8
 - subpackage all the libraries with latest ghc-rpm-macros-0.10.50
 - put rts, ffi, integer-gmp and ghc-prim in base, and ghc-binary in bin-package-db
