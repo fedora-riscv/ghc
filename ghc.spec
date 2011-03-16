@@ -1,4 +1,4 @@
-# shared haskell library support for x86* archs from version 6.12
+# shared haskell libraries supported for x86* archs (enabled in ghc-rpm-macros)
 
 ## default enabled options ##
 %bcond_without doc
@@ -31,7 +31,7 @@ Version: 7.0.1
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 11.1%{?dist}
+Release: 11.2%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9
@@ -51,7 +51,7 @@ Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
 Obsoletes: ghc-haddock-doc < 2.4.2-3
 # introduced for f15
 Obsoletes: ghc-libs < 7.0.1-3
-BuildRequires: ghc, ghc-rpm-macros >= 0.11.10
+BuildRequires: ghc, ghc-rpm-macros >= 0.11.12
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -98,7 +98,7 @@ interface.
 %ghc_binlib_package directory 1.1.0.0
 %ghc_binlib_package extensible-exceptions 0.1.1.2
 %ghc_binlib_package filepath 1.2.0.0
-%define ghc_pkg_obsoletes ghc-bin-package-db < 0.0.0.0-12
+%define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 %ghc_binlib_package -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
 %ghc_binlib_package haskell2010 1.0.0.0
@@ -201,7 +201,8 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?ghc_without_shared:-devel}.files
+# now handled by macro
+#echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?ghc_without_shared:-devel}.files
 done
 
 %ghc_gen_filelists bin-package-db 0.0.0.0
@@ -360,6 +361,9 @@ fi
 %endif
 
 %changelog
+* Wed Mar 16 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-11.2
+- fix the bin-package-db obsoletes with ghc-rpm-macros-0.11.12
+
 * Wed Mar  9 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-11.1
 - move bin-package-db into ghc-ghc
 
