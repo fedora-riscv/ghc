@@ -31,7 +31,7 @@ Version: 7.0.2
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 12%{?dist}
+Release: 13%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9
@@ -359,6 +359,9 @@ fi
 %endif
 
 %changelog
+* Fri Mar 25 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-13
+- rebuild against 7.0.2
+
 * Fri Mar 25 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-12
 - update to 7.0.2 release
 - disable broken testsuite
