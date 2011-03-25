@@ -8,7 +8,7 @@
 # build xml manuals (users_guide, etc)
 %bcond_without manual
 # run testsuite
-%bcond_without testsuite
+%bcond_with testsuite
 # include colored html src
 %bcond_without hscolour
 # use system libffi
@@ -24,14 +24,14 @@
 %global debug_package %{nil}
 
 Name: ghc
-# haskell-platform-2011.1.0.0
+# haskell-platform-2011.2.0.0
 # NB make sure to rebuild ghc after a version bump to avoid ABI change problems
-Version: 7.0.1
+Version: 7.0.2
 # Since library subpackages are versioned:
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 11.2%{?dist}
+Release: 12%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9
@@ -90,10 +90,10 @@ interface.
 %global ghc_version_override %{version}
 
 %if 0%{?ghclibdir:1}
-%ghc_binlib_package Cabal 1.10.0.0
+%ghc_binlib_package Cabal 1.10.1.0
 %ghc_binlib_package array 0.3.0.2
-%ghc_binlib_package -c gmp-devel,libffi-devel base 4.3.0.0
-%ghc_binlib_package bytestring 0.9.1.8
+%ghc_binlib_package -c gmp-devel,libffi-devel base 4.3.1.0
+%ghc_binlib_package bytestring 0.9.1.10
 %ghc_binlib_package containers 0.4.0.0
 %ghc_binlib_package directory 1.1.0.0
 %ghc_binlib_package extensible-exceptions 0.1.1.2
@@ -102,16 +102,16 @@ interface.
 %ghc_binlib_package -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
 %ghc_binlib_package haskell2010 1.0.0.0
-%ghc_binlib_package haskell98 1.1.0.0
+%ghc_binlib_package haskell98 1.1.0.1
 %ghc_binlib_package hpc 0.5.0.6
 %ghc_binlib_package old-locale 1.0.0.2
 %ghc_binlib_package old-time 1.0.0.6
 %ghc_binlib_package pretty 1.0.1.2
-%ghc_binlib_package process 1.0.1.4
+%ghc_binlib_package process 1.0.1.5
 %ghc_binlib_package random 1.0.0.3
 %ghc_binlib_package template-haskell 2.5.0.0
 %ghc_binlib_package time 1.2.0.3
-%ghc_binlib_package unix 2.4.1.0
+%ghc_binlib_package unix 2.4.2.0
 %endif
 
 %global version %{ghc_version_override}
@@ -201,15 +201,13 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-# now handled by macro
-#echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?ghc_without_shared:-devel}.files
 done
 
 %ghc_gen_filelists bin-package-db 0.0.0.0
 %ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghc-binary 0.5.0.2
 %ghc_gen_filelists ghc-prim 0.2.0.0
-%ghc_gen_filelists integer-gmp 0.2.0.2
+%ghc_gen_filelists integer-gmp 0.2.0.3
 
 %define merge_filelist()\
 %if %{undefined ghc_without_shared}\
@@ -361,6 +359,10 @@ fi
 %endif
 
 %changelog
+* Fri Mar 25 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-12
+- update to 7.0.2 release
+- disable broken testsuite
+
 * Wed Mar 16 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-11.2
 - fix the bin-package-db obsoletes with ghc-rpm-macros-0.11.12
 
