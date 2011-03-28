@@ -1,8 +1,6 @@
+# shared haskell libraries supported for x86* archs (enabled in ghc-rpm-macros)
+
 ## default enabled options ##
-# haskell shared library support available from 6.12 for x86*
-%ifnarch %{ix86} x86_64
-%global without_shared 1
-%endif
 %bcond_without doc
 # test builds can made faster and smaller by disabling profiled libraries
 # (currently libHSrts_thr_p.a breaks no prof build)
@@ -28,7 +26,7 @@ Version: 6.12.3
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 8.1%{?dist}
+Release: 8.2%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -47,7 +45,7 @@ Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
 Obsoletes: ghc-haddock-doc < 2.4.2-3
 # introduced for f15
 Obsoletes: ghc-libs < 6.12.3-8
-BuildRequires: ghc, ghc-rpm-macros >= 0.10.51
+BuildRequires: ghc, ghc-rpm-macros >= 0.10.52
 BuildRequires: gmp-devel, libffi-devel
 #BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -95,7 +93,7 @@ interface.
 %ghc_binlib_package dph-seq 0.4.0
 %ghc_binlib_package extensible-exceptions 0.1.1.1
 %ghc_binlib_package filepath 1.1.0.4
-%define ghc_pkg_obsoletes ghc-bin-package-db < 0.0.0.0-8.1
+%define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-8.2
 %ghc_binlib_package -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
 %ghc_binlib_package haskell98 1.0.1.1
@@ -145,7 +143,7 @@ rm -r ghc-tarballs/{mingw,perl}
 
 %build
 cat > mk/build.mk << EOF
-GhcLibWays = v %{?with_prof:p} %{!?without_shared:dyn} 
+GhcLibWays = v %{?with_prof:p} %{!?ghc_without_shared:dyn} 
 %if %{without doc}
 HADDOCK_DOCS = NO
 %endif
@@ -170,7 +168,7 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  %{!?without_shared:--enable-shared}
+  %{!?ghc_without_shared:--enable-shared}
 
 # 4 cpus or more sometimes breaks build
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
@@ -189,9 +187,6 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-if [ -r "libraries/$name/LICENSE" ]; then
-echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?without_shared:-devel}.files
-fi
 done
 
 %ghc_gen_filelists bin-package-db 0.0.0.0
@@ -201,7 +196,7 @@ done
 %ghc_gen_filelists integer-gmp 0.2.0.1
 
 %define merge_filelist()\
-%if 0%{!?without_shared:1}\
+%if %{undefined ghc_without_shared}\
 cat ghc-%1.files >> ghc-%2.files\
 %endif\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
@@ -217,7 +212,7 @@ fi
 %merge_filelist ghc-binary ghc
 %merge_filelist bin-package-db ghc
 
-%if 0%{!?without_shared:1}
+%if %{undefined ghc_without_shared}
 ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
 %endif
@@ -249,7 +244,7 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%if 0%{!?without_shared:1}
+%if %{undefined ghc_without_shared}
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
@@ -344,6 +339,10 @@ fi
 %endif
 
 %changelog
+* Mon Mar 28 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.2
+- fix the bin-package-db obsoletes with ghc-rpm-macros-0.10.52
+- use ghc_without_shared
+
 * Thu Mar 10 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.1
 - fix without_shared build
 - move bin-package-db into ghc-ghc
