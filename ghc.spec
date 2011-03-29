@@ -76,7 +76,7 @@ Preformatted documentation for the Glorious Glasgow Haskell Compilation System
 (GHC) and its libraries.  It should be installed if you like to have local
 access to the documentation in HTML format.
 
-%if %{with shared}
+%if %{undefined ghc_without_shared}
 %package libs
 Summary: Shared libraries for GHC
 Group: Development/Libraries
@@ -259,7 +259,7 @@ fi
 %ghost %{ghcdocbasedir}/libraries/plus.gif
 %endif
 
-%if %{with shared}
+%if %{undefined ghc_without_shared}
 %files libs -f ghc-libs.files
 %defattr(-,root,root,-)
 %endif
