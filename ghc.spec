@@ -40,7 +40,7 @@ BuildRequires: gmp-devel, ncurses-devel
 Requires: gcc, gmp-devel
 # for forwards compatibility
 Provides: ghc-devel = %{version}-%{release}
-%if %{undefined ghc_without_shared}\
+%if %{undefined ghc_without_shared}
 # not sure if this is actually needed:
 BuildRequires: libffi-devel
 Requires: %{name}-libs = %{version}-%{release}
