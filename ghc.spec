@@ -26,7 +26,7 @@ Version: 6.12.3
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 8.2%{?dist}
+Release: 8.3%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -187,6 +187,9 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
+if [ -r "libraries/$name/LICENSE" ]; then
+  echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?ghc_without_shared:-devel}.files
+fi
 done
 
 %ghc_gen_filelists bin-package-db 0.0.0.0
@@ -339,6 +342,9 @@ fi
 %endif
 
 %changelog
+* Tue Mar 29 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.3
+- fix back missing LICENSE files in library subpackages
+
 * Mon Mar 28 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.2
 - fix the bin-package-db obsoletes with ghc-rpm-macros-0.10.52
 - use ghc_without_shared
