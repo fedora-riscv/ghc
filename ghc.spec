@@ -42,7 +42,7 @@ Obsoletes: ghc-haddock-doc < 2.4.2-3
 # introduced for f14
 Obsoletes: ghc-time-devel < 1.1.2.4-5
 Obsoletes: ghc-time-doc < 1.1.2.4-5
-BuildRequires: ghc, ghc-rpm-macros >= 0.8.0
+BuildRequires: ghc, ghc-rpm-macros >= 0.10.52
 BuildRequires: gmp-devel, ncurses-devel
 Requires: gcc, gmp-devel
 # for forwards compatibility
@@ -271,7 +271,7 @@ fi
 %changelog
 * Mon Apr 25 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-6
 - provide ghc-devel for compatibility with cabal2spec-0.22.5
-- use ghc_without_shared
+- use ghc_without_shared (ghc-rpm-macros-0.10.52)
 - drop buildroot and buildroot cleaning
 - drop old extralibs bcond
 - no longer need to define or clean buildroot
