@@ -98,7 +98,7 @@ They should be installed when GHC's profiling subsystem is needed.
 
 %global ghc_version_override %{version}
 
-%ghc_binlib_package -n ghc
+%ghc_binlib_package ghc %{ghc_version_override}
 
 %prep
 %setup -q -n %{name}-%{version} %{?with_extralibs:-b1} %{?with_testsuite:-b2}
