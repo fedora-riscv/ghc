@@ -47,7 +47,7 @@ Version: 7.0.2
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 17%{?dist}
+Release: 16.1%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 
@@ -400,7 +400,7 @@ fi
 %endif
 
 %changelog
-* Tue Apr 26 2011 Jiri Skala <jskala@redhat.com> - 7.0.2-17
+* Tue Apr 26 2011 Jiri Skala <jskala@redhat.com> - 7.0.2-16.1
 - bootstrap to ppc64
 - upstream ghc-powerpc-linker-mmap.patch for ppc64
 
