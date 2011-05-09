@@ -1,4 +1,5 @@
-# shared haskell libraries supported for x86* archs (enabled in ghc-rpm-macros)
+# shared haskell libraries supported for x86* archs
+# (disabled for other archs in ghc-rpm-macros)
 
 ## default enabled options ##
 %bcond_without doc
@@ -9,8 +10,6 @@
 %bcond_without manual
 # run testsuite
 %bcond_without testsuite
-# include colored html src
-%bcond_without hscolour
 
 ## default disabled options ##
 # quick build profile
@@ -26,7 +25,7 @@ Version: 6.12.3
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 8.3%{?dist}
+Release: 8.4%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -39,25 +38,21 @@ Source2: http://www.haskell.org/ghc/dist/%{version}/testsuite-%{version}.tar.bz2
 URL: http://haskell.org/ghc/
 # introduced for f14
 Obsoletes: ghc-doc < 6.12.3-4
+# BR for lib and binlib packages
 Provides: ghc-doc = %{version}-%{release}
-# introduced for f11
-Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
-Obsoletes: ghc-haddock-doc < 2.4.2-3
-# introduced for f15
-Obsoletes: ghc-libs < 6.12.3-8
-BuildRequires: ghc, ghc-rpm-macros >= 0.10.52
+BuildRequires: ghc, ghc-rpm-macros >= 0.10.55
 BuildRequires: gmp-devel, libffi-devel
 #BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
 Requires: gcc
 # for backwards compatibility
-Requires: ghc-devel
+Requires: ghc-devel = %{version}-%{release}
 # llvm is an optional dependency
 %if %{with manual}
 BuildRequires: libxslt, docbook-style-xsl
 %endif
-%if %{with hscolour}
+%if %{undefined without_hscolour}
 BuildRequires: hscolour
 %endif
 %if %{with testsuite}
@@ -78,7 +73,9 @@ interface.
 
 %global ghc_version_override %{version}
 
-%if 0%{?ghclibdir:1}
+%global ghc_pkg_c_deps ghc = %{ghc_version_override}-%{release}
+
+%if %{defined ghclibdir}
 %ghc_binlib_package Cabal 1.8.0.6
 %ghc_binlib_package array 0.3.0.1
 %ghc_binlib_package -c gmp-devel base 4.2.0.2
@@ -111,10 +108,21 @@ interface.
 
 %global version %{ghc_version_override}
 
+%if %{undefined ghc_without_shared}
+%package libs
+Summary: GHC shared libraries meta package
+Group: System Environment/Libraries
+%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1 = \2-%{release},/g")}
+
+%description libs
+Meta package for GHC's shared libraries.
+%endif
+
 %package devel
 Summary: GHC development libraries meta package
 Group: Development/Libraries
-%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2,/g")}
+Requires: ghc = %{version}-%{release}
+%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2-%{release},/g")}
 
 %description devel
 This is a meta-package for all the development library packages in GHC.
@@ -123,8 +131,8 @@ This is a meta-package for all the development library packages in GHC.
 %package prof
 Summary: GHC profiling libraries meta-package
 Group: Development/Libraries
-%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-prof = \2,/g")}
-Obsoletes: ghc-haddock-prof < 2.4.2-3
+Requires: ghc-devel = %{version}-%{release}
+%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-prof = \2-%{release},/g")}
 
 %description prof
 This is a meta-package for all the profiling library packages in GHC.
@@ -157,7 +165,7 @@ GhcStage2HcOpts = -O0 -fasm
 GhcLibHcOpts = -O0 -fasm
 SplitObjs = NO
 %endif
-%if %{without hscolour}
+%if %{undefined without_hscolour}
 HSCOLOUR_SRCS = NO
 %endif
 EOF
@@ -170,7 +178,7 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   %{!?ghc_without_shared:--enable-shared}
 
-# 4 cpus or more sometimes breaks build
+# >4 cpus tends to break build
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
 [ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
 make -j$RPM_BUILD_NCPUS
@@ -342,6 +350,17 @@ fi
 %endif
 
 %changelog
+* Mon May  9 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.4
+- ghc-rpm-macros-0.10.55 for automatic lib dependencies
+- ghc now requires ghc-devel with ver-rel
+- ghc-devel now require ghc with ver-rel
+- ghc-prof now requires ghc-devel with ver-rel
+- make devel and prof meta packages require subpackages with ver-rel
+- make ghc-*-devel subpackages require ghc with ver-rel
+- bring back ghc-libs to avoid yum resolver problems (#702934)
+- drop haddock obsoletes
+- use without_hscolour
+
 * Tue Mar 29 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.3
 - fix back missing LICENSE files in library subpackages
 
