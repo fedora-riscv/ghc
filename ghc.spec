@@ -25,7 +25,7 @@ Version: 6.12.3
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 8.4%{?dist}
+Release: 8.5%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -341,6 +341,9 @@ fi
 %ghost %{ghcdocbasedir}/libraries/plus.gif
 %endif
 
+%files libs
+%defattr(-,root,root,-)
+
 %files devel
 %defattr(-,root,root,-)
 
@@ -350,6 +353,9 @@ fi
 %endif
 
 %changelog
+* Tue May 10 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.5
+- add missing %%files libs
+
 * Mon May  9 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.4
 - ghc-rpm-macros-0.10.55 for automatic lib dependencies
 - ghc now requires ghc-devel with ver-rel
