@@ -25,7 +25,7 @@ Version: 6.12.3
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 8.5%{?dist}
+Release: 8.6%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
@@ -179,7 +179,7 @@ export CFLAGS="${CFLAGS:-%optflags}"
   %{!?ghc_without_shared:--enable-shared}
 
 # >4 cpus tends to break build
-[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
 [ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
 make -j$RPM_BUILD_NCPUS
 
@@ -289,11 +289,6 @@ if [ "$1" = 0 ]; then
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
 
-%posttrans
-# (posttrans to make sure any old libs and docs have been removed first)
-%ghc_pkg_recache
-%ghc_reindex_haddock
-
 %files
 %defattr(-,root,root,-)
 %doc ANNOUNCE HACKING LICENSE README
@@ -341,11 +336,13 @@ fi
 %ghost %{ghcdocbasedir}/libraries/plus.gif
 %endif
 
-%files libs
-%defattr(-,root,root,-)
-
 %files devel
 %defattr(-,root,root,-)
+
+%if %{undefined ghc_without_shared}
+%files libs
+%defattr(-,root,root,-)
+%endif
 
 %if %{with prof}
 %files prof
@@ -353,6 +350,9 @@ fi
 %endif
 
 %changelog
+* Wed May 11 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.6
+- drop redundant posttrans scriptlet
+
 * Tue May 10 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-8.5
 - add missing %%files libs
 
