@@ -45,7 +45,7 @@ Version: 7.0.2
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 16.2%{?dist}
+Release: 16.3%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 
@@ -63,6 +63,13 @@ Obsoletes: ghc-doc < 6.12.3-4
 Provides: ghc-doc = %{version}-%{release}
 # introduced for f15
 Obsoletes: ghc-libs < 7.0.1-3
+Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
+Obsoletes: ghc-dph-par < 0.5, ghc-dph-par-devel < 0.5, ghc-dph-par-prof < 0.5
+Obsoletes: ghc-dph-prim-interface < 0.5, ghc-dph-prim-interface-devel < 0.5, ghc-dph-interface-prim-prof < 0.5
+Obsoletes: ghc-dph-prim-par < 0.5, ghc-dph-prim-par-devel < 0.5, ghc-dph-prim-par-prof < 0.5
+Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-seq-prof < 0.5
+Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
+Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 BuildRequires: ghc, ghc-rpm-macros >= 0.11.12
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
@@ -107,6 +114,8 @@ interface.
 
 %global ghc_version_override %{version}
 
+%global ghc_pkg_c_deps ghc = %{ghc_version_override}-%{release}
+
 %if %{defined ghclibdir}
 %ghc_binlib_package Cabal 1.10.1.0
 %ghc_binlib_package array 0.3.0.2
@@ -138,7 +147,7 @@ interface.
 Summary: GHC development libraries meta package
 Group: Development/Libraries
 Requires: ghc = %{version}-%{release}
-%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2,/g")}
+%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2-%{release},/g")}
 
 %description devel
 This is a meta-package for all the development library packages in GHC.
@@ -148,7 +157,7 @@ This is a meta-package for all the development library packages in GHC.
 Summary: GHC profiling libraries meta-package
 Group: Development/Libraries
 Requires: ghc-devel = %{version}-%{release}
-%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-prof = \2,/g")}
+%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-prof = \2-%{release},/g")}
 
 %description prof
 This is a meta-package for all the profiling library packages in GHC.
@@ -222,18 +231,17 @@ EOF
 autoreconf
 %endif
 export CFLAGS="${CFLAGS:-%optflags}"
+# specify gcc to avoid problems when bootstrapping with ccache
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-%ifarch ppc64
-  --with-gcc=/usr/bin/gcc
-%endif
+  --with-gcc=%{_bindir}/gcc \
   %{!?ghc_without_shared:--enable-shared}
 
 # >4 cpus tends to break build
-[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
 [ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
 make -j$RPM_BUILD_NCPUS
 
@@ -340,10 +348,6 @@ if [ "$1" = 0 ]; then
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
 
-%posttrans
-# (posttrans to make sure any old libs and docs have been removed first)
-%ghc_pkg_recache
-
 %files
 %defattr(-,root,root,-)
 %doc ANNOUNCE HACKING LICENSE README
@@ -404,6 +408,14 @@ fi
 %endif
 
 %changelog
+* Sat May 21 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.3
+- obsolete dph libraries and feldspar-language
+- configure with /usr/bin/gcc to help bootstrapping to new archs
+  (otherwise ccache tends to get hardcoded as gcc, which not in koji)
+- posttrans scriplet for ghc_pkg_recache is redundant
+- make devel and prof meta packages require libs with release
+- make ghc-*-devel subpackages require ghc with release
+
 * Sun May 01 2011 Jiri Skala <jskala@redhat.com> - 7.0.2-16.2
 - fixes path to gcc on ppc64 arch
 
