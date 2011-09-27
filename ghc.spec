@@ -31,7 +31,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 28%{?dist}
+Release: 28%{?dist}.1
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64
@@ -385,6 +385,9 @@ fi
 %defattr(-,root,root,-)
 
 %changelog
+* Tue Sep 27 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-28.1
+- rebuild against libffi-3.0.10
+
 * Wed Sep 14 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-28
 - setup ghc-deps.sh when not bootstrapping!
 
