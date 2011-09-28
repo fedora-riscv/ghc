@@ -1,23 +1,24 @@
-# shared haskell libraries supported for x86* archs
+# Shared haskell libraries are supported for x86* archs
 # (disabled for other archs in ghc-rpm-macros)
 
-## default enabled options ##
-%bcond_without doc
-# test builds can made faster and smaller by disabling profiled libraries
-# (currently libHSrts_thr_p.a breaks no prof build)
-%bcond_without prof
-# build xml manuals (users_guide, etc)
-%bcond_without manual
-# run testsuite
-%bcond_with testsuite
-# use system libffi
-%ifarch %{ix86} x86_64
-%bcond_without libffi
-%endif
+# 7.0.2 shipped broken testsuite
+%global without_testsuite 1
 
-## default disabled options ##
-# quick build profile
-%bcond_with quick
+# To bootstrap a new version of ghc, uncomment the following:
+#%%global ghc_bootstrapping 1
+#%%{?ghc_bootstrap}
+#%%global without_hscolour 1
+
+# To do a test build instead with shared libs, uncomment the following:
+#%%global ghc_bootstrapping 1
+#%%{?ghc_test}
+#%%global without_hscolour 1
+
+# archs that use system libffi
+%global libffi_archs %{ix86} x86_64
+
+# unregisterized archs
+%global unregisterised_archs ppc64 armv7hl
 
 # ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
@@ -37,6 +38,12 @@
     %{!?__jar_repack:/usr/lib/rpm/redhat/brp-java-repack-jars} \
 %{nil}
 
+%if %{undefined ghc_bootstrapping}
+%global _use_internal_dependency_generator 0
+%global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
+%global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
+%endif
+
 Name: ghc
 # haskell-platform-2011.2.0.0
 # NB make sure to rebuild ghc after a version bump to avoid ABI change problems
@@ -45,14 +52,14 @@ Version: 7.0.2
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 16.3%{?dist}
-Summary: Glasgow Haskell Compilation system
+Release: 16.4%{?dist}
+Summary: Glasgow Haskell Compiler
 # fedora ghc has only been bootstrapped on the following archs:
-ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 
+ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl
 License: BSD
 Group: Development/Languages
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
-%if %{with testsuite}
+%if %{undefined without_testsuite}
 Source2: http://www.haskell.org/ghc/dist/%{version}/testsuite-%{version}.tar.bz2
 %endif
 Source3: ghc-doc-index.cron
@@ -70,7 +77,8 @@ Obsoletes: ghc-dph-prim-par < 0.5, ghc-dph-prim-par-devel < 0.5, ghc-dph-prim-pa
 Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-seq-prof < 0.5
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
-BuildRequires: ghc, ghc-rpm-macros >= 0.11.12
+BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
+BuildRequires: ghc-rpm-macros >= 0.13.5
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -78,13 +86,13 @@ BuildRequires: ncurses-devel
 Requires: gcc
 Requires: ghc-base-devel
 # llvm is an optional dependency
-%if %{with manual}
+%if %{undefined without_manual}
 BuildRequires: libxslt, docbook-style-xsl
 %endif
-%if %{undefined without_hscolour}
+%if %{undefined without_haddock} && %{undefined without_hscolour}
 BuildRequires: hscolour
 %endif
-%if %{with testsuite}
+%if %{undefined without_testsuite}
 BuildRequires: python
 %endif
 %ifarch ppc64
@@ -103,14 +111,24 @@ Patch7: ghc-ppc64-pthread.patch
 Patch8: ghc-powerpc-linker-mmap.patch
 
 %description
-GHC is a state-of-the-art programming suite for Haskell, a purely
-functional programming language.  It includes an optimizing compiler
-generating good code for a variety of platforms, together with an
-interactive system for convenient, quick development.  The
-distribution includes space and time profiling facilities, a large
-collection of libraries, and support for various language
-extensions, including concurrency, exceptions, and a foreign language
-interface.
+GHC is a state-of-the-art, open source, compiler and interactive environment
+for the functional language Haskell. Highlights:
+
+- GHC supports the entire Haskell 2010 language plus various extensions.
+- GHC has particularly good support for concurrency and parallelism,
+  including support for Software Transactional Memory (STM).
+- GHC generates fast code, particularly for concurrent programs
+  (check the results on the "Computer Language Benchmarks Game").
+- GHC works on several platforms including Windows, Mac, Linux,
+  most varieties of Unix, and several different processor architectures.
+- GHC has extensive optimisation capabilities,
+  including inter-module optimisation.
+- GHC compiles Haskell code either directly to native code or using LLVM
+  as a back-end. GHC can also generate C code as an intermediate target for
+  porting to new platforms. The interactive environment compiles Haskell to
+  bytecode, and supports execution of mixed bytecode/compiled programs.
+- Profiling is supported, both by time/allocation and heap profiling.
+- GHC comes with core libraries, and thousands more are available on Hackage.
 
 %global ghc_version_override %{version}
 
@@ -147,25 +165,15 @@ interface.
 Summary: GHC development libraries meta package
 Group: Development/Libraries
 Requires: ghc = %{version}-%{release}
+Obsoletes: ghc-prof < %{version}-%{release}
+Provides: ghc-prof = %{version}-%{release}
 %{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2-%{release},/g")}
 
 %description devel
 This is a meta-package for all the development library packages in GHC.
 
-%if %{with prof}
-%package prof
-Summary: GHC profiling libraries meta-package
-Group: Development/Libraries
-Requires: ghc-devel = %{version}-%{release}
-%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-prof = \2-%{release},/g")}
-
-%description prof
-This is a meta-package for all the profiling library packages in GHC.
-They should be installed when GHC's profiling subsystem is needed.
-%endif
-
 %prep
-%setup -q -n %{name}-%{version} %{?with_testsuite:-b2}
+%setup -q -n %{name}-%{version} %{!?without_testsuite:-b2}
 # absolute haddock path (was for html/libraries -> libraries)
 %patch1 -p1 -b .orig
 # type-level too big so skip it in gen_contents_index
@@ -176,7 +184,7 @@ They should be installed when GHC's profiling subsystem is needed.
 # make sure we don't use these
 rm -r ghc-tarballs/{mingw,perl}
 # use system libffi
-%if %{with libffi}
+%ifarch %{libffi_archs}
 %patch4 -p1 -b .libffi
 rm -r ghc-tarballs/libffi
 %endif
@@ -195,32 +203,26 @@ rm -r ghc-tarballs/libffi
 
 
 %build
+# http://hackage.haskell.org/trac/ghc/wiki/Platforms
+# cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
-GhcLibWays = v %{?with_prof:p} %{!?ghc_without_shared:dyn} 
-%if %{without doc}
+GhcLibWays = v %{!?ghc_without_shared:dyn} %{!?without_prof:p}
+%if %{defined without_haddock}
 HADDOCK_DOCS = NO
 %endif
-%if %{without manual}
+%if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
-%endif
-%if %{with quick}
-SRC_HC_OPTS = -H64m -O0 -fasm
-GhcStage1HcOpts = -O -fasm
-GhcStage2HcOpts = -O0 -fasm
-GhcLibHcOpts = -O0 -fasm
-SplitObjs = NO
 %endif
 %if %{undefined without_hscolour}
 HSCOLOUR_SRCS = NO
 %endif
-%if %{with libffi}
+%ifarch %{libffi_archs}
 SRC_HC_OPTS += -lffi
 %endif
-%ifarch ppc64
+%ifarch %{unregisterised_archs}
 GhcUnregisterised=YES
-GhcWithNativeCodeGen=NO
-SplitObjs=NO
-GhcWithInterpreter=NO
+%endif
+%ifarch ppc64
 GhcNotThreaded=YES
 SRC_HC_OPTS+=-optc-mminimal-toc -optl-pthread
 SRC_CC_OPTS+=-mminimal-toc -pthread -Wa,--noexecstack
@@ -237,8 +239,7 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --with-gcc=%{_bindir}/gcc \
-  %{!?ghc_without_shared:--enable-shared}
+  --with-gcc=%{_bindir}/gcc
 
 # >4 cpus tends to break build
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
@@ -266,7 +267,6 @@ done
 cat ghc-%1.files >> ghc-%2.files\
 %endif\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
-cat ghc-%1-prof.files >> ghc-%2-prof.files\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
 echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 
@@ -279,7 +279,10 @@ echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
 %endif
-ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a %{!?with_libffi:$RPM_BUILD_ROOT%{ghclibdir}/HSffi.o} $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
+ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a  $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
+%ifnarch %{libffi_archs}
+echo $RPM_BUILD_ROOT%{ghclibdir}/HSffi.o >> ghc-base-devel.files
+%endif
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
 
 # these are handled as alternatives
@@ -293,7 +296,7 @@ done
 
 %ghc_strip_dynlinked
 
-%if %{with doc}
+%if %{undefined without_haddock}
 mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly
 install -p --mode=755 %SOURCE3 ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
 mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/lib/ghc
@@ -320,7 +323,7 @@ inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
 %endif
-%if %{with testsuite}
+%if %{undefined without_testsuite}
 make -C testsuite/tests/ghc-regress fast
 %endif
 
@@ -356,18 +359,13 @@ fi
 %{ghclibdir}/extra-gcc-opts
 %{ghclibdir}/ghc
 %{ghclibdir}/ghc-pkg
-%ifnarch ppc64
+%ifnarch %{unregisterised_archs}
 %{ghclibdir}/ghc-asm
 %{ghclibdir}/ghc-split
 %endif
 %{ghclibdir}/ghc-usage.txt
 %{ghclibdir}/ghci-usage.txt
 %{ghclibdir}/hsc2hs
-%if %{with doc}
-%{ghclibdir}/haddock
-%{ghclibdir}/html
-%{ghclibdir}/latex
-%endif
 %dir %{ghclibdir}/package.conf.d
 %ghost %{ghclibdir}/package.conf.d/package.cache
 %{ghclibdir}/runghc
@@ -376,9 +374,12 @@ fi
 %{_mandir}/man1/ghc.*
 %dir %{_docdir}/ghc
 %dir %{ghcdocbasedir}
-%if %{with doc}
+%if %{undefined without_haddock}
+%{ghclibdir}/haddock
+%{ghclibdir}/html
+%{ghclibdir}/latex
 %{ghcdocbasedir}/html
-%if %{with manual}
+%if %{undefined without_manual}
 %{ghcdocbasedir}/Cabal
 %{ghcdocbasedir}/haddock
 %{ghcdocbasedir}/users_guide
@@ -402,12 +403,19 @@ fi
 %files devel
 %defattr(-,root,root,-)
 
-%if %{with prof}
-%files prof
-%defattr(-,root,root,-)
-%endif
-
 %changelog
+* Wed Sep 28 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.4
+- port to armv7hl by Henrik Nordström (#741725)
+- setup dependency generation with ghc-deps.sh since it was moved to
+  ghc_lib_install in ghc-rpm-macros
+- BR same ghc version unless ghc_bootstrapping defined
+- add libffi_archs
+- drop the quick build profile
+- put dyn before p in GhcLibWays
+- explain new bootstrapping mode using ghc_bootstrap (ghc-rpm-macros-0.13.5)
+- update summary and description
+- merge prof subpackages into the devel subpackages with ghc-rpm-macros-0.13
+
 * Sat May 21 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.3
 - obsolete dph libraries and feldspar-language
 - configure with /usr/bin/gcc to help bootstrapping to new archs
