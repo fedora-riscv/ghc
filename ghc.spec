@@ -14,7 +14,10 @@
 #%%{?ghc_test}
 #%%global without_hscolour 1
 
-# archs that use system libffi
+# faster:
+#%%global without_testsuite 1
+
+# archs that use system libffi (needs fixing for secondary archs)
 %global libffi_archs %{ix86} x86_64
 
 # unregisterized archs
@@ -52,9 +55,9 @@ Version: 7.0.2
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 16.4%{?dist}
+Release: 16.5%{?dist}
 Summary: Glasgow Haskell Compiler
-# fedora ghc has only been bootstrapped on the following archs:
+# fedora ghc has been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl
 License: BSD
 Group: Development/Languages
@@ -78,7 +81,7 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
-BuildRequires: ghc-rpm-macros >= 0.13.5
+BuildRequires: ghc-rpm-macros >= 0.13.11
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -215,9 +218,6 @@ BUILD_DOCBOOK_HTML = NO
 %endif
 %if %{undefined without_hscolour}
 HSCOLOUR_SRCS = NO
-%endif
-%ifarch %{libffi_archs}
-SRC_HC_OPTS += -lffi
 %endif
 %ifarch %{unregisterised_archs}
 GhcUnregisterised=YES
@@ -404,6 +404,11 @@ fi
 %defattr(-,root,root,-)
 
 %changelog
+* Fri Sep 30 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.5
+- build with ghc-rpm-macros >= 0.13.11 to fix provides and obsoletes versions
+  in library devel subpackages
+- no need to specify -lffi in build.mk (Henrik Nordström)
+
 * Wed Sep 28 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.4
 - port to armv7hl by Henrik Nordström (#741725)
 - setup dependency generation with ghc-deps.sh since it was moved to
