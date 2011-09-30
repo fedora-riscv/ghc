@@ -11,8 +11,14 @@
 #%%{?ghc_test}
 #%%global without_hscolour 1
 
-# archs that use system libffi
+# faster:
+#%%global without_testsuite 1
+
+# archs that use system libffi (needs fixing for secondary archs)
 %global libffi_archs %{ix86} x86_64
+
+# unregisterized archs
+%global unregisterised_archs ppc64 armv7hl
 
 # ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
@@ -31,10 +37,10 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 28%{?dist}.1
+Release: 31%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
-#ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64
+#ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl
 ExcludeArch: sparc64 s390x
 License: BSD
 Group: Development/Languages
@@ -58,7 +64,7 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
-BuildRequires: ghc-rpm-macros >= 0.13.5
+BuildRequires: ghc-rpm-macros >= 0.13.11
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -196,14 +202,10 @@ BUILD_DOCBOOK_HTML = NO
 %if %{undefined without_hscolour}
 HSCOLOUR_SRCS = NO
 %endif
-%ifarch %{libffi_archs}
-SRC_HC_OPTS += -lffi
+%ifarch %{unregisterised_archs}
+GhcUnregisterised=YES
 %endif
 %ifarch ppc64
-GhcUnregisterised=YES
-GhcWithNativeCodeGen=NO
-SplitObjs=NO
-GhcWithInterpreter=NO
 GhcNotThreaded=YES
 SRC_HC_OPTS+=-optc-mminimal-toc -optl-pthread
 SRC_CC_OPTS+=-mminimal-toc -pthread -Wa,--noexecstack
@@ -340,7 +342,7 @@ fi
 %{ghclibdir}/extra-gcc-opts
 %{ghclibdir}/ghc
 %{ghclibdir}/ghc-pkg
-%ifnarch ppc64
+%ifnarch %{unregisterised_archs}
 %{ghclibdir}/ghc-asm
 %{ghclibdir}/ghc-split
 %endif
@@ -385,6 +387,16 @@ fi
 %defattr(-,root,root,-)
 
 %changelog
+* Fri Sep 30 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31
+- build with ghc-rpm-macros >= 0.13.11 to fix provides and obsoletes versions
+  in library devel subpackages
+
+* Thu Sep 29 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-30
+- no need to specify -lffi in build.mk (Henrik Nordström)
+
+* Wed Sep 28 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-29
+- port to armv7hl by Henrik Nordström (#741725)
+
 * Tue Sep 27 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-28.1
 - rebuild against libffi-3.0.10
 
