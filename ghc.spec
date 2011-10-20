@@ -14,20 +14,14 @@
 # faster:
 #%%global without_testsuite 1
 
-# archs that use system libffi (needs fixing for secondary archs)
-%global libffi_archs %{ix86} x86_64
+# archs that don't use system libffi (needs fixing)
+%global libffi_copy_archs ppc ppc64
 
 # unregisterized archs
-%global unregisterised_archs ppc64 armv7hl
+%global unregisterised_archs ppc64 armv7hl armv5tel
 
 # ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
-
-%if %{undefined ghc_bootstrapping}
-%global _use_internal_dependency_generator 0
-%global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
-%global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
-%endif
 
 Name: ghc
 # part of haskell-platform
@@ -37,7 +31,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 31%{?dist}
+Release: 31.1%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl
@@ -64,7 +58,7 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
-BuildRequires: ghc-rpm-macros >= 0.13.11
+BuildRequires: ghc-rpm-macros >= 0.13.13
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -118,6 +112,12 @@ for the functional language Haskell. Highlights:
 
 %global ghc_version_override %{version}
 
+# needs ghc_version_override for bootstrapping
+%global _use_internal_dependency_generator 0
+%global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
+%global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
+
+
 %global ghc_pkg_c_deps ghc = %{ghc_version_override}-%{release}
 
 %if %{defined ghclibdir}
@@ -130,7 +130,7 @@ for the functional language Haskell. Highlights:
 %ghc_binlib_package extensible-exceptions 0.1.1.2
 %ghc_binlib_package filepath 1.2.0.0
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
-%ghc_binlib_package -x ghc %{ghc_version_override}
+%ghc_binlib_package ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
 %ghc_binlib_package haskell2010 1.0.0.0
 %ghc_binlib_package haskell98 1.1.0.1
@@ -170,7 +170,7 @@ This is a meta-package for all the development library packages in GHC.
 # make sure we don't use these
 rm -r ghc-tarballs/{mingw,perl}
 # use system libffi
-%ifarch %{libffi_archs}
+%ifnarch %{libffi_copy_archs}
 %patch4 -p1 -b .libffi
 rm -r ghc-tarballs/libffi
 %endif
@@ -263,7 +263,7 @@ ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
 %endif
 ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a  $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
-%ifnarch %{libffi_archs}
+%ifarch %{libffi_copy_archs}
 echo $RPM_BUILD_ROOT%{ghclibdir}/HSffi.o >> ghc-base-devel.files
 %endif
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
@@ -335,7 +335,6 @@ if [ "$1" = 0 ]; then
 fi
 
 %files
-%defattr(-,root,root,-)
 %doc ANNOUNCE HACKING LICENSE README
 %{_bindir}/*
 %dir %{ghclibdir}
@@ -384,9 +383,15 @@ fi
 %endif
 
 %files devel
-%defattr(-,root,root,-)
 
 %changelog
+* Thu Oct 20 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31.1
+- setup ghc-deps.sh after ghc_version_override for bootstrapping
+- add armv5tel (ported by Henrik Nordström)
+- also use ghc-deps.sh when bootstrapping (ghc-rpm-macros-0.13.13)
+- replace libffi_archs with libffi_copy_archs for ppc just for now
+- include the ghc (ghci) library in ghc-devel
+
 * Fri Sep 30 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31
 - build with ghc-rpm-macros >= 0.13.11 to fix provides and obsoletes versions
   in library devel subpackages
