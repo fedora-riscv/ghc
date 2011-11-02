@@ -10,8 +10,6 @@
 #%%global ghc_bootstrapping 1
 #%%{?ghc_test}
 #%%global without_hscolour 1
-
-# faster:
 #%%global without_testsuite 1
 
 # archs that don't use system libffi (needs fixing)
@@ -31,7 +29,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 31.1%{?dist}
+Release: 31.2%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl
@@ -46,8 +44,6 @@ Source3: ghc-doc-index.cron
 URL: http://haskell.org/ghc/
 # introduced for f14
 Obsoletes: ghc-doc < 6.12.3-4
-# BR for lib and binlib packages
-Provides: ghc-doc = %{version}-%{release}
 # introduced for f15
 Obsoletes: ghc-libs < 7.0.1-3
 Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
@@ -58,14 +54,11 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
-BuildRequires: ghc-rpm-macros >= 0.13.13
+BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
-Requires: gcc
-Requires: ghc-base-devel
-# llvm is an optional dependency
 %if %{undefined without_manual}
 BuildRequires: libxslt, docbook-style-xsl
 %endif
@@ -78,6 +71,8 @@ BuildRequires: python
 %ifarch ppc64
 BuildRequires: autoconf
 %endif
+Requires: ghc-compiler = %{version}-%{release}
+Requires: ghc-libraries = %{version}-%{release}
 Patch1: ghc-6.12.1-gen_contents_index-haddock-path.patch
 Patch2: ghc-gen_contents_index-type-level.patch
 Patch3: ghc-gen_contents_index-cron-batch.patch
@@ -110,6 +105,19 @@ for the functional language Haskell. Highlights:
 - Profiling is supported, both by time/allocation and heap profiling.
 - GHC comes with core libraries, and thousands more are available on Hackage.
 
+%package compiler
+Summary: GHC compiler and utilities
+Group: Development/Languages
+Requires: gcc
+Requires: ghc-base-devel
+# llvm is an optional dependency
+
+%description compiler
+The package contains the GHC compiler, tools and utilities.
+
+The ghc libraries are provided by ghc-devel.
+To install all of ghc, install the ghc base package.
+
 %global ghc_version_override %{version}
 
 # needs ghc_version_override for bootstrapping
@@ -118,28 +126,31 @@ for the functional language Haskell. Highlights:
 %global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
 
 
-%global ghc_pkg_c_deps ghc = %{ghc_version_override}-%{release}
+%global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
+
+%define space %(echo -n ' ')
+%define BSDHaskellReport BSD%{space}and%{space}HaskellReport
 
 %if %{defined ghclibdir}
 %ghc_binlib_package Cabal 1.10.2.0
-%ghc_binlib_package array 0.3.0.2
-%ghc_binlib_package -c gmp-devel,libffi-devel base 4.3.1.0
+%ghc_binlib_package -l %BSDHaskellReport array 0.3.0.2
+%ghc_binlib_package -l %BSDHaskellReport -c gmp-devel,libffi-devel base 4.3.1.0
 %ghc_binlib_package bytestring 0.9.1.10
-%ghc_binlib_package containers 0.4.0.0
-%ghc_binlib_package directory 1.1.0.0
-%ghc_binlib_package extensible-exceptions 0.1.1.2
+%ghc_binlib_package -l %BSDHaskellReport containers 0.4.0.0
+%ghc_binlib_package -l %BSDHaskellReport directory 1.1.0.0
+%ghc_binlib_package -l %BSDHaskellReport extensible-exceptions 0.1.1.2
 %ghc_binlib_package filepath 1.2.0.0
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 %ghc_binlib_package ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_binlib_package haskell2010 1.0.0.0
-%ghc_binlib_package haskell98 1.1.0.1
+%ghc_binlib_package -l HaskellReport haskell2010 1.0.0.0
+%ghc_binlib_package -l HaskellReport haskell98 1.1.0.1
 %ghc_binlib_package hpc 0.5.0.6
-%ghc_binlib_package old-locale 1.0.0.2
-%ghc_binlib_package old-time 1.0.0.6
+%ghc_binlib_package -l %BSDHaskellReport old-locale 1.0.0.2
+%ghc_binlib_package -l %BSDHaskellReport old-time 1.0.0.6
 %ghc_binlib_package pretty 1.0.1.2
-%ghc_binlib_package process 1.0.1.5
-%ghc_binlib_package random 1.0.0.3
+%ghc_binlib_package -l %BSDHaskellReport process 1.0.1.5
+%ghc_binlib_package -l %BSDHaskellReport random 1.0.0.3
 %ghc_binlib_package template-haskell 2.5.0.0
 %ghc_binlib_package time 1.2.0.3
 %ghc_binlib_package unix 2.4.2.0
@@ -147,15 +158,17 @@ for the functional language Haskell. Highlights:
 
 %global version %{ghc_version_override}
 
-%package devel
+%package libraries
 Summary: GHC development libraries meta package
 Group: Development/Libraries
-Requires: ghc = %{version}-%{release}
+Requires: ghc-compiler = %{version}-%{release}
+Obsoletes: ghc-devel < %{version}-%{release}
+Provides: ghc-devel = %{version}-%{release}
 Obsoletes: ghc-prof < %{version}-%{release}
 Provides: ghc-prof = %{version}-%{release}
 %{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2-%{release},/g")}
 
-%description devel
+%description libraries
 This is a meta-package for all the development library packages in GHC.
 
 %prep
@@ -335,6 +348,8 @@ if [ "$1" = 0 ]; then
 fi
 
 %files
+
+%files compiler
 %doc ANNOUNCE HACKING LICENSE README
 %{_bindir}/*
 %dir %{ghclibdir}
@@ -382,15 +397,25 @@ fi
 %{_localstatedir}/lib/ghc
 %endif
 
-%files devel
+%files libraries
 
 %changelog
+* Wed Nov  2 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31.2
+- rename ghc-devel metapackage to ghc-libraries
+- require ghc-rpm-macros-0.14
+- move compiler and tools to ghc-compiler
+- the ghc base package is now a metapackage that installs all of ghc,
+  ie ghc-compiler and ghc-devel (#750317)
+- drop ghc-doc provides
+- add HaskellReport license tag to some of the library subpackages
+  which contain some code from the Haskell Reports
+
 * Thu Oct 20 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31.1
 - setup ghc-deps.sh after ghc_version_override for bootstrapping
 - add armv5tel (ported by Henrik Nordström)
 - also use ghc-deps.sh when bootstrapping (ghc-rpm-macros-0.13.13)
 - replace libffi_archs with libffi_copy_archs for ppc just for now
-- include the ghc (ghci) library in ghc-devel
+- include the ghc (ghci) library in ghc-devel (Narasim)
 
 * Fri Sep 30 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31
 - build with ghc-rpm-macros >= 0.13.11 to fix provides and obsoletes versions
