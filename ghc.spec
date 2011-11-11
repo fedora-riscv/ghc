@@ -29,7 +29,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 31.2%{?dist}
+Release: 31.3%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl
@@ -53,6 +53,7 @@ Obsoletes: ghc-dph-prim-par < 0.5, ghc-dph-prim-par-devel < 0.5, ghc-dph-prim-pa
 Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-seq-prof < 0.5
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
+# change to ghc-compiler once backported
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
 BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: gmp-devel, libffi-devel
@@ -323,7 +324,7 @@ rm testghc/*
 make -C testsuite/tests/ghc-regress fast
 %endif
 
-%post
+%post compiler
 # Alas, GHC, Hugs, and nhc all come with different set of tools in
 # addition to a runFOO:
 #
@@ -341,7 +342,7 @@ update-alternatives --install %{_bindir}/runhaskell runhaskell \
 update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
   %{_bindir}/hsc2hs-ghc 500
 
-%preun
+%preun compiler
 if [ "$1" = 0 ]; then
   update-alternatives --remove runhaskell %{_bindir}/runghc
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
@@ -400,6 +401,9 @@ fi
 %files libraries
 
 %changelog
+* Fri Nov 11 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31.3
+- the post and postun scripts are now for the compiler subpackage
+
 * Wed Nov  2 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31.2
 - rename ghc-devel metapackage to ghc-libraries
 - require ghc-rpm-macros-0.14
