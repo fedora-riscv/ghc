@@ -47,7 +47,7 @@ Version: 7.0.2
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 16.7%{?dist}
+Release: 16.8%{?dist}
 Summary: Glasgow Haskell Compiler
 ExclusiveArch: %{ghc_arches}
 License: BSD
@@ -66,7 +66,7 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
-BuildRequires: ghc-rpm-macros >= 0.13.13
+BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
 # for internal terminfo
@@ -418,7 +418,11 @@ fi
 %files libraries
 
 %changelog
+* Sat Nov 12 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.8
+- build with ghc-rpm-macros-0.14 for ghc-compiler
+
 * Fri Nov 11 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16.7
+- move ghc-doc and ghc-libs obsoletes
 - the post and postun scripts are now for the compiler subpackage
 - rename ghc-devel metapackage to ghc-libraries
 - move compiler and tools to ghc-compiler
