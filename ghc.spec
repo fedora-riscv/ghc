@@ -2,9 +2,9 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap a new version of ghc, uncomment the following:
-#%%global ghc_bootstrapping 1
-#%%{?ghc_bootstrap}
-#%%global without_hscolour 1
+%global ghc_bootstrapping 1
+%{?ghc_bootstrap}
+%global without_hscolour 1
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
@@ -29,7 +29,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 42%{?dist}
+Release: 41.1%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
@@ -415,7 +415,10 @@ fi
 %files libraries
 
 %changelog
-* Thu Jan 19 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-42
+* Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.1
+- bootstrap build for ARM
+
+* Thu Jan 19 2012 Jens Petersen <petersen@redhat.com>
 - move ghc-ghc-devel from ghc-libraries to the ghc metapackage
 
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.0.4-41
