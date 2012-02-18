@@ -190,6 +190,7 @@ rm -r ghc-tarballs/{mingw,perl}
 # use system libffi
 %patch4 -p1 -b .libffi
 rm -r ghc-tarballs/libffi
+ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
 
 %patch5 -p1 -b .orig
 
@@ -416,7 +417,9 @@ fi
 
 %changelog
 * Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.1
-- bootstrap build for ARM
+- bootstrap build
+- fix build with system libffi on secondary archs by including libffi headers
+  in base/include
 
 * Thu Jan 19 2012 Jens Petersen <petersen@redhat.com>
 - move ghc-ghc-devel from ghc-libraries to the ghc metapackage
