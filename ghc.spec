@@ -14,7 +14,7 @@
 #%%global without_testsuite 1
 
 # unregisterized archs
-%global unregisterised_archs ppc64 armv7hl armv5tel
+%global unregisterised_archs ppc64 armv7hl armv5tel s390 s390x
 
 # ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
@@ -30,11 +30,11 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 43%{?dist}
+Release: 44%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
-ExcludeArch: sparc64 s390x
+ExcludeArch: sparc64
 License: %BSDHaskellReport
 Group: Development/Languages
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
@@ -66,7 +66,7 @@ BuildRequires: hscolour
 %if %{undefined without_testsuite}
 BuildRequires: python
 %endif
-%ifarch ppc64
+%ifarch ppc64 s390x
 BuildRequires: autoconf
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -83,6 +83,8 @@ Patch6: ghc-fix-linking-on-sparc.patch
 Patch7: ghc-ppc64-pthread.patch
 # http://hackage.haskell.org/trac/ghc/ticket/4999
 Patch8: ghc-powerpc-linker-mmap.patch
+# touches configure.ac
+Patch9: ghc-7.0.4-configure-s390x
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -198,14 +200,19 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
 
 %patch6 -p1 -b .sparclinking
 
-%ifarch ppc64
+%if %{defined ghc_bootstrapping}
+%ifarch ppc ppc64 s390 s390x
 %patch7 -p1 -b .pthread
 %endif
 
 %ifarch ppc ppc64
 %patch8 -p1 -b .mmap
 %endif
+%endif
 
+%ifarch s390x
+%patch9 -p1 -b .s390x
+%endif
 
 %build
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
@@ -231,7 +238,7 @@ SRC_CC_OPTS+=-mminimal-toc -pthread -Wa,--noexecstack
 %endif
 EOF
 
-%ifarch ppc64
+%ifarch ppc64 s390x
 autoreconf
 %endif
 export CFLAGS="${CFLAGS:-%optflags}"
@@ -418,6 +425,11 @@ fi
 %files libraries
 
 %changelog
+* Sat Mar  3 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-44
+- add s390 and s390x to unregisterised_archs
+- add configure-s390x from debian
+- only apply ppc64 pthread and mmap patches when bootstrapping
+
 * Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-43
 - fix build with system libffi on secondary archs by including libffi headers
   in base/include
