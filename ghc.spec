@@ -50,8 +50,9 @@ Obsoletes: ghc-dph-prim-par < 0.5, ghc-dph-prim-par-devel < 0.5, ghc-dph-prim-pa
 Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-seq-prof < 0.5
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
-# change to ghc-compiler once backported to el6
-BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
+%if %{undefined ghc_bootstrapping}
+BuildRequires: ghc-compiler = %{version}
+%endif
 BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: gmp-devel, libffi-devel
 BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
@@ -204,10 +205,10 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
 %ifarch ppc ppc64 s390 s390x
 %patch7 -p1 -b .pthread
 %endif
+%endif
 
 %ifarch ppc ppc64
 %patch8 -p1 -b .mmap
-%endif
 %endif
 
 %ifarch s390x
@@ -426,9 +427,10 @@ fi
 
 %changelog
 * Sat Mar  3 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-44
+- BR ghc-compiler
 - add s390 and s390x to unregisterised_archs
 - add configure-s390x from debian
-- only apply ppc64 pthread and mmap patches when bootstrapping
+- only apply ppc64 pthread patch when bootstrapping
 
 * Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-43
 - fix build with system libffi on secondary archs by including libffi headers
