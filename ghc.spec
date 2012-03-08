@@ -194,8 +194,10 @@ rm -r ghc-tarballs/{mingw,perl}
 # use system libffi
 %patch4 -p1 -b .libffi
 rm -r ghc-tarballs/libffi
-# needed for secondary archs
+# needed for tier 2 archs
+%ifnarch %{ix86} x86_64
 ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
+%endif
 
 %patch5 -p1 -b .orig
 
