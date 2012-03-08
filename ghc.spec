@@ -30,7 +30,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 44%{?dist}
+Release: 45%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
@@ -86,6 +86,8 @@ Patch7: ghc-ppc64-pthread.patch
 Patch8: ghc-powerpc-linker-mmap.patch
 # touches configure.ac
 Patch9: ghc-7.0.4-configure-s390x
+# add libffi include dir to ghc wrapper for archs using gcc
+Patch10: ghc-wrapper-libffi-include.patch
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -215,6 +217,10 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
 
 %ifarch s390x
 %patch9 -p1 -b .s390x
+%endif
+
+%ifnarch %{ix86} x86_64
+%patch10 -p1 -b .10-ffi
 %endif
 
 %build
@@ -428,6 +434,9 @@ fi
 %files libraries
 
 %changelog
+* Thu Mar  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-45
+- patch ghc wrapper script to add libffi includedir on tier 2 archs
+
 * Sat Mar  3 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-44
 - BR ghc-compiler
 - add s390 and s390x to unregisterised_archs
