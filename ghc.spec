@@ -30,7 +30,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 45%{?dist}
+Release: 46%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
@@ -81,7 +81,7 @@ Patch4: ghc-use-system-libffi.patch
 # (see http://hackage.haskell.org/trac/hackage/ticket/600)
 Patch5: Cabal-option-executable-dynamic.patch
 Patch6: ghc-fix-linking-on-sparc.patch
-Patch7: ghc-ppc64-pthread.patch
+Patch7: ghc-powerpc-pthread.patch
 # http://hackage.haskell.org/trac/ghc/ticket/4999
 Patch8: ghc-powerpc-linker-mmap.patch
 # touches configure.ac
@@ -205,22 +205,17 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
 
 %patch6 -p1 -b .sparclinking
 
-%if %{defined ghc_bootstrapping}
-%ifarch ppc ppc64 s390 s390x
-%patch7 -p1 -b .pthread
-%endif
+%ifnarch %{ix86} x86_64
+%patch10 -p1 -b .10-ffi
 %endif
 
 %ifarch ppc ppc64
+%patch7 -p1 -b .pthread
 %patch8 -p1 -b .mmap
 %endif
 
 %ifarch s390x
 %patch9 -p1 -b .s390x
-%endif
-
-%ifnarch %{ix86} x86_64
-%patch10 -p1 -b .10-ffi
 %endif
 
 %build
@@ -434,6 +429,9 @@ fi
 %files libraries
 
 %changelog
+* Fri Mar  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-46
+- reinstate ghc-powerpc-pthread.patch needed for linking on ppc
+
 * Thu Mar  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-45
 - patch ghc wrapper script to add libffi includedir on tier 2 archs
 
