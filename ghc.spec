@@ -1,173 +1,286 @@
-# shared haskell libraries supported for x86* archs (enabled in ghc-rpm-macros)
+# Shared haskell libraries are supported for x86* archs
+# (disabled for other archs in ghc-rpm-macros)
 
-## default enabled options ##
-%bcond_without doc
-# test builds can made faster and smaller by disabling profiled libraries
-# (currently libHSrts_thr_p.a breaks no prof build)
-%bcond_without prof
-# build xml manuals (users_guide, etc)
-%bcond_without manual
-# run testsuite
-%bcond_without testsuite
-# include colored html src
-%bcond_without hscolour
+# To bootstrap a new version of ghc, uncomment the following:
+%global ghc_bootstrapping 1
+%{?ghc_bootstrap}
+%global without_hscolour 1
 
-## default disabled options ##
-# quick build profile
-%bcond_with quick
+# To do a test build instead with shared libs, uncomment the following:
+#%%global ghc_bootstrapping 1
+#%%{?ghc_test}
+#%%global without_hscolour 1
+#%%global without_testsuite 1
+
+# unregisterized archs
+%global unregisterised_archs ppc64 armv7hl armv5tel
 
 # ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
 
+%global space %(echo -n ' ')
+%global BSDHaskellReport BSD%{space}and%{space}HaskellReport
+
 Name: ghc
-# haskell-platform-2010.2.0.0
-Version: 6.12.3
-Release: 6%{?dist}
-Summary: Glasgow Haskell Compilation system
-# fedora ghc has only been bootstrapped on the following archs:
-ExclusiveArch: %{ix86} x86_64 ppc alpha
-License: BSD
+# part of haskell-platform
+# NB make sure to rebuild ghc after a version bump to avoid ABI change problems
+Version: 7.0.4
+# Since library subpackages are versioned:
+# - release can only be reset if all library versions get bumped simultaneously
+#   (eg for a major release)
+# - minor release numbers should be incremented monotonically
+Release: 41.1%{?dist}
+Summary: Glasgow Haskell Compiler
+# fedora ghc has been bootstrapped on the following archs:
+#ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
+ExcludeArch: sparc64 s390x
+License: %BSDHaskellReport
 Group: Development/Languages
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
-%if %{with testsuite}
+%if %{undefined without_testsuite}
 Source2: http://www.haskell.org/ghc/dist/%{version}/testsuite-%{version}.tar.bz2
 %endif
+Source3: ghc-doc-index.cron
 URL: http://haskell.org/ghc/
-# introduced for f14
-Obsoletes: ghc-doc < 6.12.3-4
-Provides: ghc-doc = %{version}-%{release}
-# introduced for f11
-Obsoletes: haddock < 2.4.2-3, ghc-haddock-devel < 2.4.2-3
-Obsoletes: ghc-haddock-doc < 2.4.2-3
-# introduced for f14
-Obsoletes: ghc-time-devel < 1.1.2.4-5
-Obsoletes: ghc-time-doc < 1.1.2.4-5
-BuildRequires: ghc, ghc-rpm-macros >= 0.10.52
-BuildRequires: gmp-devel, ncurses-devel
-Requires: gcc, gmp-devel
-# for forwards compatibility
-Provides: ghc-devel = %{version}-%{release}
-%if %{undefined ghc_without_shared}
-# not sure if this is actually needed:
-BuildRequires: libffi-devel
-Requires: %{name}-libs = %{version}-%{release}
-%endif
-%if %{with manual}
+Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
+Obsoletes: ghc-dph-par < 0.5, ghc-dph-par-devel < 0.5, ghc-dph-par-prof < 0.5
+Obsoletes: ghc-dph-prim-interface < 0.5, ghc-dph-prim-interface-devel < 0.5, ghc-dph-interface-prim-prof < 0.5
+Obsoletes: ghc-dph-prim-par < 0.5, ghc-dph-prim-par-devel < 0.5, ghc-dph-prim-par-prof < 0.5
+Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-seq-prof < 0.5
+Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
+Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
+# change to ghc-compiler once backported to el6
+BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
+BuildRequires: ghc-rpm-macros >= 0.14
+BuildRequires: gmp-devel, libffi-devel
+#BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
+# for internal terminfo
+BuildRequires: ncurses-devel
+%if %{undefined without_manual}
 BuildRequires: libxslt, docbook-style-xsl
 %endif
-%if %{with hscolour}
+%if %{undefined without_haddock} && %{undefined without_hscolour}
 BuildRequires: hscolour
 %endif
-%if %{with testsuite}
+%if %{undefined without_testsuite}
 BuildRequires: python
 %endif
+%ifarch ppc64
+BuildRequires: autoconf
+%endif
+Requires: ghc-compiler = %{version}-%{release}
+Requires: ghc-libraries = %{version}-%{release}
+Requires: ghc-ghc-devel = %{version}-%{release}
 Patch1: ghc-6.12.1-gen_contents_index-haddock-path.patch
+Patch2: ghc-gen_contents_index-type-level.patch
+Patch3: ghc-gen_contents_index-cron-batch.patch
+Patch4: ghc-use-system-libffi.patch
+# add cabal configure option --enable-executable-dynamic
+# (see http://hackage.haskell.org/trac/hackage/ticket/600)
+Patch5: Cabal-option-executable-dynamic.patch
+Patch6: ghc-fix-linking-on-sparc.patch
+Patch7: ghc-ppc64-pthread.patch
+# http://hackage.haskell.org/trac/ghc/ticket/4999
+Patch8: ghc-powerpc-linker-mmap.patch
 
 %description
-GHC is a state-of-the-art programming suite for Haskell, a purely
-functional programming language.  It includes an optimizing compiler
-generating good code for a variety of platforms, together with an
-interactive system for convenient, quick development.  The
-distribution includes space and time profiling facilities, a large
-collection of libraries, and support for various language
-extensions, including concurrency, exceptions, and a foreign language
-interface.
+GHC is a state-of-the-art, open source, compiler and interactive environment
+for the functional language Haskell. Highlights:
 
-%if %{undefined ghc_without_shared}
-%package libs
-Summary: Shared libraries for GHC
-Group: Development/Libraries
-Obsoletes: ghc-time < 1.1.2.4-5
+- GHC supports the entire Haskell 2010 language plus various extensions.
+- GHC has particularly good support for concurrency and parallelism,
+  including support for Software Transactional Memory (STM).
+- GHC generates fast code, particularly for concurrent programs
+  (check the results on the "Computer Language Benchmarks Game").
+- GHC works on several platforms including Windows, Mac, Linux,
+  most varieties of Unix, and several different processor architectures.
+- GHC has extensive optimisation capabilities,
+  including inter-module optimisation.
+- GHC compiles Haskell code either directly to native code or using LLVM
+  as a back-end. GHC can also generate C code as an intermediate target for
+  porting to new platforms. The interactive environment compiles Haskell to
+  bytecode, and supports execution of mixed bytecode/compiled programs.
+- Profiling is supported, both by time/allocation and heap profiling.
+- GHC comes with core libraries, and thousands more are available on Hackage.
 
-%description libs
-Shared libraries for Glorious Glasgow Haskell Compilation System (GHC).
-%endif
+%package compiler
+Summary: GHC compiler and utilities
+License: BSD
+Group: Development/Languages
+Requires: gcc
+Requires: ghc-base-devel
+Requires(post): chkconfig
+Requires(postun): chkconfig
+# added in f14
+Obsoletes: ghc-doc < 6.12.3-4
+# llvm is an optional dependency
 
-%if %{with prof}
-%package prof
-Summary: Profiling libraries for GHC
-Group: Development/Libraries
-Requires: %{name} = %{version}-%{release}
-Obsoletes: ghc-haddock-prof < 2.4.2-3
-Obsoletes: ghc-time-prof < 1.1.2.4-5
+%description compiler
+The package contains the GHC compiler, tools and utilities.
 
-%description prof
-Profiling libraries for Glorious Glasgow Haskell Compilation System (GHC).
-They should be installed when GHC's profiling subsystem is needed.
-%endif
+The ghc libraries are provided by ghc-devel.
+To install all of ghc, install the ghc base package.
 
 %global ghc_version_override %{version}
 
-%ghc_binlib_package ghc %{ghc_version_override}
+# needs ghc_version_override for bootstrapping
+%global _use_internal_dependency_generator 0
+%global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
+%global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
+
+
+%global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
+
+%if %{defined ghclibdir}
+%ghc_binlib_package Cabal 1.10.2.0
+%ghc_binlib_package -l %BSDHaskellReport array 0.3.0.2
+%ghc_binlib_package -l %BSDHaskellReport -c gmp-devel,libffi-devel base 4.3.1.0
+%ghc_binlib_package bytestring 0.9.1.10
+%ghc_binlib_package -l %BSDHaskellReport containers 0.4.0.0
+%ghc_binlib_package -l %BSDHaskellReport directory 1.1.0.0
+%ghc_binlib_package -l %BSDHaskellReport extensible-exceptions 0.1.1.2
+%ghc_binlib_package filepath 1.2.0.0
+%define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
+# in ghc not ghc-libraries:
+%ghc_binlib_package -x ghc %{ghc_version_override}
+%undefine ghc_pkg_obsoletes
+%ghc_binlib_package -l HaskellReport haskell2010 1.0.0.0
+%ghc_binlib_package -l HaskellReport haskell98 1.1.0.1
+%ghc_binlib_package hpc 0.5.0.6
+%ghc_binlib_package -l %BSDHaskellReport old-locale 1.0.0.2
+%ghc_binlib_package -l %BSDHaskellReport old-time 1.0.0.6
+%ghc_binlib_package pretty 1.0.1.2
+%ghc_binlib_package -l %BSDHaskellReport process 1.0.1.5
+%ghc_binlib_package -l %BSDHaskellReport random 1.0.0.3
+%ghc_binlib_package template-haskell 2.5.0.0
+%ghc_binlib_package time 1.2.0.3
+%ghc_binlib_package unix 2.4.2.0
+%endif
+
+%global version %{ghc_version_override}
+
+%package libraries
+Summary: GHC development libraries meta package
+License: %BSDHaskellReport
+Group: Development/Libraries
+Requires: ghc-compiler = %{version}-%{release}
+Obsoletes: ghc-devel < %{version}-%{release}
+Provides: ghc-devel = %{version}-%{release}
+Obsoletes: ghc-prof < %{version}-%{release}
+Provides: ghc-prof = %{version}-%{release}
+# since f15
+Obsoletes: ghc-libs < 7.0.1-3
+%{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2-%{release},/g")}
+
+%description libraries
+This is a meta-package for all the development library packages in GHC
+except the ghc library, which is installed by the toplevel ghc metapackage.
 
 %prep
-%setup -q -n %{name}-%{version} %{?with_extralibs:-b1} %{?with_testsuite:-b2}
+%setup -q -n %{name}-%{version} %{!?without_testsuite:-b2}
 # absolute haddock path (was for html/libraries -> libraries)
 %patch1 -p1 -b .orig
+# type-level too big so skip it in gen_contents_index
+%patch2 -p1
+# disable gen_contents_index when not --batch for cron
+%patch3 -p1
 
 # make sure we don't use these
 rm -r ghc-tarballs/{mingw,perl}
+# use system libffi
+%patch4 -p1 -b .libffi
+rm -r ghc-tarballs/libffi
+ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
+
+%patch5 -p1 -b .orig
+
+%patch6 -p1 -b .sparclinking
+
+%ifarch ppc64
+%patch7 -p1 -b .pthread
+%endif
+
+%ifarch ppc ppc64
+%patch8 -p1 -b .mmap
+%endif
+
 
 %build
+# http://hackage.haskell.org/trac/ghc/wiki/Platforms
+# cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
-GhcLibWays = v %{?with_prof:p} %{!?ghc_without_shared:dyn} 
-%if %{without doc}
+GhcLibWays = v %{!?ghc_without_shared:dyn} %{!?without_prof:p}
+%if %{defined without_haddock}
 HADDOCK_DOCS = NO
 %endif
-%if %{without manual}
+%if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
 %endif
-%if %{with quick}
-SRC_HC_OPTS = -H64m -O0 -fasm
-GhcStage1HcOpts = -O -fasm
-GhcStage2HcOpts = -O0 -fasm
-GhcLibHcOpts = -O0 -fasm
-SplitObjs = NO
-%endif
-%if %{without hscolour}
+%if %{undefined without_hscolour}
 HSCOLOUR_SRCS = NO
+%endif
+%ifarch %{unregisterised_archs}
+GhcUnregisterised=YES
+%endif
+%ifarch ppc64
+GhcNotThreaded=YES
+SRC_HC_OPTS+=-optc-mminimal-toc -optl-pthread
+SRC_CC_OPTS+=-mminimal-toc -pthread -Wa,--noexecstack
 %endif
 EOF
 
+%ifarch ppc64
+autoreconf
+%endif
 export CFLAGS="${CFLAGS:-%optflags}"
+# specify gcc to avoid problems when bootstrapping with ccache
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  %{!?ghc_without_shared:--enable-shared}
+  --with-gcc=%{_bindir}/gcc
 
-# 4 cpus or more sometimes breaks build
-[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+# >4 cpus tends to break build
+[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
 [ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
 make -j$RPM_BUILD_NCPUS
 
 %install
 make DESTDIR=${RPM_BUILD_ROOT} install
 
-SRC_TOP=$PWD
-( cd $RPM_BUILD_ROOT
-  # library directories
-  find .%{_libdir}/%{name}-%{version} -maxdepth 1 -type d ! -name 'include' ! -name 'package.conf.d' -fprintf $SRC_TOP/rpm-lib-dir.files "%%%%dir %%p\n"
-  # library devel subdirs
-  find .%{_libdir}/%{name}-%{version} -mindepth 1 -type d \( -fprintf $SRC_TOP/rpm-dev-dir.files "%%%%dir %%p\n" \)
-  # split dyn, devel, conf and prof files
-  find .%{_libdir}/%{name}-%{version} -mindepth 1 \( -name 'libHS*-ghc%{version}.so' -fprintf $SRC_TOP/rpm-lib.files "%%%%attr(755,root,root) %%p\n" \) -o \( \( -name '*.p_hi' -o -name '*_p.a' \) -fprint $SRC_TOP/ghc-prof.files \) -o \( \( -name '*.hi' -o -name '*.dyn_hi' -o -name 'libHS*.a' -o -name 'HS*.o' -o -name '*.h' -o -name '*.conf' -o -type f -not -name 'package.cache' \) -fprint $SRC_TOP/rpm-base.files \)
-  # manuals (src dir are subdirs so dont duplicate them)
-  find .%{_docdir}/%{name}/html/* -type d ! -name libraries ! -name src > $SRC_TOP/rpm-doc-dir.files
-)
+for i in %{ghc_packages_list}; do
+name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
+ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
+%ghc_gen_filelists $name $ver
+echo "%doc libraries/$name/LICENSE" >> ghc-$name%{?ghc_without_shared:-devel}.files
+done
 
-# make paths absolute (filter "./usr" to "/usr")
-sed -i -e "s|\.%{_prefix}|%{_prefix}|" *.files
+%ghc_gen_filelists bin-package-db 0.0.0.0
+%ghc_gen_filelists ghc %{ghc_version_override}
+%ghc_gen_filelists ghc-binary 0.5.0.2
+%ghc_gen_filelists ghc-prim 0.2.0.0
+%ghc_gen_filelists integer-gmp 0.2.0.3
 
-cat rpm-lib-dir.files rpm-lib.files > ghc-libs.files
-cat rpm-dev-dir.files rpm-base.files rpm-doc-dir.files > ghc.files
+%define merge_filelist()\
+%if %{undefined ghc_without_shared}\
+cat ghc-%1.files >> ghc-%2.files\
+%endif\
+cat ghc-%1-devel.files >> ghc-%2-devel.files\
+cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
+echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 
-# subpackage ghc libraries
-sed -i -e "/ghc-%{version}\/ghc-%{version}/d" ghc.files ghc-libs.files ghc-prof.files
-sed -i -e "/ghc-%{version}\/package.conf.d\/ghc-%{version}-.*.conf\$/d" ghc.files
-sed -i -e "/html\/libraries\/ghc-%{version}\$/d" ghc.files
-%ghc_gen_filelists ghc
+%merge_filelist integer-gmp base
+%merge_filelist ghc-prim base
+%merge_filelist ghc-binary ghc
+%merge_filelist bin-package-db ghc
+
+%if %{undefined ghc_without_shared}
+ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
+sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
+%endif
+ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a  $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
+sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
 
 # these are handled as alternatives
 for i in hsc2hs runhaskell; do
@@ -176,10 +289,16 @@ for i in hsc2hs runhaskell; do
   else
     mv ${RPM_BUILD_ROOT}%{_bindir}/$i{,-ghc}
   fi
+  touch ${RPM_BUILD_ROOT}%{_bindir}/$i
 done
 
 %ghc_strip_dynlinked
 
+%if %{undefined without_haddock}
+mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly
+install -p --mode=755 %SOURCE3 ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/lib/ghc
+%endif
 
 %check
 # stolen from ghc6/debian/rules:
@@ -189,6 +308,8 @@ mkdir testghc
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo
 [ "$(testghc/foo)" = "Foo" ]
+# doesn't seem to work inplace:
+#[ "$(inplace/bin/runghc testghc/foo.hs)" = "Foo" ]
 rm testghc/*
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
@@ -200,11 +321,11 @@ inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
 %endif
-%if %{with testsuite}
+%if %{undefined without_testsuite}
 make -C testsuite/tests/ghc-regress fast
 %endif
 
-%post
+%post compiler
 # Alas, GHC, Hugs, and nhc all come with different set of tools in
 # addition to a runFOO:
 #
@@ -222,59 +343,290 @@ update-alternatives --install %{_bindir}/runhaskell runhaskell \
 update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
   %{_bindir}/hsc2hs-ghc 500
 
-%preun
+%preun compiler
 if [ "$1" = 0 ]; then
   update-alternatives --remove runhaskell %{_bindir}/runghc
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
 
-%posttrans
-# (posttrans to make sure any old libs and docs have been removed first)
-%ghc_pkg_recache
-%ghc_reindex_haddock
+%files
 
-%files -f ghc.files
-%defattr(-,root,root,-)
+%files compiler
 %doc ANNOUNCE HACKING LICENSE README
-%{_bindir}/*
-%dir %{_libdir}/%{name}-%{version}
-%ghost %{_libdir}/%{name}-%{version}/package.conf.d/package.cache
-%if %{with manual}
-%{_mandir}/man1/ghc.*
+%{_bindir}/ghc
+%{_bindir}/ghc-%{version}
+%{_bindir}/ghc-pkg
+%{_bindir}/ghc-pkg-%{version}
+%{_bindir}/ghci
+%{_bindir}/ghci-%{version}
+%{_bindir}/hp2ps
+%{_bindir}/hpc
+%ghost %{_bindir}/hsc2hs
+%{_bindir}/hsc2hs-ghc
+%{_bindir}/runghc
+%ghost %{_bindir}/runhaskell
+%{_bindir}/runhaskell-ghc
+%dir %{ghclibdir}
+%{ghclibdir}/extra-gcc-opts
+%{ghclibdir}/ghc
+%{ghclibdir}/ghc-pkg
+%ifnarch %{unregisterised_archs}
+%{ghclibdir}/ghc-asm
+%{ghclibdir}/ghc-split
 %endif
-%if %{with doc}
+%{ghclibdir}/ghc-usage.txt
+%{ghclibdir}/ghci-usage.txt
+%{ghclibdir}/hsc2hs
+%dir %{ghclibdir}/package.conf.d
+%ghost %{ghclibdir}/package.conf.d/package.cache
+%{ghclibdir}/runghc
+%{ghclibdir}/template-hsc.h
+%{ghclibdir}/unlit
+%{_mandir}/man1/ghc.*
+%dir %{_docdir}/ghc
+%dir %{ghcdocbasedir}
+%if %{undefined without_haddock}
+%{_bindir}/haddock
+%{_bindir}/haddock-ghc-%{version}
+%{ghclibdir}/haddock
+%{ghclibdir}/html
+%{ghclibdir}/latex
+%{ghcdocbasedir}/html
+%if %{undefined without_manual}
+%{ghcdocbasedir}/Cabal
+%{ghcdocbasedir}/haddock
+%{ghcdocbasedir}/users_guide
+%endif
 %dir %{ghcdocbasedir}/libraries
 %{ghcdocbasedir}/libraries/frames.html
 %{ghcdocbasedir}/libraries/gen_contents_index
 %{ghcdocbasedir}/libraries/hscolour.css
+%{ghcdocbasedir}/libraries/ocean.css
 %{ghcdocbasedir}/libraries/prologue.txt
 %{ghcdocbasedir}/index.html
 %ghost %{ghcdocbasedir}/libraries/doc-index*.html
-%ghost %{ghcdocbasedir}/libraries/haddock.css
 %ghost %{ghcdocbasedir}/libraries/haddock-util.js
-%ghost %{ghcdocbasedir}/libraries/haskell_icon.gif
 %ghost %{ghcdocbasedir}/libraries/index*.html
 %ghost %{ghcdocbasedir}/libraries/minus.gif
 %ghost %{ghcdocbasedir}/libraries/plus.gif
+%{_sysconfdir}/cron.hourly/ghc-doc-index
+%{_localstatedir}/lib/ghc
 %endif
 
-%if %{undefined ghc_without_shared}
-%files libs -f ghc-libs.files
-%defattr(-,root,root,-)
-%endif
-
-%if %{with prof}
-%files prof -f ghc-prof.files
-%defattr(-,root,root,-)
-%endif
+%files libraries
 
 %changelog
-* Mon Apr 25 2011 Jens Petersen <petersen@redhat.com> - 6.12.3-6
-- provide ghc-devel for compatibility with cabal2spec-0.22.5
-- use ghc_without_shared (ghc-rpm-macros-0.10.52)
-- drop buildroot and buildroot cleaning
+* Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.1
+- bootstrap build
+- fix build with system libffi on secondary archs by including libffi headers
+  in base/include
+
+* Thu Jan 19 2012 Jens Petersen <petersen@redhat.com>
+- move ghc-ghc-devel from ghc-libraries to the ghc metapackage
+
+* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.0.4-41
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Mon Nov 14 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-40
+- do alternatives handling correctly (reported by Giam Teck Choon, #753661)
+  see https://fedoraproject.org/wiki/Packaging:Alternatives
+
+* Sat Nov 12 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-39
+- move ghc-doc and ghc-libs obsoletes
+- add HaskellReport license also to the base and libraries subpackages
+
+* Thu Nov 10 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-38
+- the post and postun scripts are now for the compiler subpackage
+
+* Wed Nov  2 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-37
+- rename ghc-devel metapackage to ghc-libraries
+- require ghc-rpm-macros-0.14
+
+* Tue Nov  1 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-36
+- move compiler and tools to ghc-compiler
+- the ghc base package is now a metapackage that installs all of ghc,
+  ie ghc-compiler and ghc-devel (#750317)
+- drop ghc-doc provides
+
+* Fri Oct 28 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-35.1
+- rebuild against new gmp
+
+* Fri Oct 28 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-35
+- add HaskellReport license tag to some of the library subpackages
+  which contain some code from the Haskell Reports
+
+* Thu Oct 20 2011 Marcela Mašláňová <mmaslano@redhat.com> - 7.0.4-34.1
+- rebuild with new gmp without compat lib
+
+* Thu Oct 20 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-34
+- setup ghc-deps.sh after ghc_version_override for bootstrapping
+
+* Tue Oct 18 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-33
+- add armv5tel (ported by Henrik Nordström)
+- also use ghc-deps.sh when bootstrapping (ghc-rpm-macros-0.13.13)
+
+* Mon Oct 17 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-32
+- remove libffi_archs: not allowed to bundle libffi on any arch
+- include the ghc (ghci) library in ghc-devel (Narasim)
+
+* Tue Oct 11 2011 Peter Schiffer <pschiffe@redhat.com> - 7.0.4-31.1
+- rebuild with new gmp
+
+* Fri Sep 30 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-31
+- build with ghc-rpm-macros >= 0.13.11 to fix provides and obsoletes versions
+  in library devel subpackages
+
+* Thu Sep 29 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-30
+- no need to specify -lffi in build.mk (Henrik Nordström)
+
+* Wed Sep 28 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-29
+- port to armv7hl by Henrik Nordström (#741725)
+
+* Wed Sep 14 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-28
+- setup ghc-deps.sh when not bootstrapping!
+
+* Wed Sep 14 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-27
+- setup dependency generation with ghc-deps.sh since it was moved to
+  ghc_lib_install in ghc-rpm-macros
+
+* Fri Jun 17 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-26
+- BR same ghc version unless ghc_bootstrapping defined
+- add libffi_archs
+- drop the quick build profile
+- put dyn before p in GhcLibWays
+- explain new bootstrapping mode using ghc_bootstrap (ghc-rpm-macros-0.13.5)
+
+* Thu Jun 16 2011 Jens Petersen <petersen@redhat.com> - 7.0.4-25
+- update to 7.0.4 bugfix release
+  http://haskell.org/ghc/docs/7.0.4/html/users_guide/release-7-0-4.html
+- strip static again (upstream #5004 fixed)
+- Cabal updated to 1.10.2.0
+- re-enable testsuite
+- update summary and description
+
+* Tue Jun 14 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-24
+- finally change from ExclusiveArch to ExcludeArch to target more archs
+
+* Sat May 21 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-23
+- obsolete dph libraries and feldspar-language
+
+* Mon May 16 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-22
+- merge prof subpackages into the devel subpackages with ghc-rpm-macros-0.13
+
+* Wed May 11 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-21
+- configure with /usr/bin/gcc to help bootstrapping to new archs
+  (otherwise ccache tends to get hardcoded as gcc, which not in koji)
+- posttrans scriplet for ghc_pkg_recache is redundant
+
+* Mon May  9 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-20
+- make devel and prof meta packages require libs with release
+- make ghc-*-devel subpackages require ghc with release
+
+* Wed May 04 2011 Jiri Skala <jskala@redhat.com> - 7.0.2-19.1
+- fixes path to gcc on ppc64 arch
+
+* Tue Apr 26 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-19
+- add upstream ghc-powerpc-linker-mmap.patch for ppc64 (Jiri Skala)
+
+* Thu Apr 21 2011 Jiri Skala <jskala@redhat.com> - 7.0.2-18
+- bootstrap to ppc64
+
+* Fri Apr  1 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-17
+- rebuild against ghc-rpm-macros-0.11.14 to provide ghc-*-doc
+
+* Fri Apr  1 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-16
+- provides ghc-doc again: it is still a buildrequires for libraries
+- ghc-prof now requires ghc-devel
+- ghc-devel now requires ghc explicitly
+
+* Wed Mar 30 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-15
+- do not strip static libs since it breaks ghci-7.0.2 loading libHSghc.a
+  (see http://hackage.haskell.org/trac/ghc/ticket/5004)
+- no longer provide ghc-doc
+- no longer obsolete old haddock
+
+* Tue Mar 29 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-14
+- fix back missing LICENSE files in library subpackages
+- drop ghc_reindex_haddock from install script
+
+* Thu Mar 10 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-13
+- rebuild against 7.0.2
+
+* Wed Mar  9 2011 Jens Petersen <petersen@redhat.com> - 7.0.2-12
+- update to 7.0.2 release
+- move bin-package-db into ghc-ghc
+- disable broken testsuite
+
+* Wed Feb 23 2011 Fabio M. Di Nitto <fdinitto@redhat.com> 7.0.1-11
+- enable build on sparcv9
+- add ghc-fix-linking-on-sparc.patch to fix ld being called
+  at the same time with --relax and -r. The two options conflict
+  on sparc.
+- bump BuildRequires on ghc-rpm-macros to >= 0.11.10 that guarantees
+  a correct build on secondary architectures.
+
+* Sun Feb 13 2011 Jens Petersen <petersen@redhat.com>
+- without_shared renamed to ghc_without_shared
+
+* Thu Feb 10 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-10
+- rebuild
+
+* Thu Feb 10 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-9
+- fix without_shared build (thanks Adrian Reber)
+- disable system libffi for secondary archs
+- temporarily disable ghc-*-devel BRs for ppc
+
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.0.1-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Mon Jan 31 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-7
+- include LICENSE files in the shared lib subpackages
+
+* Sat Jan 22 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-6
+- patch Cabal to add configure option --enable-executable-dynamic
+- exclude huge ghc API library from devel and prof metapackages
+
+* Thu Jan 13 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-5
+- fix no doc and no manual builds
+
+* Thu Jan 13 2011 Jens Petersen <petersen@redhat.com> - 7.0.1-4
+- add BRs for various subpackaged ghc libraries needed to build ghc
+- condition rts .so libraries for non-shared builds
+
+* Thu Dec 30 2010 Jens Petersen <petersen@redhat.com> - 7.0.1-3
+- subpackage all the libraries with ghc-rpm-macros-0.11.1
+- put rts, integer-gmp and ghc-prim in base, and ghc-binary in bin-package-db
+- drop the libs mega-subpackage
+- prof now a meta-package for backward compatibility
+- add devel meta-subpackage to easily install all ghc libraries
+- store doc cronjob package cache file under /var (#664850)
 - drop old extralibs bcond
 - no longer need to define or clean buildroot
+- ghc base package now requires ghc-base-devel
+- drop ghc-time obsoletes
+
+* Wed Nov 24 2010 Jens Petersen <petersen@redhat.com> - 7.0.1-2
+- require libffi-devel
+
+* Tue Nov 16 2010 Jens Petersen <petersen@redhat.com> - 7.0.1-1
+- update to 7.0.1 release
+- turn on system libffi now
+
+* Mon Nov  8 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-9
+- disable the libffi changes for now since they break libHSffi*.so
+
+* Thu Nov  4 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-8
+- add a cronjob for doc indexing
+- disable gen_contents_index when not run with --batch for cron
+- use system libffi with ghc-use-system-libffi.patch from debian
+- add bcond for system libffi
+
+* Thu Nov  4 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-7
+- skip huge type-level docs from haddock re-indexing (#649228)
+
+* Thu Sep 30 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-6
+- move gtk2hs obsoletes to ghc-glib and ghc-gtk
+- drop happy buildrequires
 - smp build with max 4 cpus
 
 * Wed Sep 29 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-5.el6
@@ -371,7 +723,7 @@ fi
 - add bcond for manual and extralibs
 - reenable ppc secondary arch
 - don't provide ghc-haddock-*
-- remove obsoltete post requires policycoreutils
+- remove obsolete post requires policycoreutils
 - add vanilla v to GhcLibWays when building without prof
 - handle without hscolour
 - can't smp make currently
