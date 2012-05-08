@@ -29,11 +29,11 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 41.1%{?dist}
+Release: 41.2%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
-ExcludeArch: sparc64 s390x
+ExcludeArch: sparc64 s390x ppc64
 License: %BSDHaskellReport
 Group: Development/Languages
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
@@ -416,6 +416,10 @@ fi
 %files libraries
 
 %changelog
+* Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.2
+- skip BR ghc-*-devel
+- exclude ppc64 from this build
+
 * Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.1
 - bootstrap build
 - fix build with system libffi on secondary archs by including libffi headers
