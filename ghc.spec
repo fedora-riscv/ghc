@@ -51,7 +51,9 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 # change to ghc-compiler once backported to el6
+%ifnarch ppc64
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
+%endif
 BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: gmp-devel, libffi-devel
 #BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
