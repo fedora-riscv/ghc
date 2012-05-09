@@ -2,9 +2,10 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
-%{?ghc_bootstrap}
-%global without_hscolour 1
+#%%global ghc_bootstrapping 1
+#%%{?ghc_bootstrap}
+#%%global without_hscolour 1
+#%%global without_testsuite 1
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
@@ -13,7 +14,7 @@
 #%%global without_testsuite 1
 
 # unregisterized archs
-%global unregisterised_archs ppc64 armv7hl armv5tel
+%global unregisterised_archs ppc64 armv7hl armv5tel s390 s390x
 
 # ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
@@ -29,11 +30,11 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 41.3%{?dist}
+Release: 46%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
-ExcludeArch: sparc64 s390x
+ExcludeArch: sparc64
 License: %BSDHaskellReport
 Group: Development/Languages
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
@@ -49,11 +50,18 @@ Obsoletes: ghc-dph-prim-par < 0.5, ghc-dph-prim-par-devel < 0.5, ghc-dph-prim-pa
 Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-seq-prof < 0.5
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
-# change to ghc-compiler once backported to el6
-BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
+%if %{undefined ghc_bootstrapping}
+BuildRequires: ghc-compiler = %{version}
+%endif
 BuildRequires: ghc-rpm-macros >= 0.14
-BuildRequires: gmp-devel, libffi-devel
-#BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
+BuildRequires: ghc-bytestring-devel
+BuildRequires: ghc-containers-devel
+BuildRequires: ghc-directory-devel
+BuildRequires: ghc-haskell98-devel
+BuildRequires: ghc-pretty-devel
+BuildRequires: ghc-process-devel
+BuildRequires: gmp-devel
+BuildRequires: libffi-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
 %if %{undefined without_manual}
@@ -65,7 +73,7 @@ BuildRequires: hscolour
 %if %{undefined without_testsuite}
 BuildRequires: python
 %endif
-%ifarch ppc64
+%ifarch ppc64 s390x
 BuildRequires: autoconf
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -79,9 +87,13 @@ Patch4: ghc-use-system-libffi.patch
 # (see http://hackage.haskell.org/trac/hackage/ticket/600)
 Patch5: Cabal-option-executable-dynamic.patch
 Patch6: ghc-fix-linking-on-sparc.patch
-Patch7: ghc-ppc64-pthread.patch
+Patch7: ghc-powerpc-pthread.patch
 # http://hackage.haskell.org/trac/ghc/ticket/4999
 Patch8: ghc-powerpc-linker-mmap.patch
+# touches configure.ac
+Patch9: ghc-7.0.4-configure-s390x.patch
+# add libffi include dir to ghc wrapper for archs using gcc
+Patch10: ghc-wrapper-libffi-include.patch
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -190,20 +202,27 @@ rm -r ghc-tarballs/{mingw,perl}
 # use system libffi
 %patch4 -p1 -b .libffi
 rm -r ghc-tarballs/libffi
+# needed for tier 2 archs
+%ifnarch %{ix86} x86_64
 ln -s $(pkg-config --variable=includedir libffi)/*.h libraries/base/include
+%endif
 
 %patch5 -p1 -b .orig
 
 %patch6 -p1 -b .sparclinking
 
-%ifarch ppc64
-%patch7 -p1 -b .pthread
+%ifnarch %{ix86} x86_64
+%patch10 -p1 -b .10-ffi
 %endif
 
 %ifarch ppc ppc64
+%patch7 -p1 -b .pthread
 %patch8 -p1 -b .mmap
 %endif
 
+%ifarch s390x
+%patch9 -p1 -b .s390x
+%endif
 
 %build
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
@@ -229,7 +248,7 @@ SRC_CC_OPTS+=-mminimal-toc -pthread -Wa,--noexecstack
 %endif
 EOF
 
-%ifarch ppc64
+%ifarch ppc64 s390x
 autoreconf
 %endif
 export CFLAGS="${CFLAGS:-%optflags}"
@@ -416,19 +435,23 @@ fi
 %files libraries
 
 %changelog
-* Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.3
-- include ppc64
+* Fri Mar  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-46
+- reinstate ghc-powerpc-pthread.patch needed for linking on ppc
 
-* Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.2
-- skip BR ghc-*-devel
-- exclude ppc64 from this build
+* Thu Mar  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-45
+- patch ghc wrapper script to add libffi includedir on tier 2 archs
 
-* Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.1
-- bootstrap build
+* Sat Mar  3 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-44
+- BR ghc-compiler
+- add s390 and s390x to unregisterised_archs
+- add configure-s390x from debian
+- only apply ppc64 pthread patch when bootstrapping
+
+* Thu Feb  9 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-43
 - fix build with system libffi on secondary archs by including libffi headers
   in base/include
 
-* Thu Jan 19 2012 Jens Petersen <petersen@redhat.com>
+* Thu Jan 19 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-42
 - move ghc-ghc-devel from ghc-libraries to the ghc metapackage
 
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.0.4-41

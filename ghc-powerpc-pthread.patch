@@ -10,9 +10,9 @@ diff -up ghc-7.0.2/aclocal.m4.pthread ghc-7.0.2/aclocal.m4
      then
          AC_MSG_ERROR([Building ghc-pwd failed])
      fi
-diff -up ghc-7.0.2/ghc/ghc.wrapper.pthread ghc-7.0.2/ghc/ghc.wrapper
---- ghc-7.0.2/ghc/ghc.wrapper.pthread	2011-04-20 09:58:50.307894773 -0400
-+++ ghc-7.0.2/ghc/ghc.wrapper	2011-04-20 09:59:14.477894370 -0400
+diff -up ghc-7.0.4/ghc/ghc.wrapper.pthread ghc-7.0.4/ghc/ghc.wrapper
+--- ghc-7.0.4/ghc/ghc.wrapper.pthread	2012-03-09 09:39:58.205330373 +0900
++++ ghc-7.0.4/ghc/ghc.wrapper	2012-03-09 09:41:01.791237737 +0900
 @@ -1 +1 @@
--exec "$executablename" -B"$topdir" -pgmc "$pgmgcc" -pgma "$pgmgcc" -pgml "$pgmgcc" -pgmP "$pgmgcc -E -undef -traditional" ${1+"$@"}
-+exec "$executablename" -B"$topdir" -pgmc "$pgmgcc" -pgma "$pgmgcc" -pgml "$pgmgcc" -pgmP "$pgmgcc -E -undef -traditional" -optl-pthread ${1+"$@"}
+-exec "$executablename" -B"$topdir" -pgmc "$pgmgcc" -pgma "$pgmgcc" -pgml "$pgmgcc" -pgmP "$pgmgcc -E -undef -traditional" -optc-I$(pkg-config --variable=includedir libffi) ${1+"$@"}
++exec "$executablename" -B"$topdir" -pgmc "$pgmgcc" -pgma "$pgmgcc" -pgml "$pgmgcc" -pgmP "$pgmgcc -E -undef -traditional" -optl-pthread -optc-I$(pkg-config --variable=includedir libffi) ${1+"$@"}
