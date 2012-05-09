@@ -257,6 +257,7 @@ make DESTDIR=${RPM_BUILD_ROOT} install
 %else
 cd ${RPM_BUILD_ROOT}
 tar zxvf %{SOURCE4}
+cd -
 %endif
 
 for i in %{ghc_packages_list}; do
