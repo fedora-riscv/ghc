@@ -374,10 +374,10 @@ fi
 %{_bindir}/ghci-%{version}
 %{_bindir}/hp2ps
 %{_bindir}/hpc
-%ghost %{_bindir}/hsc2hs
+%ghost %attr(755,root,root) %{_bindir}/hsc2hs
 %{_bindir}/hsc2hs-ghc
 %{_bindir}/runghc
-%ghost %{_bindir}/runhaskell
+%ghost %attr(755,root,root) %{_bindir}/runhaskell
 %{_bindir}/runhaskell-ghc
 %dir %{ghclibdir}
 %{ghclibdir}/extra-gcc-opts
@@ -391,7 +391,7 @@ fi
 %{ghclibdir}/ghci-usage.txt
 %{ghclibdir}/hsc2hs
 %dir %{ghclibdir}/package.conf.d
-%ghost %{ghclibdir}/package.conf.d/package.cache
+%ghost %attr(755,root,root) %{ghclibdir}/package.conf.d/package.cache
 %{ghclibdir}/runghc
 %{ghclibdir}/template-hsc.h
 %{ghclibdir}/unlit
