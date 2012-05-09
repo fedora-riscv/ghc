@@ -5,8 +5,8 @@
 %ifnarch ppc64
 %global ghc_bootstrapping 1
 %{?ghc_bootstrap}
-%global without_hscolour 1
 %endif
+%global without_hscolour 1
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
