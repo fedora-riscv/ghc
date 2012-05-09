@@ -399,7 +399,7 @@ fi
 %{ghclibdir}/ghci-usage.txt
 %{ghclibdir}/hsc2hs
 %dir %{ghclibdir}/package.conf.d
-%ghost %attr(755,root,root) %{ghclibdir}/package.conf.d/package.cache
+%ghost %attr(644,root,root) %{ghclibdir}/package.conf.d/package.cache
 %{ghclibdir}/runghc
 %{ghclibdir}/template-hsc.h
 %{ghclibdir}/unlit
@@ -425,11 +425,13 @@ fi
 %{ghcdocbasedir}/libraries/ocean.css
 %{ghcdocbasedir}/libraries/prologue.txt
 %{ghcdocbasedir}/index.html
+%ifnarch ppc64
 %ghost %{ghcdocbasedir}/libraries/doc-index*.html
-%ghost %{ghcdocbasedir}/libraries/haddock-util.js
 %ghost %{ghcdocbasedir}/libraries/index*.html
-%ghost %{ghcdocbasedir}/libraries/minus.gif
-%ghost %{ghcdocbasedir}/libraries/plus.gif
+%endif
+%ghost %attr(644,root,root) %{ghcdocbasedir}/libraries/haddock-util.js
+%ghost %attr(644,root,root) %{ghcdocbasedir}/libraries/minus.gif
+%ghost %attr(644,root,root) %{ghcdocbasedir}/libraries/plus.gif
 %{_sysconfdir}/cron.hourly/ghc-doc-index
 %{_localstatedir}/lib/ghc
 %endif
