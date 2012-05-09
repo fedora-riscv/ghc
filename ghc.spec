@@ -2,9 +2,11 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap a new version of ghc, uncomment the following:
+%ifnarch ppc64
 %global ghc_bootstrapping 1
 %{?ghc_bootstrap}
 %global without_hscolour 1
+%endif
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
@@ -337,10 +339,10 @@ rm testghc/*
 make -C testsuite/tests/ghc-regress fast
 %endif
 %else
-rm -r ${RPM_BUILD_ROOT}%{_docdir}/ghc/html/*
-rm -r ${RPM_BUILD_ROOT}%{ghclibdir}/{haddock,html,latex}
-rm -r ${RPM_BUILD_ROOT}%{_bindir}/haddock*
-rm ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
+#rm -r ${RPM_BUILD_ROOT}%{_docdir}/ghc/html/{user_guide,index.html}
+#rm -r ${RPM_BUILD_ROOT}%{ghclibdir}/{haddock,html,latex}
+#rm -r ${RPM_BUILD_ROOT}%{_bindir}/haddock*
+#rm ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
 echo %{ghclibdir}/HSffi.o >> ghc-base-devel.files
 %endif
 
