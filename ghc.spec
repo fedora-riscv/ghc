@@ -41,6 +41,7 @@ Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 Source2: http://www.haskell.org/ghc/dist/%{version}/testsuite-%{version}.tar.bz2
 %endif
 Source3: ghc-doc-index.cron
+Source4: ghc-7.0.4-31.3.fc16.ppc64.tar.gz
 URL: http://haskell.org/ghc/
 Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
 Obsoletes: ghc-dph-par < 0.5, ghc-dph-par-devel < 0.5, ghc-dph-par-prof < 0.5
@@ -232,6 +233,7 @@ EOF
 %ifarch ppc64
 autoreconf
 %endif
+%ifnarch ppc64
 export CFLAGS="${CFLAGS:-%optflags}"
 # specify gcc to avoid problems when bootstrapping with ccache
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -245,9 +247,15 @@ export CFLAGS="${CFLAGS:-%optflags}"
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
 [ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
 make -j$RPM_BUILD_NCPUS
+%endif
 
 %install
+%ifnarch ppc64
 make DESTDIR=${RPM_BUILD_ROOT} install
+%else
+cd ${RPM_BUILD_ROOT}
+tar zxvf %{SOURCE4}
+%endif
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -282,6 +290,7 @@ sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
 ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a  $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
 
+%ifnarch ppc64
 # these are handled as alternatives
 for i in hsc2hs runhaskell; do
   if [ -x ${RPM_BUILD_ROOT}%{_bindir}/$i-ghc ]; then
@@ -323,6 +332,7 @@ rm testghc/*
 %endif
 %if %{undefined without_testsuite}
 make -C testsuite/tests/ghc-regress fast
+%endif
 %endif
 
 %post compiler
@@ -417,7 +427,7 @@ fi
 
 %changelog
 * Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.3
-- include ppc64
+- import ghc-7.0.4-31.3.fc16.ppc64
 
 * Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.2
 - skip BR ghc-*-devel
