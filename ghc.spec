@@ -54,8 +54,14 @@ Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-f
 BuildRequires: ghc-compiler = %{version}
 %endif
 BuildRequires: ghc-rpm-macros >= 0.14
-BuildRequires: gmp-devel, libffi-devel
-BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
+BuildRequires: ghc-bytestring-devel
+BuildRequires: ghc-containers-devel
+BuildRequires: ghc-directory-devel
+BuildRequires: ghc-haskell98-devel
+BuildRequires: ghc-pretty-devel
+BuildRequires: ghc-process-devel
+BuildRequires: gmp-devel
+BuildRequires: libffi-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
 %if %{undefined without_manual}
@@ -85,7 +91,7 @@ Patch7: ghc-powerpc-pthread.patch
 # http://hackage.haskell.org/trac/ghc/ticket/4999
 Patch8: ghc-powerpc-linker-mmap.patch
 # touches configure.ac
-Patch9: ghc-7.0.4-configure-s390x
+Patch9: ghc-7.0.4-configure-s390x.patch
 # add libffi include dir to ghc wrapper for archs using gcc
 Patch10: ghc-wrapper-libffi-include.patch
 
