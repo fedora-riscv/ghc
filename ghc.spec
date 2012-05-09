@@ -337,7 +337,7 @@ rm testghc/*
 make -C testsuite/tests/ghc-regress fast
 %endif
 %else
-rm -r ${RPM_BUILD_ROOT}%{_docdir}/ghc/html
+rm -r ${RPM_BUILD_ROOT}%{_docdir}/ghc/html/*
 rm -r ${RPM_BUILD_ROOT}%{ghclibdir}/{haddock,html,latex}
 rm -r ${RPM_BUILD_ROOT}%{_bindir}/haddock*
 rm ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
