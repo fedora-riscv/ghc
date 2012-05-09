@@ -2,10 +2,8 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap a new version of ghc, uncomment the following:
-%ifnarch ppc64
 %global ghc_bootstrapping 1
 %{?ghc_bootstrap}
-%endif
 %global without_hscolour 1
 
 # To do a test build instead with shared libs, uncomment the following:
@@ -43,7 +41,6 @@ Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 Source2: http://www.haskell.org/ghc/dist/%{version}/testsuite-%{version}.tar.bz2
 %endif
 Source3: ghc-doc-index.cron
-Source4: ghc-7.0.4-31.3.fc16.ppc64.tar.gz
 URL: http://haskell.org/ghc/
 Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
 Obsoletes: ghc-dph-par < 0.5, ghc-dph-par-devel < 0.5, ghc-dph-par-prof < 0.5
@@ -53,9 +50,7 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 # change to ghc-compiler once backported to el6
-%ifnarch ppc64
 BuildRequires: ghc %{!?ghc_bootstrapping: = %{version}}
-%endif
 BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: gmp-devel, libffi-devel
 #BuildRequires: ghc-directory-devel, ghc-process-devel, ghc-pretty-devel, ghc-containers-devel, ghc-haskell98-devel, ghc-bytestring-devel
@@ -237,7 +232,6 @@ EOF
 %ifarch ppc64
 autoreconf
 %endif
-%ifnarch ppc64
 export CFLAGS="${CFLAGS:-%optflags}"
 # specify gcc to avoid problems when bootstrapping with ccache
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -251,16 +245,9 @@ export CFLAGS="${CFLAGS:-%optflags}"
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
 [ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
 make -j$RPM_BUILD_NCPUS
-%endif
 
 %install
-%ifnarch ppc64
 make DESTDIR=${RPM_BUILD_ROOT} install
-%else
-cd ${RPM_BUILD_ROOT}
-tar zxvf %{SOURCE4}
-cd -
-%endif
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -295,7 +282,6 @@ sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
 ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a  $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
 sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
 
-%ifnarch ppc64
 # these are handled as alternatives
 for i in hsc2hs runhaskell; do
   if [ -x ${RPM_BUILD_ROOT}%{_bindir}/$i-ghc ]; then
@@ -338,13 +324,6 @@ rm testghc/*
 %if %{undefined without_testsuite}
 make -C testsuite/tests/ghc-regress fast
 %endif
-%else
-#rm -r ${RPM_BUILD_ROOT}%{_docdir}/ghc/html/{user_guide,index.html}
-#rm -r ${RPM_BUILD_ROOT}%{ghclibdir}/{haddock,html,latex}
-#rm -r ${RPM_BUILD_ROOT}%{_bindir}/haddock*
-#rm ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
-echo %{ghclibdir}/HSffi.o >> ghc-base-devel.files
-%endif
 
 %post compiler
 # Alas, GHC, Hugs, and nhc all come with different set of tools in
@@ -382,10 +361,10 @@ fi
 %{_bindir}/ghci-%{version}
 %{_bindir}/hp2ps
 %{_bindir}/hpc
-%ghost %attr(755,root,root) %{_bindir}/hsc2hs
+%ghost %{_bindir}/hsc2hs
 %{_bindir}/hsc2hs-ghc
 %{_bindir}/runghc
-%ghost %attr(755,root,root) %{_bindir}/runhaskell
+%ghost %{_bindir}/runhaskell
 %{_bindir}/runhaskell-ghc
 %dir %{ghclibdir}
 %{ghclibdir}/extra-gcc-opts
@@ -399,7 +378,7 @@ fi
 %{ghclibdir}/ghci-usage.txt
 %{ghclibdir}/hsc2hs
 %dir %{ghclibdir}/package.conf.d
-%ghost %attr(644,root,root) %{ghclibdir}/package.conf.d/package.cache
+%ghost %{ghclibdir}/package.conf.d/package.cache
 %{ghclibdir}/runghc
 %{ghclibdir}/template-hsc.h
 %{ghclibdir}/unlit
@@ -425,13 +404,11 @@ fi
 %{ghcdocbasedir}/libraries/ocean.css
 %{ghcdocbasedir}/libraries/prologue.txt
 %{ghcdocbasedir}/index.html
-%ifnarch ppc64
 %ghost %{ghcdocbasedir}/libraries/doc-index*.html
+%ghost %{ghcdocbasedir}/libraries/haddock-util.js
 %ghost %{ghcdocbasedir}/libraries/index*.html
-%endif
-%ghost %attr(644,root,root) %{ghcdocbasedir}/libraries/haddock-util.js
-%ghost %attr(644,root,root) %{ghcdocbasedir}/libraries/minus.gif
-%ghost %attr(644,root,root) %{ghcdocbasedir}/libraries/plus.gif
+%ghost %{ghcdocbasedir}/libraries/minus.gif
+%ghost %{ghcdocbasedir}/libraries/plus.gif
 %{_sysconfdir}/cron.hourly/ghc-doc-index
 %{_localstatedir}/lib/ghc
 %endif
@@ -440,7 +417,7 @@ fi
 
 %changelog
 * Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.3
-- import ghc-7.0.4-31.3.fc16.ppc64
+- include ppc64
 
 * Tue May  8 2012 Jens Petersen <petersen@redhat.com> - 7.0.4-41.2
 - skip BR ghc-*-devel
