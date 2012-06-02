@@ -1,8 +1,6 @@
+# shared haskell libraries supported for x86* archs (enabled in ghc-rpm-macros)
+
 ## default enabled options ##
-# experimental shared libraries support available in ghc-6.12 for x86
-%ifarch %{ix86} x86_64
-%bcond_without shared
-%endif
 %bcond_without doc
 # test builds can made faster and smaller by disabling profiled libraries
 # (currently libHSrts_thr_p.a breaks no prof build)
@@ -15,27 +13,22 @@
 %bcond_with hscolour
 
 ## default disabled options ##
-# include extralibs
-%bcond_with extralibs
 # quick build profile
 %bcond_with quick
 
-# the debuginfo subpackage is currently empty anyway, so don't generate it
+# ghc does not output dwarf format so debuginfo is not useful
 %global debug_package %{nil}
 
 Name: ghc
-# part of haskell-platform-2010.2.0.0
+# haskell-platform-2010.2.0.0
 Version: 6.12.3
-Release: 5%{?dist}
+Release: 5.1%{?dist}
 Summary: Glasgow Haskell Compilation system
 # fedora ghc has only been bootstrapped on the following archs:
 ExclusiveArch: %{ix86} x86_64 ppc alpha
 License: BSD
 Group: Development/Languages
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
-%if %{with extralibs}
-Source1: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src-extralibs.tar.bz2
-%endif
 %if %{with testsuite}
 Source2: http://www.haskell.org/ghc/dist/%{version}/testsuite-%{version}.tar.bz2
 %endif
@@ -50,10 +43,12 @@ Obsoletes: ghc-haddock-doc < 2.4.2-3
 # introduced for f14
 Obsoletes: ghc-time-devel < 1.1.2.4-5
 Obsoletes: ghc-time-doc < 1.1.2.4-5
-BuildRequires: ghc, ghc-rpm-macros >= 0.8.0
+BuildRequires: ghc, ghc-rpm-macros >= 0.10.52
 BuildRequires: gmp-devel, ncurses-devel
 Requires: gcc, gmp-devel
-%if %{with shared}
+# for forwards compatibility
+Provides: ghc-devel = %{version}-%{release}
+%if %{undefined ghc_without_shared}
 # not sure if this is actually needed:
 BuildRequires: libffi-devel
 Requires: %{name}-libs = %{version}-%{release}
@@ -71,7 +66,7 @@ Patch1: ghc-6.12.1-gen_contents_index-haddock-path.patch
 
 %description
 GHC is a state-of-the-art programming suite for Haskell, a purely
-functional programming language.  It includes an optimising compiler
+functional programming language.  It includes an optimizing compiler
 generating good code for a variety of platforms, together with an
 interactive system for convenient, quick development.  The
 distribution includes space and time profiling facilities, a large
@@ -79,7 +74,7 @@ collection of libraries, and support for various language
 extensions, including concurrency, exceptions, and a foreign language
 interface.
 
-%if %{with shared}
+%if %{undefined ghc_without_shared}
 %package libs
 Summary: Shared libraries for GHC
 Group: Development/Libraries
@@ -104,7 +99,7 @@ They should be installed when GHC's profiling subsystem is needed.
 
 %global ghc_version_override %{version}
 
-%ghc_binlib_package -n ghc -o 6.12.3-4
+%ghc_binlib_package ghc %{ghc_version_override}
 
 %prep
 %setup -q -n %{name}-%{version} %{?with_extralibs:-b1} %{?with_testsuite:-b2}
@@ -116,19 +111,19 @@ rm -r ghc-tarballs/{mingw,perl}
 
 %build
 cat > mk/build.mk << EOF
-GhcLibWays = v %{?with_prof:p} %{?with_shared:dyn} 
+GhcLibWays = v %{?with_prof:p} %{!?ghc_without_shared:dyn} 
 %if %{without doc}
-HADDOCK_DOCS       = NO
+HADDOCK_DOCS = NO
 %endif
 %if %{without manual}
 BUILD_DOCBOOK_HTML = NO
 %endif
 %if %{with quick}
-SRC_HC_OPTS        = -H64m -O0 -fasm
-GhcStage1HcOpts    = -O -fasm
-GhcStage2HcOpts    = -O0 -fasm
-GhcLibHcOpts       = -O0 -fasm
-SplitObjs          = NO
+SRC_HC_OPTS = -H64m -O0 -fasm
+GhcStage1HcOpts = -O -fasm
+GhcStage2HcOpts = -O0 -fasm
+GhcLibHcOpts = -O0 -fasm
+SplitObjs = NO
 %endif
 %if %{without hscolour}
 HSCOLOUR_SRCS = NO
@@ -141,11 +136,12 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  %{?with_shared:--enable-shared}
+  %{!?ghc_without_shared:--enable-shared}
 
-# 8 cpus seems to break build
-#make %{_smp_mflags}
-make
+# 4 cpus or more sometimes breaks build
+[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(/usr/bin/getconf _NPROCESSORS_ONLN)
+[ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
+make -j$RPM_BUILD_NCPUS
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -200,7 +196,7 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%if %{with shared}
+%if %{undefined ghc_without_shared}
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
@@ -267,7 +263,7 @@ fi
 %ghost %{ghcdocbasedir}/libraries/plus.gif
 %endif
 
-%if %{with shared}
+%if %{undefined ghc_without_shared}
 %files libs -f ghc-libs.files
 %defattr(-,root,root,-)
 %endif
@@ -278,7 +274,13 @@ fi
 %endif
 
 %changelog
-* Wed Sep 29 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-5.el6
+* Sat Jun  2 2012 Jens Petersen <petersen@redhat.com> - 6.12.3-5.1
+- provide ghc-devel for compatibility with cabal2spec-0.22.5
+- use ghc_without_shared (ghc-rpm-macros-0.10.52)
+- drop old extralibs bcond
+- smp build with max 4 cpus
+
+* Wed Sep 29 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-5
 - build without happy and hscolour
 
 * Thu Jul 15 2010 Jens Petersen <petersen@redhat.com> - 6.12.3-4
