@@ -30,7 +30,7 @@ Version: 7.4.1
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 6%{?dist}
+Release: 6.1%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -104,6 +104,8 @@ Patch12: fix-ARM-StgCRun-to-not-save-and-restore-r11-fp-regis.patch
 # Debian armhf fixes
 Patch13: ghc-debian-ARM-VFPv3D16.patch
 Patch14: ghc-debian-armhf_llvm_abi.patch
+Patch15: ghc-llvmGen-fence-instruction.patch
+Patch16: ghc-llvmGen-improve-write-barrier.patch
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -234,6 +236,8 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %patch14 -p1 -b .arm
 autoreconf
 %endif
+%patch15 -p1 -b .15~
+%patch16 -p1 -b .16~
 
 %build
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
@@ -270,6 +274,9 @@ make -j$RPM_BUILD_NCPUS
 
 %install
 make DESTDIR=${RPM_BUILD_ROOT} install
+
+# this should be done in the buildsys
+find %{buildroot} -type f -name "HS*.o" -delete
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -435,6 +442,11 @@ fi
 %files libraries
 
 %changelog
+* Mon Oct  1 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.1
+- backport two llvmGen patches from 7.4.2 for fence and better barrier support
+  to fix ARM build with llvm-3.1
+- forcibly remove redundant HS*.o files from ghc libs for now
+
 * Thu Jul 19 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.4.1-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 

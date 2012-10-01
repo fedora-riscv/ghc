@@ -1,0 +1,111 @@
+commit 932cdfd52d94cdfb074878e98767d0ff597262b6
+Author: Paolo Capriotti <p.capriotti@gmail.com>
+Date:   Mon Mar 26 18:56:14 2012 +0100
+
+    Improve support for LLVM >= 3.0 write barrier. (#5814)
+    
+    MERGED from commit d2d5ee16cf21c5b32333ff57ba0a65f89ff7e988
+
+	Modified   compiler/llvmGen/Llvm/AbsSyn.hs
+diff --git a/compiler/llvmGen/Llvm/AbsSyn.hs b/compiler/llvmGen/Llvm/AbsSyn.hs
+index 468b7e4..1b50d29 100644
+--- a/compiler/llvmGen/Llvm/AbsSyn.hs
++++ b/compiler/llvmGen/Llvm/AbsSyn.hs
+@@ -59,13 +59,24 @@ data LlvmFunction = LlvmFunction {
+     funcBody  :: LlvmBlocks
+   }
+ 
+-type LlvmFunctions  = [LlvmFunction]
+-
+-data LlvmSyncOrdering = SyncAcquire
+-                      | SyncRelease
+-                      | SyncAcqRel
+-                      | SyncSeqCst
+-                      deriving (Show, Eq)
++type LlvmFunctions = [LlvmFunction]
++
++-- | LLVM ordering types for synchronization purposes. (Introduced in LLVM
++-- 3.0). Please see the LLVM documentation for a better description.
++data LlvmSyncOrdering
++  -- | Some partial order of operations exists.
++  = SyncUnord
++  -- | A single total order for operations at a single address exists.
++  | SyncMonotonic
++  -- | Acquire synchronization operation.
++  | SyncAcquire
++  -- | Release synchronization operation.
++  | SyncRelease
++  -- | Acquire + Release synchronization operation.
++  | SyncAcqRel
++  -- | Full sequential Consistency operation.
++  | SyncSeqCst
++  deriving (Show, Eq)
+ 
+ -- | Llvm Statements
+ data LlvmStatement
+	Modified   compiler/llvmGen/Llvm/PpLlvm.hs
+diff --git a/compiler/llvmGen/Llvm/PpLlvm.hs b/compiler/llvmGen/Llvm/PpLlvm.hs
+index f3c8342..0a750c3 100644
+--- a/compiler/llvmGen/Llvm/PpLlvm.hs
++++ b/compiler/llvmGen/Llvm/PpLlvm.hs
+@@ -166,7 +166,7 @@ ppLlvmStatement :: LlvmStatement -> Doc
+ ppLlvmStatement stmt
+   = case stmt of
+         Assignment  dst expr      -> ppAssignment dst (ppLlvmExpression expr)
+-        Fence       st ord	  -> ppFence st ord
++        Fence       st ord        -> ppFence st ord
+         Branch      target        -> ppBranch target
+         BranchIf    cond ifT ifF  -> ppBranchIf cond ifT ifF
+         Comment     comments      -> ppLlvmComments comments
+@@ -258,14 +258,16 @@ ppAssignment var expr = (text $ getName var) <+> equals <+> expr
+ ppFence :: Bool -> LlvmSyncOrdering -> Doc
+ ppFence st ord =
+   let singleThread = case st of True  -> text "singlethread"
+-				False -> empty
++                                False -> empty
+   in text "fence" <+> singleThread <+> ppSyncOrdering ord
+ 
+ ppSyncOrdering :: LlvmSyncOrdering -> Doc
+-ppSyncOrdering SyncAcquire = text "acquire"
+-ppSyncOrdering SyncRelease = text "release"
+-ppSyncOrdering SyncAcqRel  = text "acq_rel"
+-ppSyncOrdering SyncSeqCst  = text "seq_cst"
++ppSyncOrdering SyncUnord     = text "unordered"
++ppSyncOrdering SyncMonotonic = text "monotonic"
++ppSyncOrdering SyncAcquire   = text "acquire"
++ppSyncOrdering SyncRelease   = text "release"
++ppSyncOrdering SyncAcqRel    = text "acq_rel"
++ppSyncOrdering SyncSeqCst    = text "seq_cst"
+ 
+ ppLoad :: LlvmVar -> Doc
+ ppLoad var = text "load" <+> texts var
+	Modified   compiler/llvmGen/LlvmCodeGen/CodeGen.hs
+diff --git a/compiler/llvmGen/LlvmCodeGen/CodeGen.hs b/compiler/llvmGen/LlvmCodeGen/CodeGen.hs
+index c505cc0..4a8d37f 100644
+--- a/compiler/llvmGen/LlvmCodeGen/CodeGen.hs
++++ b/compiler/llvmGen/LlvmCodeGen/CodeGen.hs
+@@ -136,11 +136,13 @@ stmtToInstrs env stmt = case stmt of
+         -> return (env, unitOL $ Return Nothing, [])
+ 
+ 
++-- | Memory barrier instruction for LLVM >= 3.0
+ barrier :: LlvmEnv -> UniqSM StmtData
+ barrier env = do
+-    let s = Fence False SyncAcqRel
++    let s = Fence False SyncSeqCst
+     return (env, unitOL s, [])
+ 
++-- | Memory barrier instruction for LLVM < 3.0
+ oldBarrier :: LlvmEnv -> UniqSM StmtData
+ oldBarrier env = do
+     let fname = fsLit "llvm.memory.barrier"
+@@ -172,7 +174,8 @@ genCall :: LlvmEnv -> CmmCallTarget -> [HintedCmmFormal] -> [HintedCmmActual]
+ genCall env (CmmPrim MO_WriteBarrier) _ _ _
+  | platformArch (getLlvmPlatform env) `elem` [ArchX86, ArchX86_64, ArchSPARC]
+     = return (env, nilOL, [])
+- | otherwise = barrier env
++ | getLlvmVer env > 29 = barrier env
++ | otherwise           = oldBarrier env
+ 
+ -- Handle popcnt function specifically since GHC only really has i32 and i64
+ -- types and things like Word8 are backed by an i32 and just present a logical
