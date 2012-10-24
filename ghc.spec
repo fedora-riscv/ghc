@@ -30,7 +30,7 @@ Version: 7.4.1
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 6.1%{?dist}
+Release: 6.2%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -267,16 +267,10 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --with-gcc=%{_bindir}/gcc
 
-# >4 cpus tends to break build
-[ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
-[ "$RPM_BUILD_NCPUS" -gt 4 ] && RPM_BUILD_NCPUS=4
-make -j$RPM_BUILD_NCPUS
+make %{?_smp_mflags}
 
 %install
-make DESTDIR=${RPM_BUILD_ROOT} install
-
-# this should be done in the buildsys
-find %{buildroot} -type f -name "HS*.o" -delete
+make DESTDIR=%{buildroot} install
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -303,28 +297,28 @@ echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 %merge_filelist bin-package-db ghc
 
 %if %{undefined ghc_without_shared}
-ls $RPM_BUILD_ROOT%{ghclibdir}/libHS*.so >> ghc-base.files
-sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base.files
+ls %{buildroot}%{ghclibdir}/libHS*.so >> ghc-base.files
+sed -i -e "s|^%{buildroot}||g" ghc-base.files
 %endif
-ls -d $RPM_BUILD_ROOT%{ghclibdir}/libHS*.a  $RPM_BUILD_ROOT%{ghclibdir}/package.conf.d/builtin_*.conf $RPM_BUILD_ROOT%{ghclibdir}/include >> ghc-base-devel.files
-sed -i -e "s|^$RPM_BUILD_ROOT||g" ghc-base-devel.files
+ls -d %{buildroot}%{ghclibdir}/libHS*.a  %{buildroot}%{ghclibdir}/package.conf.d/builtin_*.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
+sed -i -e "s|^%{buildroot}||g" ghc-base-devel.files
 
 # these are handled as alternatives
 for i in hsc2hs runhaskell; do
-  if [ -x ${RPM_BUILD_ROOT}%{_bindir}/$i-ghc ]; then
-    rm ${RPM_BUILD_ROOT}%{_bindir}/$i
+  if [ -x %{buildroot}%{_bindir}/$i-ghc ]; then
+    rm %{buildroot}%{_bindir}/$i
   else
-    mv ${RPM_BUILD_ROOT}%{_bindir}/$i{,-ghc}
+    mv %{buildroot}%{_bindir}/$i{,-ghc}
   fi
-  touch ${RPM_BUILD_ROOT}%{_bindir}/$i
+  touch %{buildroot}%{_bindir}/$i
 done
 
 %ghc_strip_dynlinked
 
 %if %{undefined without_haddock}
-mkdir -p ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly
-install -p --mode=755 %SOURCE3 ${RPM_BUILD_ROOT}%{_sysconfdir}/cron.hourly/ghc-doc-index
-mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/lib/ghc
+mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
+install -p --mode=755 %SOURCE3 %{buildroot}%{_sysconfdir}/cron.hourly/ghc-doc-index
+mkdir -p %{buildroot}%{_localstatedir}/lib/ghc
 %endif
 
 %check
@@ -442,6 +436,11 @@ fi
 %files libraries
 
 %changelog
+* Wed Oct 24 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.2
+- bring back the HS*.o lib files since ghci loads them faster
+  (see http://hackage.haskell.org/trac/ghc/ticket/7249)
+- sync some minor ghc.spec cleanup changes from master
+
 * Mon Oct  1 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.1
 - backport two llvmGen patches from 7.4.2 for fence and better barrier support
   to fix ARM build with llvm-3.1
