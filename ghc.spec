@@ -1,16 +1,14 @@
 # Shared haskell libraries are supported for x86* archs
 # (disabled for other archs in ghc-rpm-macros)
 
-# To bootstrap a new version of ghc, uncomment the following:
+# To bootstrap build a new version of ghc, uncomment the following:
 #%%global ghc_bootstrapping 1
 #%%{?ghc_bootstrap}
-#%%global without_hscolour 1
 #%%global without_testsuite 1
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
 #%%{?ghc_test}
-#%%global without_hscolour 1
 #%%global without_testsuite 1
 
 # unregisterized archs
@@ -30,7 +28,7 @@ Version: 7.4.1
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 6.2%{?dist}
+Release: 6.3%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -67,9 +65,6 @@ BuildRequires: libffi-devel
 BuildRequires: ncurses-devel
 %if %{undefined without_manual}
 BuildRequires: libxslt, docbook-style-xsl
-%endif
-%if %{undefined without_haddock} && %{undefined without_hscolour}
-BuildRequires: hscolour
 %endif
 %if %{undefined without_testsuite}
 BuildRequires: python
@@ -249,9 +244,6 @@ HADDOCK_DOCS = NO
 %endif
 %if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
-%endif
-%if %{undefined without_hscolour}
-HSCOLOUR_SRCS = NO
 %endif
 %ifarch armv7hl
 SRC_HC_OPTS += -D__ARM_PCS_VFP
@@ -436,6 +428,11 @@ fi
 %files libraries
 
 %changelog
+* Thu Oct 25 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.3
+- do not disable hscolour in build.mk
+- drop the explicit hscolour BR
+- without_hscolour should now be set by ghc-rpm-macros for bootstrapping
+
 * Wed Oct 24 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.2
 - bring back the HS*.o lib files since ghci loads them faster
   (see http://hackage.haskell.org/trac/ghc/ticket/7249)
