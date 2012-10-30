@@ -28,7 +28,7 @@ Version: 7.4.1
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 6.3%{?dist}
+Release: 6.4%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -101,6 +101,7 @@ Patch13: ghc-debian-ARM-VFPv3D16.patch
 Patch14: ghc-debian-armhf_llvm_abi.patch
 Patch15: ghc-llvmGen-fence-instruction.patch
 Patch16: ghc-llvmGen-improve-write-barrier.patch
+Patch17: ghc-7.4-silence-gen_contents_index.patch
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -202,9 +203,12 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 
 %prep
 %setup -q -n %{name}-%{version} %{!?without_testsuite:-b2}
+
+# tweaks to gen_contents_index
 %patch1 -p1 -b .orig
 %patch2 -p1
 %patch3 -p1
+%patch17 -p1
 
 # make sure we don't use these
 rm -r ghc-tarballs/{mingw,perl}
@@ -428,6 +432,9 @@ fi
 %files libraries
 
 %changelog
+* Tue Oct 30 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.4
+- silence the doc re-indexing script (#870694)
+
 * Thu Oct 25 2012 Jens Petersen <petersen@redhat.com> - 7.4.1-6.3
 - do not disable hscolour in build.mk
 - drop the explicit hscolour BR
