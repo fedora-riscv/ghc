@@ -2,22 +2,17 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap build a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
-%{?ghc_bootstrap}
-%global without_testsuite 1
-# uncomment to generate haddocks
-#%%undefine without_haddock
-
-# To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
-#%%{?ghc_test}
 #%%global without_testsuite 1
+# either:
+#%%{?ghc_bootstrap}
+# or for shared libs:
+#%%{?ghc_test}
+# uncomment to generate haddocks for bootstrap
+#%%undefine without_haddock
 
 # unregisterized archs
 %global unregisterised_archs ppc64 s390 s390x
-
-# ghc does not output dwarf format so debuginfo is not useful
-%global debug_package %{nil}
 
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
@@ -30,7 +25,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 19%{?dist}
+Release: 20%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -475,6 +470,10 @@ fi
 
 
 %changelog
+* Wed Oct 30 2013 Jens Petersen <petersen@redhat.com> - 7.6.3-20
+- enable debuginfo for C code bits (#989593)
+- back to production build
+
 * Tue Oct 29 2013 Jens Petersen <petersen@redhat.com> - 7.6.3-19
 - fix rts hang on 64bit bigendian archs (patch by Gustavo Luiz Duarte, #989593)
 - generate and ship library doc index for ghc bundled libraries
