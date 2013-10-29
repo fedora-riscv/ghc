@@ -2,10 +2,11 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap build a new version of ghc, uncomment the following:
-#%%global ghc_bootstrapping 1
-#%%{?ghc_bootstrap}
-#%%global without_testsuite 1
-#%%global without_haddock 1
+%global ghc_bootstrapping 1
+%{?ghc_bootstrap}
+%global without_testsuite 1
+# uncomment to generate haddocks
+#%%undefine without_haddock
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
@@ -29,7 +30,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 18%{?dist}
+Release: 18.1%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -54,6 +55,8 @@ Patch12: ghc-7.4.2-Cabal-disable-ghci-libs.patch
 Patch13: ghc-llvmCodeGen-empty-array.patch
 # stop warnings about unsupported version of llvm
 Patch14: ghc-7.6.3-LlvmCodeGen-no-3.3-warning.patch
+# fix hang on ppc64 and s390x
+Patch15: ghc-64bit-bigendian-rts-hang-989593.patch
 
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -133,8 +136,9 @@ Requires: llvm >= 3.0
 %description compiler
 The package contains the GHC compiler, tools and utilities.
 
-The ghc libraries are provided by ghc-devel.
-To install all of ghc, install the ghc base package.
+The ghc libraries are provided by ghc-libraries.
+To install all of ghc (including the ghc library),
+install the main ghc package.
 
 %if %{undefined without_haddock}
 %package doc-index
@@ -234,6 +238,10 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %patch14 -p1 -b .orig
 %endif
 
+%ifarch ppc64 s390x
+%patch15 -p1 -b .orig
+%endif
+
 
 %build
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
@@ -264,7 +272,8 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --with-gcc=%{_bindir}/gcc
 
-make %{?_smp_mflags}
+# utf8 is needed when building with verbose output
+LANG=en_US.utf8 make %{?_smp_mflags}
 
 
 %install
@@ -446,6 +455,12 @@ fi
 
 
 %changelog
+* Tue Oct 29 2013 Jens Petersen <petersen@redhat.com> - 7.6.3-18.1
+- fix rts hang on 64bit bigendian archs (patch by Gustavo Luiz Duarte, #989593)
+- build with utf8 encoding (needed for verbose ghc output
+  and makes better sense anyway)
+- bootstrap build
+
 * Sat Jul 27 2013 Jóhann B. Guðmundsson <johannbg@fedoraproject.org> - 7.6.3-18
 - ghc-doc-index requires crontabs and mark cron file config noreplace
   (http://fedoraproject.org/wiki/Packaging:CronFiles)
