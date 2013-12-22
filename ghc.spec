@@ -4,11 +4,11 @@
 # To bootstrap build a new version of ghc, uncomment the following:
 #%%global ghc_bootstrapping 1
 #%%global without_testsuite 1
-# either:
+### either:
 #%%{?ghc_bootstrap}
-# or for shared libs:
+### or for shared libs:
 #%%{?ghc_test}
-# uncomment to generate haddocks for bootstrap
+### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
 
 # unregisterized archs
@@ -269,8 +269,11 @@ HADDOCK_DOCS = NO
 %if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
 %endif
-# for verbose build output
+## for verbose build output
 #GhcStage1HcOpts=-v4
+## enable RTS debugging:
+## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
+#EXTRA_HC_OPTS=-debug
 EOF
 
 export CFLAGS="${CFLAGS:-%optflags}"
