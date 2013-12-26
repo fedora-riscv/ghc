@@ -2,10 +2,10 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
-%{?ghc_bootstrap}
-%global without_hscolour 1
-%global without_testsuite 1
+#%%global ghc_bootstrapping 1
+#%%{?ghc_bootstrap}
+#%%global without_hscolour 1
+#%%global without_testsuite 1
 
 # To do a test build instead with shared libs, uncomment the following:
 #%%global ghc_bootstrapping 1
@@ -30,7 +30,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 45.1%{?dist}
+Release: 45.2%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
@@ -53,11 +53,9 @@ Obsoletes: ghc-haddock-doc < 2.4.2-3
 # introduced for f14
 Obsoletes: ghc-time-devel < 1.1.2.4-5
 Obsoletes: ghc-time-doc < 1.1.2.4-5
-%if %{defined ghc_bootstrapping}
-BuildRequires: ghc, ghc-rpm-macros >= 0.10.52
-%endif
 %if %{undefined ghc_bootstrapping}
 BuildRequires: ghc-compiler = %{version}
+%endif
 BuildRequires: ghc-rpm-macros >= 0.14
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
@@ -65,7 +63,6 @@ BuildRequires: ghc-directory-devel
 BuildRequires: ghc-haskell98-devel
 BuildRequires: ghc-pretty-devel
 BuildRequires: ghc-process-devel
-%endif
 BuildRequires: gmp-devel
 BuildRequires: libffi-devel
 # for internal terminfo
@@ -446,6 +443,9 @@ fi
 %files libraries
 
 %changelog
+* Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.2
+- final build
+
 * Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.1
 - rebase to 7.0.4 bootstrap
 - use ghc_lib_subpackage
