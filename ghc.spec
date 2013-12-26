@@ -1,15 +1,8 @@
-# Shared haskell libraries are supported for x86* archs
-# (disabled for other archs in ghc-rpm-macros)
+# Shared haskell libraries disabled for epel5
 
 # To bootstrap a new version of ghc, uncomment the following:
 #%%global ghc_bootstrapping 1
 #%%{?ghc_bootstrap}
-#%%global without_hscolour 1
-#%%global without_testsuite 1
-
-# To do a test build instead with shared libs, uncomment the following:
-#%%global ghc_bootstrapping 1
-#%%{?ghc_test}
 #%%global without_hscolour 1
 #%%global without_testsuite 1
 
