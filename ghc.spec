@@ -403,7 +403,6 @@ fi
 %{ghclibdir}/runghc
 %{ghclibdir}/template-hsc.h
 %{ghclibdir}/unlit
-%{_mandir}/man1/ghc.*
 %dir %{_docdir}/ghc
 %dir %{ghcdocbasedir}
 %if %{undefined without_haddock}
@@ -414,6 +413,7 @@ fi
 %{ghclibdir}/latex
 %{ghcdocbasedir}/html
 %if %{undefined without_manual}
+%{_mandir}/man1/ghc.*
 %{ghcdocbasedir}/Cabal
 %{ghcdocbasedir}/haddock
 %{ghcdocbasedir}/users_guide
@@ -439,7 +439,7 @@ fi
 %changelog
 * Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.2
 - final build
-- without manual because of docbook dtd issue in configure
+- without manuals and manpages because of docbook dtd issue in configure
 
 * Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.1
 - rebase to 7.0.4 bootstrap
