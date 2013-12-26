@@ -5,6 +5,7 @@
 #%%{?ghc_bootstrap}
 #%%global without_hscolour 1
 #%%global without_testsuite 1
+%global without_manual 1
 
 # unregisterized archs
 %global unregisterised_archs ppc64 armv7hl armv5tel s390 s390x
@@ -438,6 +439,7 @@ fi
 %changelog
 * Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.2
 - final build
+- without manual because of docbook dtd issue in configure
 
 * Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.1
 - rebase to 7.0.4 bootstrap
