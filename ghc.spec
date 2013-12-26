@@ -144,29 +144,29 @@ To install all of ghc, install the ghc base package.
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
 %if %{defined ghclibdir}
-%ghc_binlib_package Cabal 1.10.2.0
-%ghc_binlib_package -l %BSDHaskellReport array 0.3.0.2
-%ghc_binlib_package -l %BSDHaskellReport -c gmp-devel,libffi-devel base 4.3.1.0
-%ghc_binlib_package bytestring 0.9.1.10
-%ghc_binlib_package -l %BSDHaskellReport containers 0.4.0.0
-%ghc_binlib_package -l %BSDHaskellReport directory 1.1.0.0
-%ghc_binlib_package -l %BSDHaskellReport extensible-exceptions 0.1.1.2
-%ghc_binlib_package filepath 1.2.0.0
+%ghc_lib_subpackage Cabal 1.10.2.0
+%ghc_lib_subpackage -l %BSDHaskellReport array 0.3.0.2
+%ghc_lib_subpackage -l %BSDHaskellReport -c gmp-devel,libffi-devel base 4.3.1.0
+%ghc_lib_subpackage bytestring 0.9.1.10
+%ghc_lib_subpackage -l %BSDHaskellReport containers 0.4.0.0
+%ghc_lib_subpackage -l %BSDHaskellReport directory 1.1.0.0
+%ghc_lib_subpackage -l %BSDHaskellReport extensible-exceptions 0.1.1.2
+%ghc_lib_subpackage filepath 1.2.0.0
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 # in ghc not ghc-libraries:
-%ghc_binlib_package -x ghc %{ghc_version_override}
+%ghc_lib_subpackage -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_binlib_package -l HaskellReport haskell2010 1.0.0.0
-%ghc_binlib_package -l HaskellReport haskell98 1.1.0.1
-%ghc_binlib_package hpc 0.5.0.6
-%ghc_binlib_package -l %BSDHaskellReport old-locale 1.0.0.2
-%ghc_binlib_package -l %BSDHaskellReport old-time 1.0.0.6
-%ghc_binlib_package pretty 1.0.1.2
-%ghc_binlib_package -l %BSDHaskellReport process 1.0.1.5
-%ghc_binlib_package -l %BSDHaskellReport random 1.0.0.3
-%ghc_binlib_package template-haskell 2.5.0.0
-%ghc_binlib_package time 1.2.0.3
-%ghc_binlib_package unix 2.4.2.0
+%ghc_lib_subpackage -l HaskellReport haskell2010 1.0.0.0
+%ghc_lib_subpackage -l HaskellReport haskell98 1.1.0.1
+%ghc_lib_subpackage hpc 0.5.0.6
+%ghc_lib_subpackage -l %BSDHaskellReport old-locale 1.0.0.2
+%ghc_lib_subpackage -l %BSDHaskellReport old-time 1.0.0.6
+%ghc_lib_subpackage pretty 1.0.1.2
+%ghc_lib_subpackage -l %BSDHaskellReport process 1.0.1.5
+%ghc_lib_subpackage -l %BSDHaskellReport random 1.0.0.3
+%ghc_lib_subpackage template-haskell 2.5.0.0
+%ghc_lib_subpackage time 1.2.0.3
+%ghc_lib_subpackage unix 2.4.2.0
 %endif
 
 %global version %{ghc_version_override}
