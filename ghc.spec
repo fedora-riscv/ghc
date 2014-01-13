@@ -16,6 +16,14 @@
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
 
+# gcc-4.1 is too old for ghc7 dyn:
+# "/usr/bin/ld: rts/dist/build/RtsStartup.dyn_o: relocation R_X86_64_PC32 against `StgRun' can not be used when making a shared object; recompile with -fPIC"
+%ifarch %{ix86} x86_64
+%global gcc gcc44
+%else
+%global gcc gcc
+%endif
+
 Name: ghc
 # part of haskell-platform
 # NB make sure to rebuild ghc after a version bump to avoid ABI change problems
@@ -24,7 +32,7 @@ Version: 7.0.4
 # - release can only be reset if all library versions get bumped simultaneously
 #   (eg for a major release)
 # - minor release numbers should be incremented monotonically
-Release: 45.2%{?dist}
+Release: 45.3%{?dist}
 Summary: Glasgow Haskell Compiler
 # fedora ghc has been bootstrapped on the following archs:
 #ExclusiveArch: %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel
@@ -73,6 +81,9 @@ BuildRequires: python
 %ifarch ppc64 s390x
 BuildRequires: autoconf
 %endif
+%ifarch %{ix86} x86_64
+BuildRequires: %{gcc}
+%endif
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
 Requires: ghc-ghc-devel = %{version}-%{release}
@@ -116,7 +127,7 @@ for the functional language Haskell. Highlights:
 Summary: GHC compiler and utilities
 License: BSD
 Group: Development/Languages
-Requires: gcc
+Requires: %{gcc}
 Requires: ghc-base-devel
 Requires(post): chkconfig
 Requires(postun): chkconfig
@@ -255,7 +266,7 @@ export CFLAGS="${CFLAGS:-%optflags}"
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --with-gcc=%{_bindir}/gcc
+  --with-gcc=%{_bindir}/%{gcc}
 
 # >4 cpus tends to break build
 [ -z "$RPM_BUILD_NCPUS" ] && RPM_BUILD_NCPUS=$(%{_bindir}/getconf _NPROCESSORS_ONLN)
@@ -437,6 +448,10 @@ fi
 %files libraries
 
 %changelog
+* Mon Jan 13 2014 Jens Petersen <petersen@redhat.com> - 7.0.4-45.3
+- build with gcc44 on intel archs to fix dynamic linking
+- this build re-enables shared libraries
+
 * Wed Dec 25 2013 Jens Petersen <petersen@redhat.com> - 7.0.4-45.2
 - final build
 - without manuals and manpages because of docbook dtd issue in configure
