@@ -50,11 +50,11 @@ Patch12: ghc-7.4.2-Cabal-disable-ghci-libs.patch
 Patch13: ghc-llvmCodeGen-empty-array.patch
 # stop warnings about unsupported version of llvm
 Patch14: ghc-7.6.3-LlvmCodeGen-no-3.3-warning.patch
-# fix hang on ppc64 and s390x
+# fix hang on ppc64 and s390x (upstream in 7.8)
 Patch15: ghc-64bit-bigendian-rts-hang-989593.patch
 # unversion library html docdirs
 Patch16: ghc-cabal-unversion-docdir.patch
-# fix libffi segfaults on 32bit
+# fix libffi segfaults on 32bit (upstream in 7.8)
 Patch17: ghc-7.6.3-rts-Adjustor-32bit-segfault.patch
 
 # fedora ghc has been bootstrapped on
@@ -237,7 +237,6 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %patch14 -p1 -b .orig
 %endif
 
-# #FIXME: apply to all archs from next version bootstrap
 %ifarch ppc64 s390x
 %patch15 -p1 -b .orig
 %endif
