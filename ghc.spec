@@ -25,7 +25,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 18.2%{?dist}
+Release: 18.3%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -52,6 +52,8 @@ Patch13: ghc-llvmCodeGen-empty-array.patch
 Patch14: ghc-7.6.3-LlvmCodeGen-no-3.3-warning.patch
 # fix hang on ppc64 and s390x
 Patch15: ghc-64bit-bigendian-rts-hang-989593.patch
+# fix libffi segfaults on 32bit
+Patch17: ghc-7.6.3-rts-Adjustor-32bit-segfault.patch
 
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -236,6 +238,8 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %ifarch ppc64 s390x
 %patch15 -p1 -b .orig
 %endif
+
+%patch17 -p0 -b .orig
 
 
 %build
@@ -450,6 +454,11 @@ fi
 
 
 %changelog
+* Wed Jan 29 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-18.3
+- fix segfault on i686 when using ffi double-mapping for selinux (#907515)
+  see http://hackage.haskell.org/trac/ghc/ticket/7629
+  (thanks Garrett Mitchener for patch committed upstream)
+
 * Wed Oct 30 2013 Jens Petersen <petersen@redhat.com> - 7.6.3-18.2
 - enable debuginfo for C code bits (#989593)
 - back to production build
