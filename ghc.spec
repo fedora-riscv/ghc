@@ -25,7 +25,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 21%{?dist}
+Release: 22%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -56,6 +56,8 @@ Patch15: ghc-64bit-bigendian-rts-hang-989593.patch
 Patch16: ghc-cabal-unversion-docdir.patch
 # fix libffi segfaults on 32bit (upstream in 7.8)
 Patch17: ghc-7.6.3-rts-Adjustor-32bit-segfault.patch
+# add .note.GNU-stack to assembly output to avoid execstack (#973512)
+Patch18: ghc-7.6-driver-Disable-executable-stack-for-the-linker-note.patch
 
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -244,6 +246,8 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %patch16 -p1 -b .orig
 
 %patch17 -p0 -b .orig
+
+%patch18 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{undefined without_haddock}
@@ -476,6 +480,11 @@ fi
 
 
 %changelog
+* Thu Jan 30 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-22
+- do not set executable stack on executables (#973512)
+  (upstream patch by Edward Z Yang)
+- note this patch changes the ABI hash of the ghc library
+
 * Wed Jan 29 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-21
 - fix segfault on i686 when using ffi double-mapping for selinux (#907515)
   see http://hackage.haskell.org/trac/ghc/ticket/7629
