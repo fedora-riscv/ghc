@@ -2,39 +2,20 @@
 # (disabled for other archs in ghc-rpm-macros)
 
 # To bootstrap build a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
-%global without_testsuite 1
+#%%global ghc_bootstrapping 1
+#%%global without_testsuite 1
 ### either:
 #%%{?ghc_bootstrap}
 ### or for shared libs:
-%{?ghc_test}
+#%%{?ghc_test}
 ### uncomment to generate haddocks for bootstrap
-%undefine without_haddock
-%undefine without_manual
+#%%undefine without_haddock
 
 # unregisterized archs
 %global unregisterised_archs ppc64 s390 s390x
 
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
-
-%global frel 11.2.fc19
-
-%global array_ver 0.4.0.0
-%global base_ver 4.5.1.0
-%global binary_ver 0.5.1.0
-%global bytestring_ver 0.9.2.1
-%global containers_ver 0.4.2.1
-%global deepseq_ver 1.3.0.0
-%global directory_ver 1.1.0.2
-%global filepath_ver 1.3.0.0
-%global haskell98_ver 2.0.0.1
-%global old_locale_ver 1.0.0.4
-%global old_time_ver 1.1.0.0
-%global pretty_ver 1.1.1.0
-%global process_ver 1.1.0.1
-%global time_ver 1.4
-%global unix_ver 2.5.1.1
 
 Name: ghc
 # part of haskell-platform
@@ -44,7 +25,7 @@ Version: 7.4.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 0%{?dist}
+Release: 11.2%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -55,67 +36,6 @@ Source2: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-testsuite.tar
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
-
-Source10: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-base-%{base_ver}-%{frel}.x86_64.rpm
-Source11: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-compiler-%{version}-%{frel}.x86_64.rpm
-Source12: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-base-devel-%{base_ver}-%{frel}.x86_64.rpm
-Source13: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-array-%{array_ver}-%{frel}.x86_64.rpm
-Source14: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-array-devel-%{array_ver}-%{frel}.x86_64.rpm
-Source15: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-bytestring-%{bytestring_ver}-%{frel}.x86_64.rpm
-Source16: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-bytestring-devel-%{bytestring_ver}-%{frel}.x86_64.rpm
-Source17: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-containers-%{containers_ver}-%{frel}.x86_64.rpm
-Source18: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-containers-devel-%{containers_ver}-%{frel}.x86_64.rpm
-Source19: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-deepseq-%{deepseq_ver}-%{frel}.x86_64.rpm
-Source20: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-deepseq-devel-%{deepseq_ver}-%{frel}.x86_64.rpm
-Source21: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-directory-%{directory_ver}-%{frel}.x86_64.rpm
-Source22: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-directory-devel-%{directory_ver}-%{frel}.x86_64.rpm
-Source23: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-filepath-%{filepath_ver}-%{frel}.x86_64.rpm
-Source24: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-filepath-devel-%{filepath_ver}-%{frel}.x86_64.rpm
-Source25: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-haskell98-%{haskell98_ver}-%{frel}.x86_64.rpm
-Source26: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-haskell98-devel-%{haskell98_ver}-%{frel}.x86_64.rpm
-Source27: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-old-locale-%{old_locale_ver}-%{frel}.x86_64.rpm
-Source28: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-old-locale-devel-%{old_locale_ver}-%{frel}.x86_64.rpm
-Source29: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-old-time-%{old_time_ver}-%{frel}.x86_64.rpm
-Source30: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-old-time-devel-%{old_time_ver}-%{frel}.x86_64.rpm
-Source31: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-pretty-%{pretty_ver}-%{frel}.x86_64.rpm
-Source32: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-pretty-devel-%{pretty_ver}-%{frel}.x86_64.rpm
-Source33: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-process-%{process_ver}-%{frel}.x86_64.rpm
-Source34: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-process-devel-%{process_ver}-%{frel}.x86_64.rpm
-Source35: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-time-%{time_ver}-%{frel}.x86_64.rpm
-Source36: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-time-devel-%{time_ver}-%{frel}.x86_64.rpm
-Source37: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-unix-%{unix_ver}-%{frel}.x86_64.rpm
-Source38: http://kojipkgs.fedoraproject.org/packages/ghc/7.4.2/11.2.fc19/x86_64/ghc-unix-devel-%{unix_ver}-%{frel}.x86_64.rpm
-
-Source110: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-base-%{base_ver}-%{frel}.ppc64.rpm
-Source111: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-compiler-%{version}-%{frel}.ppc64.rpm
-Source112: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-base-devel-%{base_ver}-%{frel}.ppc64.rpm
-Source113: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-array-%{array_ver}-%{frel}.ppc64.rpm
-Source114: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-array-devel-%{array_ver}-%{frel}.ppc64.rpm
-Source115: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-bytestring-%{bytestring_ver}-%{frel}.ppc64.rpm
-Source116: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-bytestring-devel-%{bytestring_ver}-%{frel}.ppc64.rpm
-Source117: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-containers-%{containers_ver}-%{frel}.ppc64.rpm
-Source118: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-containers-devel-%{containers_ver}-%{frel}.ppc64.rpm
-Source119: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-deepseq-%{deepseq_ver}-%{frel}.ppc64.rpm
-Source120: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-deepseq-devel-%{deepseq_ver}-%{frel}.ppc64.rpm
-Source121: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-directory-%{directory_ver}-%{frel}.ppc64.rpm
-Source122: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-directory-devel-%{directory_ver}-%{frel}.ppc64.rpm
-Source123: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-filepath-%{filepath_ver}-%{frel}.ppc64.rpm
-Source124: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-filepath-devel-%{filepath_ver}-%{frel}.ppc64.rpm
-Source125: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-haskell98-%{haskell98_ver}-%{frel}.ppc64.rpm
-Source126: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-haskell98-devel-%{haskell98_ver}-%{frel}.ppc64.rpm
-Source127: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-old-locale-%{old_locale_ver}-%{frel}.ppc64.rpm
-Source128: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-old-locale-devel-%{old_locale_ver}-%{frel}.ppc64.rpm
-Source129: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-old-time-%{old_time_ver}-%{frel}.ppc64.rpm
-Source130: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-old-time-devel-%{old_time_ver}-%{frel}.ppc64.rpm
-Source131: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-pretty-%{pretty_ver}-%{frel}.ppc64.rpm
-Source132: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-pretty-devel-%{pretty_ver}-%{frel}.ppc64.rpm
-Source133: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-process-%{process_ver}-%{frel}.ppc64.rpm
-Source134: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-process-devel-%{process_ver}-%{frel}.ppc64.rpm
-Source135: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-time-%{time_ver}-%{frel}.ppc64.rpm
-Source136: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-time-devel-%{time_ver}-%{frel}.ppc64.rpm
-Source137: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-unix-%{unix_ver}-%{frel}.ppc64.rpm
-Source138: http://ppc.koji.fedoraproject.org/kojifiles/packages/ghc/7.4.2/11.2.fc19/ppc64/ghc-unix-devel-%{unix_ver}-%{frel}.ppc64.rpm
-
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1: ghc-6.12.1-gen_contents_index-haddock-path.patch
 # type-level too big so skip it in gen_contents_index
@@ -151,31 +71,31 @@ Obsoletes: ghc-dph-prim-seq < 0.5, ghc-dph-prim-seq-devel < 0.5, ghc-dph-prim-se
 Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 %if %{undefined ghc_bootstrapping}
-# BuildRequires: ghc-compiler = %{version}
+BuildRequires: ghc-compiler = %{version}
 %endif
 BuildRequires: ghc-rpm-macros >= 0.91
-# BuildRequires: ghc-bytestring-devel
-# BuildRequires: ghc-containers-devel
-# BuildRequires: ghc-directory-devel
-# BuildRequires: ghc-haskell98-devel
-# BuildRequires: ghc-pretty-devel
-# BuildRequires: ghc-process-devel
-# BuildRequires: gmp-devel
-# BuildRequires: libffi-devel
-# # for internal terminfo
-# BuildRequires: ncurses-devel
-# %if %{undefined without_manual}
-# BuildRequires: libxslt, docbook-style-xsl
-# %endif
-# %if %{undefined without_testsuite}
-# BuildRequires: python
-# %endif
-# %ifarch armv7hl armv5tel
-# BuildRequires: llvm >= 3.0
-# %endif
-# %ifarch armv7hl
-# BuildRequires: autoconf
-# %endif
+BuildRequires: ghc-bytestring-devel
+BuildRequires: ghc-containers-devel
+BuildRequires: ghc-directory-devel
+BuildRequires: ghc-haskell98-devel
+BuildRequires: ghc-pretty-devel
+BuildRequires: ghc-process-devel
+BuildRequires: gmp-devel
+BuildRequires: libffi-devel
+# for internal terminfo
+BuildRequires: ncurses-devel
+%if %{undefined without_manual}
+BuildRequires: libxslt, docbook-style-xsl
+%endif
+%if %{undefined without_testsuite}
+BuildRequires: python
+%endif
+%ifarch armv7hl armv5tel
+BuildRequires: llvm >= 3.0
+%endif
+%ifarch armv7hl
+BuildRequires: autoconf
+%endif
 Requires: ghc-compiler = %{version}-%{release}
 %if %{undefined without_haddock}
 Requires: ghc-doc-index = %{version}-%{release}
@@ -247,29 +167,29 @@ documention.
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
 %if %{defined ghclibdir}
-#%%ghc_lib_subpackage Cabal 1.14.0
+%ghc_lib_subpackage Cabal 1.14.0
 %ghc_lib_subpackage -l %BSDHaskellReport array 0.4.0.0
 %ghc_lib_subpackage -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base 4.5.1.0
-#%%ghc_lib_subpackage binary 0.5.1.0
+%ghc_lib_subpackage binary 0.5.1.0
 %ghc_lib_subpackage bytestring 0.9.2.1
 %ghc_lib_subpackage -l %BSDHaskellReport containers 0.4.2.1
 %ghc_lib_subpackage -l %BSDHaskellReport deepseq 1.3.0.0
 %ghc_lib_subpackage -l %BSDHaskellReport directory 1.1.0.2
-#%%ghc_lib_subpackage -l %BSDHaskellReport extensible-exceptions 0.1.1.4
+%ghc_lib_subpackage -l %BSDHaskellReport extensible-exceptions 0.1.1.4
 %ghc_lib_subpackage filepath 1.3.0.0
-#%%define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
+%define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 # in ghc not ghc-libraries:
-#%%ghc_lib_subpackage -x ghc %{ghc_version_override}
+%ghc_lib_subpackage -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-#%%ghc_lib_subpackage -l HaskellReport haskell2010 1.1.0.1
+%ghc_lib_subpackage -l HaskellReport haskell2010 1.1.0.1
 %ghc_lib_subpackage -l HaskellReport haskell98 2.0.0.1
-#%%ghc_lib_subpackage hoopl 3.8.7.3
-#%%ghc_lib_subpackage hpc 0.5.1.1
+%ghc_lib_subpackage hoopl 3.8.7.3
+%ghc_lib_subpackage hpc 0.5.1.1
 %ghc_lib_subpackage -l %BSDHaskellReport old-locale 1.0.0.4
 %ghc_lib_subpackage -l %BSDHaskellReport old-time 1.1.0.0
 %ghc_lib_subpackage pretty 1.1.1.0
 %ghc_lib_subpackage -l %BSDHaskellReport process 1.1.0.1
-#%%ghc_lib_subpackage template-haskell 2.7.0.0
+%ghc_lib_subpackage template-haskell 2.7.0.0
 %ghc_lib_subpackage time 1.4
 %ghc_lib_subpackage unix 2.5.1.1
 %endif
@@ -330,21 +250,37 @@ autoreconf
 
 
 %build
-%{nil}
+# http://hackage.haskell.org/trac/ghc/wiki/Platforms
+# cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
+cat > mk/build.mk << EOF
+%if %{undefined ghc_bootstrapping}
+%ifarch %{ix86} x86_64
+BuildFlavour = perf
+%endif
+%endif
+GhcLibWays = v %{!?ghc_without_shared:dyn} %{!?without_prof:p}
+%if %{defined without_haddock}
+HADDOCK_DOCS = NO
+%endif
+%if %{defined without_manual}
+BUILD_DOCBOOK_HTML = NO
+%endif
+EOF
+
+export CFLAGS="${CFLAGS:-%optflags}"
+# use --with-gcc=%{_bindir}/gcc when bootstrapping to avoid ccache hardcoding problem
+./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
+  --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
+  --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
+  --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
+  --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
+  --with-gcc=%{_bindir}/gcc
+
+make %{?_smp_mflags}
 
 
 %install
-cd %{buildroot}
-for i in \
-%ifarch x86_64
-%SOURCE10 %SOURCE11 %SOURCE12 %SOURCE13 %SOURCE14 %SOURCE15 %SOURCE16 %SOURCE17 %SOURCE18 %SOURCE19 %SOURCE20 %SOURCE21 %SOURCE22 %SOURCE23 %SOURCE24 %SOURCE25 %SOURCE26 %SOURCE27 %SOURCE28 %SOURCE29 %SOURCE30 %SOURCE31 %SOURCE32 %SOURCE33 %SOURCE34 %SOURCE35 %SOURCE36 %SOURCE37 %SOURCE38; do
-%endif
-%ifarch ppc64
-%SOURCE110 %SOURCE111 %SOURCE112 %SOURCE113 %SOURCE114 %SOURCE115 %SOURCE116 %SOURCE117 %SOURCE118 %SOURCE119 %SOURCE120 %SOURCE121 %SOURCE122 %SOURCE123 %SOURCE124 %SOURCE125 %SOURCE126 %SOURCE127 %SOURCE128 %SOURCE129 %SOURCE130 %SOURCE131 %SOURCE132 %SOURCE133 %SOURCE134 %SOURCE135 %SOURCE136 %SOURCE137 %SOURCE138; do
-%endif
-    rpm2cpio $i | cpio --extract --make-directories
-done
-cd -
+make DESTDIR=%{buildroot} install
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -356,7 +292,8 @@ done
 # ghc-base should own ghclibdir
 echo "%dir %{ghclibdir}" >> ghc-base%{?ghc_without_shared:-devel}.files
 
-#%%ghc_gen_filelists bin-package-db 0.0.0.0
+%ghc_gen_filelists bin-package-db 0.0.0.0
+%ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghc-prim 0.2.0.0
 %ghc_gen_filelists integer-gmp 0.4.0.0
 
@@ -370,7 +307,7 @@ echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
-#%%merge_filelist bin-package-db ghc
+%merge_filelist bin-package-db ghc
 
 # add rts libs
 %if %{undefined ghc_without_shared}
@@ -380,6 +317,18 @@ sed -i -e "s|^%{buildroot}||g" ghc-base.files
 ls -d %{buildroot}%{ghclibdir}/libHS*.a  %{buildroot}%{ghclibdir}/package.conf.d/builtin_*.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
 sed -i -e "s|^%{buildroot}||g" ghc-base-devel.files
 
+# these are handled as alternatives
+for i in hsc2hs runhaskell; do
+  if [ -x %{buildroot}%{_bindir}/$i-ghc ]; then
+    rm %{buildroot}%{_bindir}/$i
+  else
+    mv %{buildroot}%{_bindir}/$i{,-ghc}
+  fi
+  touch %{buildroot}%{_bindir}/$i
+done
+
+%ghc_strip_dynlinked
+
 %if %{undefined without_haddock}
 mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
 install -p --mode=0755 %SOURCE3 %{buildroot}%{_sysconfdir}/cron.hourly/ghc-doc-index
@@ -388,30 +337,30 @@ install -p --mode=0755 %SOURCE4 %{buildroot}%{_bindir}/ghc-doc-index
 %endif
 
 
-# %%check
-# # stolen from ghc6/debian/rules:
-# # Do some very simple tests that the compiler actually works
-# rm -rf testghc
-# mkdir testghc
-# echo 'main = putStrLn "Foo"' > testghc/foo.hs
-# inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo
-# [ "$(testghc/foo)" = "Foo" ]
-# # doesn't seem to work inplace:
-# #[ "$(inplace/bin/runghc testghc/foo.hs)" = "Foo" ]
-# rm testghc/*
-# echo 'main = putStrLn "Foo"' > testghc/foo.hs
-# inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
-# [ "$(testghc/foo)" = "Foo" ]
-# rm testghc/*
-# %if %{undefined ghc_without_shared}
-# echo 'main = putStrLn "Foo"' > testghc/foo.hs
-# inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
-# [ "$(testghc/foo)" = "Foo" ]
-# rm testghc/*
-# %endif
-# %if %{undefined without_testsuite}
-# make test
-# %endif
+%check
+# stolen from ghc6/debian/rules:
+# Do some very simple tests that the compiler actually works
+rm -rf testghc
+mkdir testghc
+echo 'main = putStrLn "Foo"' > testghc/foo.hs
+inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo
+[ "$(testghc/foo)" = "Foo" ]
+# doesn't seem to work inplace:
+#[ "$(inplace/bin/runghc testghc/foo.hs)" = "Foo" ]
+rm testghc/*
+echo 'main = putStrLn "Foo"' > testghc/foo.hs
+inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
+[ "$(testghc/foo)" = "Foo" ]
+rm testghc/*
+%if %{undefined ghc_without_shared}
+echo 'main = putStrLn "Foo"' > testghc/foo.hs
+inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
+[ "$(testghc/foo)" = "Foo" ]
+rm testghc/*
+%endif
+%if %{undefined without_testsuite}
+make test
+%endif
 
 
 %post compiler
@@ -439,7 +388,7 @@ if [ "$1" = 0 ]; then
 fi
 
 
-#%%files
+%files
 
 %files compiler
 %doc ANNOUNCE HACKING LICENSE README
@@ -493,11 +442,11 @@ fi
 %{ghcdocbasedir}/libraries/ocean.css
 %{ghcdocbasedir}/libraries/prologue.txt
 %{ghcdocbasedir}/index.html
-# %ghost %{ghcdocbasedir}/libraries/doc-index*.html
-# %ghost %{ghcdocbasedir}/libraries/haddock-util.js
-# %ghost %{ghcdocbasedir}/libraries/index*.html
-# %ghost %{ghcdocbasedir}/libraries/minus.gif
-# %ghost %{ghcdocbasedir}/libraries/plus.gif
+%ghost %{ghcdocbasedir}/libraries/doc-index*.html
+%ghost %{ghcdocbasedir}/libraries/haddock-util.js
+%ghost %{ghcdocbasedir}/libraries/index*.html
+%ghost %{ghcdocbasedir}/libraries/minus.gif
+%ghost %{ghcdocbasedir}/libraries/plus.gif
 %{_localstatedir}/lib/ghc
 %endif
 
