@@ -12,10 +12,34 @@
 #%%undefine without_haddock
 
 # unregisterized archs
-%global unregisterised_archs ppc64 s390 s390x
+%global unregisterised_archs ppc64 s390 s390x ppc64le
 
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
+
+%global Cabal_ver 1.16.0
+%global array_ver 0.4.0.1
+%global base_ver 4.6.0.1
+%global bin_package_db_ver 0.0.0.0
+%global binary_ver 0.5.1.1
+%global bytestring_ver 0.10.0.2
+%global containers_ver 0.5.0.0
+%global deepseq_ver 1.3.0.1
+%global directory_ver 1.2.0.1
+%global filepath_ver 1.3.0.1
+%global ghc_prim_ver 0.3.0.0
+%global haskell2010_ver 1.1.1.0
+%global haskell98_ver 2.0.0.2
+%global hoopl_ver 3.9.0.0
+%global hpc_ver 0.6.0.0
+%global integer_gmp_ver 0.5.0.0
+%global old_locale_ver 1.0.0.5
+%global old_time_ver 1.1.0.1
+%global pretty_ver 1.1.1.0
+%global process_ver 1.1.0.2
+%global template_haskell_ver 2.8.0.0
+%global time_ver 1.4.0.1
+%global unix_ver 2.6.0.1
 
 Name: ghc
 # part of haskell-platform
@@ -57,7 +81,11 @@ Patch16: ghc-cabal-unversion-docdir.patch
 # fix libffi segfaults on 32bit (upstream in 7.8)
 Patch17: ghc-7.6.3-rts-Adjustor-32bit-segfault.patch
 # add .note.GNU-stack to assembly output to avoid execstack (#973512)
-Patch18: ghc-7.6-driver-Disable-executable-stack-for-the-linker-note.patch
+# (disabled for now since it changes libghc ABI and fix only works for i686)
+#Patch18: ghc-7.6-driver-Disable-executable-stack-for-the-linker-note.patch
+# changes for ppc64le committed upstream for 7.8.3
+# (https://ghc.haskell.org/trac/ghc/ticket/8965)
+Patch19: ghc-ppc64el.patch
 
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -73,7 +101,11 @@ Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-f
 %if %{undefined ghc_bootstrapping}
 BuildRequires: ghc-compiler = %{version}
 %endif
+%if 0%{?fedora} >= 20
 BuildRequires: ghc-rpm-macros-extra
+%else
+BuildRequires: ghc-rpm-macros
+%endif
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
 BuildRequires: ghc-directory-devel
@@ -84,14 +116,17 @@ BuildRequires: gmp-devel
 BuildRequires: libffi-devel
 # for internal terminfo
 BuildRequires: ncurses-devel
-%if %{undefined without_manual}
+# for manpage and docs
 BuildRequires: libxslt, docbook-style-xsl
-%endif
 %if %{undefined without_testsuite}
 BuildRequires: python
 %endif
 %ifarch armv7hl armv5tel
 BuildRequires: llvm >= 3.0
+%endif
+%ifarch ppc64le
+# for patch19
+BuildRequires: autoconf
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 %if %{undefined without_haddock}
@@ -164,32 +199,32 @@ documention.
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
 %if %{defined ghclibdir}
-%ghc_lib_subpackage Cabal 1.16.0
-%ghc_lib_subpackage -l %BSDHaskellReport array 0.4.0.1
-%ghc_lib_subpackage -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base 4.6.0.1
-%ghc_lib_subpackage binary 0.5.1.1
-%ghc_lib_subpackage bytestring 0.10.0.2
-%ghc_lib_subpackage -l %BSDHaskellReport containers 0.5.0.0
-%ghc_lib_subpackage -l %BSDHaskellReport deepseq 1.3.0.1
-%ghc_lib_subpackage -l %BSDHaskellReport directory 1.2.0.1
-%ghc_lib_subpackage filepath 1.3.0.1
+%ghc_lib_subpackage Cabal %{Cabal_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport array %{array_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base %{base_ver}
+%ghc_lib_subpackage binary %{binary_ver}
+%ghc_lib_subpackage bytestring %{bytestring_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport containers %{containers_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport deepseq %{deepseq_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport directory %{directory_ver}
+%ghc_lib_subpackage filepath %{filepath_ver}
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage -l HaskellReport haskell2010 1.1.1.0
-%ghc_lib_subpackage -l HaskellReport haskell98 2.0.0.2
-%ghc_lib_subpackage hoopl 3.9.0.0
-%ghc_lib_subpackage hpc 0.6.0.0
-%ghc_lib_subpackage -l %BSDHaskellReport old-locale 1.0.0.5
-%ghc_lib_subpackage -l %BSDHaskellReport old-time 1.1.0.1
-%ghc_lib_subpackage pretty 1.1.1.0
+%ghc_lib_subpackage -l HaskellReport haskell2010 %{haskell2010_ver}
+%ghc_lib_subpackage -l HaskellReport haskell98 %{haskell98_ver}
+%ghc_lib_subpackage hoopl %{hoopl_ver}
+%ghc_lib_subpackage hpc %{hpc_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport old-locale %{old_locale_ver}
+%ghc_lib_subpackage -l %BSDHaskellReport old-time %{old_time_ver}
+%ghc_lib_subpackage pretty %{pretty_ver}
 %define ghc_pkg_obsoletes ghc-process-leksah-devel < 1.0.1.4-14
-%ghc_lib_subpackage -l %BSDHaskellReport process 1.1.0.2
+%ghc_lib_subpackage -l %BSDHaskellReport process %{process_ver}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage template-haskell 2.8.0.0
-%ghc_lib_subpackage time 1.4.0.1
-%ghc_lib_subpackage unix 2.6.0.1
+%ghc_lib_subpackage template-haskell %{template_haskell_ver}
+%ghc_lib_subpackage time %{time_ver}
+%ghc_lib_subpackage unix %{unix_ver}
 %endif
 
 %global version %{ghc_version_override}
@@ -247,7 +282,11 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 
 %patch17 -p0 -b .orig
 
-%patch18 -p1 -b .orig
+#%%patch18 -p1 -b .orig
+
+%ifarch ppc64le
+%patch19 -p1 -b .orig
+%endif
 
 %global gen_contents_index gen_contents_index.orig
 %if %{undefined without_haddock}
@@ -284,7 +323,14 @@ BUILD_DOCBOOK_HTML = NO
 EOF
 
 export CFLAGS="${CFLAGS:-%optflags}"
-# use --with-gcc=%{_bindir}/gcc when bootstrapping to avoid ccache hardcoding problem
+# note %%configure induces cross-build due to different target/host/build platform names
+# --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
+%ifarch ppc64le
+for i in $(find . -name config.guess -o -name config.sub) ; do
+    [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
+done
+autoreconf
+%endif
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
@@ -309,10 +355,10 @@ done
 # ghc-base should own ghclibdir
 echo "%dir %{ghclibdir}" >> ghc-base.files
 
-%ghc_gen_filelists bin-package-db 0.0.0.0
+%ghc_gen_filelists bin-package-db %{bin_package_db_ver}
 %ghc_gen_filelists ghc %{ghc_version_override}
-%ghc_gen_filelists ghc-prim 0.3.0.0
-%ghc_gen_filelists integer-gmp 0.5.0.0
+%ghc_gen_filelists ghc-prim %{ghc_prim_ver}
+%ghc_gen_filelists integer-gmp %{integer_gmp_ver}
 
 %define merge_filelist()\
 cat ghc-%1.files >> ghc-%2.files\
@@ -359,22 +405,23 @@ cd ..
 
 %check
 # stolen from ghc6/debian/rules:
+GHC=inplace/bin/ghc-stage2
 # Do some very simple tests that the compiler actually works
 rm -rf testghc
 mkdir testghc
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
-inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo
+$GHC testghc/foo.hs -o testghc/foo
 [ "$(testghc/foo)" = "Foo" ]
 # doesn't seem to work inplace:
 #[ "$(inplace/bin/runghc testghc/foo.hs)" = "Foo" ]
 rm testghc/*
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
-inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -O2
+$GHC testghc/foo.hs -o testghc/foo -O2
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
 %if %{undefined ghc_without_shared}
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
-inplace/bin/ghc-stage2 testghc/foo.hs -o testghc/foo -dynamic
+$GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
 %endif
@@ -480,10 +527,9 @@ fi
 
 
 %changelog
-* Thu Jan 30 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-22
-- do not set executable stack on executables (#973512)
-  (upstream patch by Edward Z Yang)
-- note this patch changes the ABI hash of the ghc library
+* Fri May 30 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-22
+- add ppc64le support patch from Debian by Colin Watson
+  (thanks to Jaromir Capik for Fedora ppc64le bootstrap)
 
 * Wed Jan 29 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-21
 - fix segfault on i686 when using ffi double-mapping for selinux (#907515)
