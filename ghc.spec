@@ -49,7 +49,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 22%{?dist}
+Release: 23%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -527,6 +527,9 @@ fi
 
 
 %changelog
+* Fri May 30 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-23
+- bump release
+
 * Fri May 30 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-22
 - add ppc64le support patch from Debian by Colin Watson
   (thanks to Jaromir Capik for Fedora ppc64le bootstrap)
