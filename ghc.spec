@@ -11,9 +11,6 @@
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
 
-# unregisterized archs
-%global unregisterised_archs ppc64 s390 s390x ppc64le
-
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
 
@@ -49,7 +46,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 23%{?dist}
+Release: 24%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -86,6 +83,10 @@ Patch17: ghc-7.6.3-rts-Adjustor-32bit-segfault.patch
 # changes for ppc64le committed upstream for 7.8.3
 # (https://ghc.haskell.org/trac/ghc/ticket/8965)
 Patch19: ghc-ppc64el.patch
+# warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
+Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
+# Debian patch
+Patch21: ghc-arm64.patch
 
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
@@ -124,8 +125,8 @@ BuildRequires: python
 %ifarch armv7hl armv5tel
 BuildRequires: llvm >= 3.0
 %endif
-%ifarch ppc64le
-# for patch19
+%ifarch ppc64le aarch64
+# for patch19 and patch21
 BuildRequires: autoconf
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -288,6 +289,13 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %patch19 -p1 -b .orig
 %endif
 
+%patch20 -p1 -b .orig
+
+%ifarch aarch64
+%patch21 -p1 -b .orig
+%endif
+
+
 %global gen_contents_index gen_contents_index.orig
 %if %{undefined without_haddock}
 if [ ! -f "libraries/%{gen_contents_index}" ]; then
@@ -325,7 +333,7 @@ EOF
 export CFLAGS="${CFLAGS:-%optflags}"
 # note %%configure induces cross-build due to different target/host/build platform names
 # --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
-%ifarch ppc64le
+%ifarch ppc64le aarch64
 for i in $(find . -name config.guess -o -name config.sub) ; do
     [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
 done
@@ -474,7 +482,8 @@ fi
 %{_bindir}/runhaskell-ghc
 %{ghclibdir}/ghc
 %{ghclibdir}/ghc-pkg
-%ifnarch %{unregisterised_archs}
+# unknown ("unregisterized") archs
+%ifnarch ppc64 s390 s390x ppc64le aarch64
 %{ghclibdir}/ghc-split
 %endif
 %{ghclibdir}/ghc-usage.txt
@@ -527,6 +536,11 @@ fi
 
 
 %changelog
+* Fri Jun  6 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-24
+- add aarch64 with Debian patch by Karel Gardas and Colin Watson
+- patch Stg.h to define _DEFAULT_SOURCE instead of _BSD_SOURCE to quieten
+  glibc 2.20 warnings (see #1067110)
+
 * Fri May 30 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-23
 - bump release
 
