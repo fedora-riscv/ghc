@@ -14,30 +14,6 @@
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
 
-%global Cabal_ver 1.16.0
-%global array_ver 0.4.0.1
-%global base_ver 4.6.0.1
-%global bin_package_db_ver 0.0.0.0
-%global binary_ver 0.5.1.1
-%global bytestring_ver 0.10.0.2
-%global containers_ver 0.5.0.0
-%global deepseq_ver 1.3.0.1
-%global directory_ver 1.2.0.1
-%global filepath_ver 1.3.0.1
-%global ghc_prim_ver 0.3.0.0
-%global haskell2010_ver 1.1.1.0
-%global haskell98_ver 2.0.0.2
-%global hoopl_ver 3.9.0.0
-%global hpc_ver 0.6.0.0
-%global integer_gmp_ver 0.5.0.0
-%global old_locale_ver 1.0.0.5
-%global old_time_ver 1.1.0.1
-%global pretty_ver 1.1.1.0
-%global process_ver 1.1.0.2
-%global template_haskell_ver 2.8.0.0
-%global time_ver 1.4.0.1
-%global unix_ver 2.6.0.1
-
 Name: ghc
 # part of haskell-platform
 # ghc must be rebuilt after a version bump to avoid ABI change problems
@@ -87,6 +63,30 @@ Patch19: ghc-ppc64el.patch
 Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
 Patch21: ghc-arm64.patch
+
+%global Cabal_ver 1.16.0
+%global array_ver 0.4.0.1
+%global base_ver 4.6.0.1
+%global bin_package_db_ver 0.0.0.0
+%global binary_ver 0.5.1.1
+%global bytestring_ver 0.10.0.2
+%global containers_ver 0.5.0.0
+%global deepseq_ver 1.3.0.1
+%global directory_ver 1.2.0.1
+%global filepath_ver 1.3.0.1
+%global ghc_prim_ver 0.3.0.0
+%global haskell2010_ver 1.1.1.0
+%global haskell98_ver 2.0.0.2
+%global hoopl_ver 3.9.0.0
+%global hpc_ver 0.6.0.0
+%global integer_gmp_ver 0.5.0.0
+%global old_locale_ver 1.0.0.5
+%global old_time_ver 1.1.0.1
+%global pretty_ver 1.1.1.0
+%global process_ver 1.1.0.2
+%global template_haskell_ver 2.8.0.0
+%global time_ver 1.4.0.1
+%global unix_ver 2.6.0.1
 
 # fedora ghc has been bootstrapped on
 # %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
