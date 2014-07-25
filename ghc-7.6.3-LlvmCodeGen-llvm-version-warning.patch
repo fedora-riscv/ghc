@@ -5,7 +5,7 @@
  
  maxSupportLlvmVersion :: LlvmVersion
 -maxSupportLlvmVersion = 31
-+maxSupportLlvmVersion = 33
++maxSupportLlvmVersion = 34
  
  -- ----------------------------------------------------------------------------
  -- * Environment Handling
