@@ -22,7 +22,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 24%{?dist}
+Release: 25%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -46,7 +46,7 @@ Patch12: ghc-7.4.2-Cabal-disable-ghci-libs.patch
 # fix compilation with llvm-3.3
 Patch13: ghc-llvmCodeGen-empty-array.patch
 # stop warnings about unsupported version of llvm
-Patch14: ghc-7.6.3-LlvmCodeGen-no-3.3-warning.patch
+Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
 # fix hang on ppc64 and s390x (upstream in 7.8)
 Patch15: ghc-64bit-bigendian-rts-hang-989593.patch
 # unversion library html docdirs
@@ -63,6 +63,7 @@ Patch19: ghc-ppc64el.patch
 Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
 Patch21: ghc-arm64.patch
+Patch22: ghc-7.6.3-armv7-VFPv3D16--NEON.patch
 
 %global Cabal_ver 1.16.0
 %global array_ver 0.4.0.1
@@ -128,6 +129,10 @@ BuildRequires: llvm >= 3.0
 %ifarch ppc64le aarch64
 # for patch19 and patch21
 BuildRequires: autoconf
+%endif
+%ifarch armv7hl
+# patch22
+BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 %if %{undefined without_haddock}
@@ -279,7 +284,9 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 %patch15 -p1 -b .orig
 %endif
 
+%if 0%{?fedora} >= 21
 %patch16 -p1 -b .orig
+%endif
 
 %patch17 -p0 -b .orig
 
@@ -293,6 +300,10 @@ ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
 
 %ifarch aarch64
 %patch21 -p1 -b .orig
+%endif
+
+%ifarch armv7hl
+%patch22 -p1 -b .orig
 %endif
 
 
@@ -333,7 +344,7 @@ EOF
 export CFLAGS="${CFLAGS:-%optflags}"
 # note %%configure induces cross-build due to different target/host/build platform names
 # --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
-%ifarch ppc64le aarch64
+%ifarch ppc64le aarch64 armv7hl
 for i in $(find . -name config.guess -o -name config.sub) ; do
     [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
 done
@@ -536,6 +547,11 @@ fi
 
 
 %changelog
+* Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
+- configure ARM with VFPv3D16 and without NEON (#995419)
+- only apply the Cabal unversion docdir patch to F21 and later
+- hide llvm version warning on ARM now up to 3.4
+
 * Fri Jun  6 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-24
 - add aarch64 with Debian patch by Karel Gardas and Colin Watson
 - patch Stg.h to define _DEFAULT_SOURCE instead of _BSD_SOURCE to quieten
