@@ -22,7 +22,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 25%{?dist}
+Release: 26%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -547,6 +547,9 @@ fi
 
 
 %changelog
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.6.3-26
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
 - configure ARM with VFPv3D16 and without NEON (#995419)
 - only apply the Cabal unversion docdir patch to F21 and later
