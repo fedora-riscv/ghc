@@ -22,7 +22,7 @@ Version: 7.8.3
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 38%{?dist}
+Release: 39%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -540,6 +540,9 @@ fi
 
 
 %changelog
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.8.3-39
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
 * Sun Aug  3 2014 Jens Petersen <petersen@redhat.com> - 7.8.3-38
 - update to 7.8.3
 - https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-1.html
