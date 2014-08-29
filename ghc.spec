@@ -22,7 +22,7 @@ Version: 7.8.3
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 39%{?dist}
+Release: 38%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -38,6 +38,7 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 # add libffi include dir to ghc wrapper for archs using gcc/llc
 #Patch10: ghc-wrapper-libffi-include.patch
 # stop warnings about unsupported version of llvm
+# NB: value affects ABI hash of libHSghc!
 Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
 # unversion library html docdirs
 Patch16: ghc-cabal-unversion-docdir.patch
@@ -49,6 +50,7 @@ Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
 Patch21: ghc-arm64.patch
 Patch22: ghc-7.6.3-armv7-VFPv3D16--NEON.patch
+Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
 
 %global Cabal_ver 1.18.1.3
 %global array_ver 0.5.0.0
@@ -286,6 +288,7 @@ rm -r libffi-tarballs
 %patch22 -p1 -b .orig
 %endif
 
+%patch23 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{undefined without_haddock}
@@ -307,7 +310,7 @@ BuildFlavour = perf
 BuildFlavour = perf-llvm
 %endif
 %endif
-GhcLibWays = v %{!?ghc_without_shared:dyn} %{!?without_prof:p}
+GhcLibWays = v dyn %{!?without_prof:p}
 %if %{defined without_haddock}
 HADDOCK_DOCS = NO
 %endif
@@ -372,9 +375,7 @@ echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 
 # add rts libs
 echo "%dir %{ghclibdir}/rts-1.0" >> ghc-base.files
-%if %{undefined ghc_without_shared}
 ls %{buildroot}%{ghclibdir}/rts-1.0/libHS*.so >> ghc-base.files
-%endif
 
 sed -i -e "s|^%{buildroot}||g" ghc-base.files
 
@@ -427,12 +428,10 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -O2
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%if %{undefined ghc_without_shared}
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%endif
 %if %{undefined without_testsuite}
 make test
 %endif
@@ -540,15 +539,14 @@ fi
 
 
 %changelog
-* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.8.3-39
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
-
 * Sun Aug  3 2014 Jens Petersen <petersen@redhat.com> - 7.8.3-38
 - update to 7.8.3
 - https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-1.html
 - https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-2.html
 - https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-3.html
 - bootstrap build
+- provides haskeline, terminfo and xhtml libraries
+- shared libraries on all archs
 
 * Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
 - configure ARM with VFPv3D16 and without NEON (#995419)
