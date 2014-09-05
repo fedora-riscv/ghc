@@ -187,13 +187,16 @@ The package provides a cronjob for re-indexing installed library development
 documention.
 %endif
 
+# ghclibdir also needs ghc_version_override for bootstrapping (ghc-deps.sh)
 %global ghc_version_override %{version}
 
+# currently only F22 ghc-rpm-macros has ghc.attr
+%if 0%{?fedora} < 22
 # needs ghc_version_override for bootstrapping
 %global _use_internal_dependency_generator 0
 %global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
 %global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
-
+%endif
 
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
@@ -255,7 +258,6 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 # gen_contents_index: use absolute path for haddock
 %patch1 -p1 -b .orig
 
-# unversion pkgdoc htmldir
 rm -r libffi-tarballs
 
 %ifnarch %{ix86} x86_64
@@ -270,6 +272,7 @@ rm -r libffi-tarballs
 %patch15 -p1 -b .orig
 %endif
 
+# unversion pkgdoc htmldir
 %if 0%{?fedora} >= 21
 %patch16 -p1 -b .orig
 %endif
@@ -547,6 +550,7 @@ fi
 - bootstrap build
 - provides haskeline, terminfo and xhtml libraries
 - shared libraries on all archs
+- use rpm internal dependency generator with ghc.attr on F22
 
 * Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
 - configure ARM with VFPv3D16 and without NEON (#995419)
