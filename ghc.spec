@@ -551,6 +551,7 @@ fi
 - provides haskeline, terminfo and xhtml libraries
 - shared libraries on all archs
 - use rpm internal dependency generator with ghc.attr on F22
+- fix bash-ism in ghc-doc-index (#1146733)
 
 * Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
 - configure ARM with VFPv3D16 and without NEON (#995419)
