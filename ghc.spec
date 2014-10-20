@@ -10,6 +10,11 @@
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
 
+# need to enable shared libs for all arches
+%if %{defined ghc_without_shared}
+%undefine ghc_without_shared
+%endif
+
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
 
@@ -42,9 +47,6 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
 # unversion library html docdirs
 Patch16: ghc-cabal-unversion-docdir.patch
-# changes for ppc64le committed upstream for 7.8.3
-# (https://ghc.haskell.org/trac/ghc/ticket/8965)
-Patch19: ghc-ppc64el.patch
 # warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
 Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
@@ -119,11 +121,7 @@ BuildRequires: python
 %ifarch armv7hl armv5tel
 BuildRequires: llvm >= 3.0
 %endif
-%ifarch ppc64le aarch64
-# for patch19 and patch21
-BuildRequires: autoconf
-%endif
-%ifarch armv7hl
+%ifarch armv7hl aarch64
 # patch22
 BuildRequires: autoconf, automake
 %endif
@@ -268,17 +266,9 @@ rm -r libffi-tarballs
 %patch14 -p1 -b .orig
 %endif
 
-%ifarch ppc64 s390x
-%patch15 -p1 -b .orig
-%endif
-
 # unversion pkgdoc htmldir
 %if 0%{?fedora} >= 21
 %patch16 -p1 -b .orig
-%endif
-
-%ifarch ppc64le
-%patch19 -p1 -b .orig
 %endif
 
 %patch20 -p1 -b .orig
@@ -312,6 +302,12 @@ BuildFlavour = perf
 %else
 BuildFlavour = perf-llvm
 %endif
+%else
+%ifnarch armv7hl armv5tel
+BuildFlavour = quick-llvm
+%else
+BuildFlavour = quick
+%endif
 %endif
 GhcLibWays = v dyn %{!?without_prof:p}
 %if %{defined without_haddock}
@@ -328,9 +324,10 @@ BUILD_DOCBOOK_HTML = NO
 EOF
 
 export CFLAGS="${CFLAGS:-%optflags}"
+export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 # * %%configure induces cross-build due to different target/host/build platform names
 # * --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
-%ifarch ppc64le aarch64 armv7hl
+%ifarch aarch64 armv7hl
 for i in $(find . -name config.guess -o -name config.sub) ; do
     [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
 done
@@ -473,8 +470,10 @@ fi
 %{_bindir}/ghc-%{version}
 %{_bindir}/ghc-pkg
 %{_bindir}/ghc-pkg-%{version}
+%ifarch %ghc_arches_with_ghci
 %{_bindir}/ghci
 %{_bindir}/ghci-%{version}
+%endif
 %{_bindir}/hp2ps
 %{_bindir}/hpc
 %ghost %{_bindir}/hsc2hs
@@ -552,6 +551,9 @@ fi
 - shared libraries on all archs
 - use rpm internal dependency generator with ghc.attr on F22
 - fix bash-ism in ghc-doc-index (#1146733)
+- do "quick" build when bootstrapping
+- setup LDFLAGS
+- bindir/ghci only on ghc_arches_with_ghci
 
 * Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
 - configure ARM with VFPv3D16 and without NEON (#995419)
