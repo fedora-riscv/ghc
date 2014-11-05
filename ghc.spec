@@ -44,14 +44,15 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 #Patch10: ghc-wrapper-libffi-include.patch
 # stop warnings about unsupported version of llvm
 # NB: value affects ABI hash of libHSghc!
-Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
+# will probably be needed again for llvm-3.5
+#Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
 # unversion library html docdirs
 Patch16: ghc-cabal-unversion-docdir.patch
 # warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
 Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
 Patch21: ghc-arm64.patch
-Patch22: ghc-7.6.3-armv7-VFPv3D16--NEON.patch
+Patch22: ghc-armv7-VFPv3D16--NEON.patch
 Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
 
 %global Cabal_ver 1.18.1.3
@@ -84,7 +85,8 @@ Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
 
 
 # fedora ghc has been bootstrapped on
-# %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
+# %{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
+# and retired arches: alpha sparcv9 armv5tel
 # see ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 ExcludeArch: sparc64
 Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
@@ -263,7 +265,7 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch armv7hl armv5tel
-%patch14 -p1 -b .orig
+#%%patch14 -p1 -b .orig
 %endif
 
 # unversion pkgdoc htmldir
@@ -323,16 +325,18 @@ BUILD_DOCBOOK_HTML = NO
 #EXTRA_HC_OPTS=-debug
 EOF
 
+%ifarch aarch64
+for i in $(find . -name config.guess -o -name config.sub) ; do
+    [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
+done
+%endif
+%ifarch aarch64 armv7hl
+autoreconf
+%endif
 export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 # * %%configure induces cross-build due to different target/host/build platform names
 # * --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
-%ifarch aarch64 armv7hl
-for i in $(find . -name config.guess -o -name config.sub) ; do
-    [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
-done
-autoreconf
-%endif
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
