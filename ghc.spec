@@ -1,19 +1,15 @@
+# Shared haskell libraries are supported for x86* archs
+# (disabled for other archs in ghc-rpm-macros)
+
 # To bootstrap build a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
-%global without_testsuite 1
-%global without_prof 1
-%if 0%{?fedora} >= 22
-%{?ghc_bootstrap}
-%else
-%{?ghc_test}
-%endif
+#%%global ghc_bootstrapping 1
+#%%global without_testsuite 1
+### either:
+#%%{?ghc_bootstrap}
+### or for shared libs:
+#%%{?ghc_test}
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
-
-# need to enable shared libs for all arches
-%if %{defined ghc_without_shared}
-%undefine ghc_without_shared
-%endif
 
 %global space %(echo -n ' ')
 %global BSDHaskellReport BSD%{space}and%{space}HaskellReport
@@ -21,72 +17,80 @@
 Name: ghc
 # part of haskell-platform
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 7.8.3
+Version: 7.6.3
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-# xhtml moved from haskell-platform to ghc-7.8.3
-Release: 38%{?dist}
+Release: 26%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
 URL: http://haskell.org/ghc/
-Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.xz
+Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.bz2
 %if %{undefined without_testsuite}
-Source2: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-testsuite.tar.xz
+Source2: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-testsuite.tar.bz2
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
+# fedora does not allow copy libraries
+Patch4:  ghc-use-system-libffi.patch
+# fix dynamic linking of executables using Template Haskell
+Patch9:  Cabal-fix-dynamic-exec-for-TH.patch
 # add libffi include dir to ghc wrapper for archs using gcc/llc
-#Patch10: ghc-wrapper-libffi-include.patch
+Patch10: ghc-wrapper-libffi-include.patch
+# disable building HS*.o libs for ghci
+Patch12: ghc-7.4.2-Cabal-disable-ghci-libs.patch
+# fix compilation with llvm-3.3
+Patch13: ghc-llvmCodeGen-empty-array.patch
 # stop warnings about unsupported version of llvm
-# NB: value affects ABI hash of libHSghc!
-# will probably be needed again for llvm-3.5
-#Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
+Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
+# fix hang on ppc64 and s390x (upstream in 7.8)
+Patch15: ghc-64bit-bigendian-rts-hang-989593.patch
 # unversion library html docdirs
 Patch16: ghc-cabal-unversion-docdir.patch
+# fix libffi segfaults on 32bit (upstream in 7.8)
+Patch17: ghc-7.6.3-rts-Adjustor-32bit-segfault.patch
+# add .note.GNU-stack to assembly output to avoid execstack (#973512)
+# (disabled for now since it changes libghc ABI and fix only works for i686)
+#Patch18: ghc-7.6-driver-Disable-executable-stack-for-the-linker-note.patch
+# changes for ppc64le committed upstream for 7.8.3
+# (https://ghc.haskell.org/trac/ghc/ticket/8965)
+Patch19: ghc-ppc64el.patch
 # warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
 Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
 Patch21: ghc-arm64.patch
-Patch22: ghc-armv7-VFPv3D16--NEON.patch
-Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
+Patch22: ghc-7.6.3-armv7-VFPv3D16--NEON.patch
 
-%global Cabal_ver 1.18.1.3
-%global array_ver 0.5.0.0
-%global base_ver 4.7.0.1
+%global Cabal_ver 1.16.0
+%global array_ver 0.4.0.1
+%global base_ver 4.6.0.1
 %global bin_package_db_ver 0.0.0.0
-%global binary_ver 0.7.1.0
-%global bytestring_ver 0.10.4.0
-%global containers_ver 0.5.5.1
-%global deepseq_ver 1.3.0.2
-%global directory_ver 1.2.1.0
-%global filepath_ver 1.3.0.2
-%global ghc_prim_ver 0.3.1.0
-%global haskeline_ver 0.7.1.2
-%global haskell2010_ver 1.1.2.0
-%global haskell98_ver 2.0.0.3
-%global hoopl_ver 3.10.0.1
-%global hpc_ver 0.6.0.1
-%global integer_gmp_ver 0.5.1.0
-%global old_locale_ver 1.0.0.6
-%global old_time_ver 1.1.0.2
-%global pretty_ver 1.1.1.1
-%global process_ver 1.2.0.0
-%global template_haskell_ver 2.9.0.0
-%global terminfo_ver 0.4.0.0
-%global time_ver 1.4.2
-%global transformers_ver 0.3.0.0
-%global unix_ver 2.7.0.1
-%global xhtml_ver 3000.2.1
-
+%global binary_ver 0.5.1.1
+%global bytestring_ver 0.10.0.2
+%global containers_ver 0.5.0.0
+%global deepseq_ver 1.3.0.1
+%global directory_ver 1.2.0.1
+%global filepath_ver 1.3.0.1
+%global ghc_prim_ver 0.3.0.0
+%global haskell2010_ver 1.1.1.0
+%global haskell98_ver 2.0.0.2
+%global hoopl_ver 3.9.0.0
+%global hpc_ver 0.6.0.0
+%global integer_gmp_ver 0.5.0.0
+%global old_locale_ver 1.0.0.5
+%global old_time_ver 1.1.0.1
+%global pretty_ver 1.1.1.0
+%global process_ver 1.1.0.2
+%global template_haskell_ver 2.8.0.0
+%global time_ver 1.4.0.1
+%global unix_ver 2.6.0.1
 
 # fedora ghc has been bootstrapped on
-# %{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
-# and retired arches: alpha sparcv9 armv5tel
+# %{ix86} x86_64 ppc alpha sparcv9 ppc64 armv7hl armv5tel s390 s390x
 # see ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 ExcludeArch: sparc64
 Obsoletes: ghc-dph-base < 0.5, ghc-dph-base-devel < 0.5, ghc-dph-base-prof < 0.5
@@ -99,12 +103,11 @@ Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-f
 %if %{undefined ghc_bootstrapping}
 BuildRequires: ghc-compiler = %{version}
 %endif
-%if 0%{?fedora} >= 20 || 0%{?rhel} >= 7
+%if 0%{?fedora} >= 20
 BuildRequires: ghc-rpm-macros-extra
 %else
 BuildRequires: ghc-rpm-macros
 %endif
-BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
 BuildRequires: ghc-directory-devel
@@ -113,9 +116,9 @@ BuildRequires: ghc-pretty-devel
 BuildRequires: ghc-process-devel
 BuildRequires: gmp-devel
 BuildRequires: libffi-devel
-# for terminfo
+# for internal terminfo
 BuildRequires: ncurses-devel
-# for man and docs
+# for manpage and docs
 BuildRequires: libxslt, docbook-style-xsl
 %if %{undefined without_testsuite}
 BuildRequires: python
@@ -123,7 +126,11 @@ BuildRequires: python
 %ifarch armv7hl armv5tel
 BuildRequires: llvm >= 3.0
 %endif
-%ifarch armv7hl aarch64
+%ifarch ppc64le aarch64
+# for patch19 and patch21
+BuildRequires: autoconf
+%endif
+%ifarch armv7hl
 # patch22
 BuildRequires: autoconf, automake
 %endif
@@ -187,16 +194,13 @@ The package provides a cronjob for re-indexing installed library development
 documention.
 %endif
 
-# ghclibdir also needs ghc_version_override for bootstrapping (ghc-deps.sh)
 %global ghc_version_override %{version}
 
-# currently only F22 ghc-rpm-macros has ghc.attr
-%if 0%{?fedora} < 22
 # needs ghc_version_override for bootstrapping
 %global _use_internal_dependency_generator 0
 %global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
 %global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
-%endif
+
 
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
@@ -214,7 +218,6 @@ documention.
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -x ghc %{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage haskeline %{haskeline_ver}
 %ghc_lib_subpackage -l HaskellReport haskell2010 %{haskell2010_ver}
 %ghc_lib_subpackage -l HaskellReport haskell98 %{haskell98_ver}
 %ghc_lib_subpackage hoopl %{hoopl_ver}
@@ -226,11 +229,8 @@ documention.
 %ghc_lib_subpackage -l %BSDHaskellReport process %{process_ver}
 %undefine ghc_pkg_obsoletes
 %ghc_lib_subpackage template-haskell %{template_haskell_ver}
-%ghc_lib_subpackage -c ncurses-devel%{?_isa} terminfo %{terminfo_ver}
 %ghc_lib_subpackage time %{time_ver}
-%ghc_lib_subpackage transformers %{transformers_ver}
 %ghc_lib_subpackage unix %{unix_ver}
-%ghc_lib_subpackage xhtml %{xhtml_ver}
 %endif
 
 %global version %{ghc_version_override}
@@ -258,19 +258,42 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 # gen_contents_index: use absolute path for haddock
 %patch1 -p1 -b .orig
 
-rm -r libffi-tarballs
+# make sure we don't use these
+rm -r ghc-tarballs/{mingw*,perl}
+# use system libffi
+%patch4 -p1 -b .libffi
+rm -r ghc-tarballs/libffi
+mkdir -p rts/dist/build
+ln -s $(pkg-config --variable=includedir libffi)/*.h rts/dist/build
+
+%patch9 -p1 -b .orig
 
 %ifnarch %{ix86} x86_64
-#%%patch10 -p1 -b .10-ffi
+%patch10 -p1 -b .10-ffi
 %endif
+
+%patch12 -p1 -b .orig
+
+%patch13 -p1 -b .orig
 
 %ifarch armv7hl armv5tel
-#%%patch14 -p1 -b .orig
+%patch14 -p1 -b .orig
 %endif
 
-# unversion pkgdoc htmldir
+%ifarch ppc64 s390x
+%patch15 -p1 -b .orig
+%endif
+
 %if 0%{?fedora} >= 21
 %patch16 -p1 -b .orig
+%endif
+
+%patch17 -p0 -b .orig
+
+#%%patch18 -p1 -b .orig
+
+%ifarch ppc64le
+%patch19 -p1 -b .orig
 %endif
 
 %patch20 -p1 -b .orig
@@ -283,7 +306,6 @@ rm -r libffi-tarballs
 %patch22 -p1 -b .orig
 %endif
 
-%patch23 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{undefined without_haddock}
@@ -304,14 +326,8 @@ BuildFlavour = perf
 %else
 BuildFlavour = perf-llvm
 %endif
-%else
-%ifnarch armv7hl armv5tel
-BuildFlavour = quick-llvm
-%else
-BuildFlavour = quick
 %endif
-%endif
-GhcLibWays = v dyn %{!?without_prof:p}
+GhcLibWays = v %{!?ghc_without_shared:dyn} %{!?without_prof:p}
 %if %{defined without_haddock}
 HADDOCK_DOCS = NO
 %endif
@@ -325,28 +341,24 @@ BUILD_DOCBOOK_HTML = NO
 #EXTRA_HC_OPTS=-debug
 EOF
 
-%ifarch aarch64
+export CFLAGS="${CFLAGS:-%optflags}"
+# note %%configure induces cross-build due to different target/host/build platform names
+# --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
+%ifarch ppc64le aarch64 armv7hl
 for i in $(find . -name config.guess -o -name config.sub) ; do
     [ -f /usr/lib/rpm/redhat/$(basename $i) ] && %{__rm} -f $i && %{__cp} -fv /usr/lib/rpm/redhat/$(basename $i) $i
 done
-%endif
-%ifarch aarch64 armv7hl
 autoreconf
 %endif
-export CFLAGS="${CFLAGS:-%optflags}"
-export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
-# * %%configure induces cross-build due to different target/host/build platform names
-# * --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --with-gcc=%{_bindir}/gcc --with-system-libffi
+  --with-gcc=%{_bindir}/gcc
 
-# avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
-export LANG=en_US.utf8
-make %{?_smp_mflags}
+# utf8 is needed when building with verbose output
+LANG=en_US.utf8 make %{?_smp_mflags}
 
 
 %install
@@ -378,13 +390,11 @@ echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
 %merge_filelist bin-package-db ghc
 
 # add rts libs
-echo "%dir %{ghclibdir}/rts-1.0" >> ghc-base.files
-ls %{buildroot}%{ghclibdir}/rts-1.0/libHS*.so >> ghc-base.files
-
+%if %{undefined ghc_without_shared}
+ls %{buildroot}%{ghclibdir}/libHS*.so >> ghc-base.files
 sed -i -e "s|^%{buildroot}||g" ghc-base.files
-
-ls -d %{buildroot}%{ghclibdir}/rts-1.0/lib*.a  %{buildroot}%{ghclibdir}/package.conf.d/builtin_*.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
-
+%endif
+ls -d %{buildroot}%{ghclibdir}/libHS*.a  %{buildroot}%{ghclibdir}/package.conf.d/builtin_*.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
 sed -i -e "s|^%{buildroot}||g" ghc-base-devel.files
 
 # these are handled as alternatives
@@ -411,12 +421,8 @@ sh %{gen_contents_index} --intree --verbose
 cd ..
 %endif
 
-# we package the library license files separately
-find %{buildroot}%ghclibdocdir -name LICENSE -exec rm '{}' ';'
-
 
 %check
-export LANG=en_US.utf8
 # stolen from ghc6/debian/rules:
 GHC=inplace/bin/ghc-stage2
 # Do some very simple tests that the compiler actually works
@@ -432,10 +438,12 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -O2
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
+%if %{undefined ghc_without_shared}
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
+%endif
 %if %{undefined without_testsuite}
 make test
 %endif
@@ -469,15 +477,13 @@ fi
 %files
 
 %files compiler
-%doc ANNOUNCE LICENSE
+%doc ANNOUNCE HACKING LICENSE README
 %{_bindir}/ghc
 %{_bindir}/ghc-%{version}
 %{_bindir}/ghc-pkg
 %{_bindir}/ghc-pkg-%{version}
-%ifarch %ghc_arches_with_ghci
 %{_bindir}/ghci
 %{_bindir}/ghci-%{version}
-%endif
 %{_bindir}/hp2ps
 %{_bindir}/hpc
 %ghost %{_bindir}/hsc2hs
@@ -485,22 +491,18 @@ fi
 %{_bindir}/runghc*
 %ghost %{_bindir}/runhaskell
 %{_bindir}/runhaskell-ghc
-%dir %{ghclibdir}/bin
-%{ghclibdir}/bin/ghc
-%{ghclibdir}/bin/ghc-pkg
-%{ghclibdir}/bin/hpc
-%{ghclibdir}/bin/hsc2hs
-%{ghclibdir}/bin/runghc
-# unknown (unregisterized) archs
+%{ghclibdir}/ghc
+%{ghclibdir}/ghc-pkg
+# unknown ("unregisterized") archs
 %ifnarch ppc64 s390 s390x ppc64le aarch64
 %{ghclibdir}/ghc-split
 %endif
 %{ghclibdir}/ghc-usage.txt
 %{ghclibdir}/ghci-usage.txt
-%{ghclibdir}/mkGmpDerivedConstants
+%{ghclibdir}/hsc2hs
 %dir %{ghclibdir}/package.conf.d
 %ghost %{ghclibdir}/package.conf.d/package.cache
-%{ghclibdir}/platformConstants
+%{ghclibdir}/runghc
 %{ghclibdir}/settings
 %{ghclibdir}/template-hsc.h
 %{ghclibdir}/unlit
@@ -511,7 +513,7 @@ fi
 %{_bindir}/ghc-doc-index
 %{_bindir}/haddock
 %{_bindir}/haddock-ghc-%{version}
-%{ghclibdir}/bin/haddock
+%{ghclibdir}/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
 %if %{undefined without_manual}
@@ -545,19 +547,8 @@ fi
 
 
 %changelog
-* Sun Aug  3 2014 Jens Petersen <petersen@redhat.com> - 7.8.3-38
-- update to 7.8.3
-- https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-1.html
-- https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-2.html
-- https://www.haskell.org/ghc/docs/7.8.3/html/users_guide/release-7-8-3.html
-- bootstrap build
-- provides haskeline, terminfo and xhtml libraries
-- shared libraries on all archs
-- use rpm internal dependency generator with ghc.attr on F22
-- fix bash-ism in ghc-doc-index (#1146733)
-- do "quick" build when bootstrapping
-- setup LDFLAGS
-- bindir/ghci only on ghc_arches_with_ghci
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.6.3-26
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
 * Tue Jul 15 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-25
 - configure ARM with VFPv3D16 and without NEON (#995419)
