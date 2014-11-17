@@ -22,7 +22,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 26%{?dist}
+Release: 27%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -33,6 +33,8 @@ Source2: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-testsuite.tar
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
+Source5: ghc
+Source6: ghc-pkg
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 # fedora does not allow copy libraries
@@ -124,7 +126,7 @@ BuildRequires: libxslt, docbook-style-xsl
 BuildRequires: python
 %endif
 %ifarch armv7hl armv5tel
-BuildRequires: llvm >= 3.0
+BuildRequires: llvm34
 %endif
 %ifarch ppc64le aarch64
 # for patch19 and patch21
@@ -172,7 +174,7 @@ Requires(postun): chkconfig
 # added in f14
 Obsoletes: ghc-doc < 6.12.3-4
 %ifarch armv7hl armv5tel
-Requires: llvm >= 3.0
+Requires: llvm34
 %endif
 
 %description compiler
@@ -350,12 +352,19 @@ for i in $(find . -name config.guess -o -name config.sub) ; do
 done
 autoreconf
 %endif
+%ifarch armv7hl armv5tel
+export GHC=%SOURCE5
+%endif
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --with-gcc=%{_bindir}/gcc
+  --with-gcc=%{_bindir}/gcc \
+%ifarch armv7hl armv5tel
+  --with-llc=%{_bindir}/llc-3.4 --with-opt=%{_bindir}/opt-3.4 \
+%endif
+%{nil}
 
 # utf8 is needed when building with verbose output
 LANG=en_US.utf8 make %{?_smp_mflags}
@@ -547,6 +556,9 @@ fi
 
 
 %changelog
+* Mon Nov 17 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-27
+- use llvm34 instead of llvm-3.5 for arm (#1161049)
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.6.3-26
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
