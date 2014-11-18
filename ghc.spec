@@ -22,7 +22,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 26%{?dist}
+Release: 26.1%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -103,7 +103,7 @@ Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-f
 %if %{undefined ghc_bootstrapping}
 BuildRequires: ghc-compiler = %{version}
 %endif
-%if 0%{?fedora} >= 20
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
 BuildRequires: ghc-rpm-macros-extra
 %else
 BuildRequires: ghc-rpm-macros
@@ -196,11 +196,13 @@ documention.
 
 %global ghc_version_override %{version}
 
+# currently only F21+ ghc-rpm-macros has ghc.attr
+%if 0%{?fedora} < 21
 # needs ghc_version_override for bootstrapping
 %global _use_internal_dependency_generator 0
 %global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
 %global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
-
+%endif
 
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
@@ -326,6 +328,12 @@ BuildFlavour = perf
 %else
 BuildFlavour = perf-llvm
 %endif
+%else
+%ifnarch armv7hl armv5tel
+BuildFlavour = quick-llvm
+%else
+BuildFlavour = quick
+%endif
 %endif
 GhcLibWays = v %{!?ghc_without_shared:dyn} %{!?without_prof:p}
 %if %{defined without_haddock}
@@ -341,7 +349,6 @@ BUILD_DOCBOOK_HTML = NO
 #EXTRA_HC_OPTS=-debug
 EOF
 
-export CFLAGS="${CFLAGS:-%optflags}"
 # note %%configure induces cross-build due to different target/host/build platform names
 # --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
 %ifarch ppc64le aarch64 armv7hl
@@ -350,6 +357,8 @@ for i in $(find . -name config.guess -o -name config.sub) ; do
 done
 autoreconf
 %endif
+export CFLAGS="${CFLAGS:-%optflags}"
+export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
@@ -547,6 +556,12 @@ fi
 
 
 %changelog
+* Tue Nov 18 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-26.1
+- use rpm internal dependency generator with ghc.attr on F21+
+- fix bash-ism in ghc-doc-index (#1146733)
+- do "quick" build when bootstrapping
+- setup LDFLAGS
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 7.6.3-26
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
