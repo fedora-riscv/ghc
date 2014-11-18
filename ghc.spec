@@ -560,7 +560,7 @@ fi
 
 
 %changelog
-* Mon Nov 17 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-28
+* Tue Nov 18 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-28
 - remove the build hack to switch from llvm to llvm34 (#1161049)
 - use rpm internal dependency generator with ghc.attr on F21+
 - fix bash-ism in ghc-doc-index (#1146733)
