@@ -22,7 +22,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 26.2%{?dist}
+Release: 26.3%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -33,8 +33,6 @@ Source2: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-testsuite.tar
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
-Source5: ghc
-Source6: ghc-pkg
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 # fedora does not allow copy libraries
@@ -361,9 +359,6 @@ autoreconf
 %endif
 export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
-%ifarch armv7hl armv5tel
-export GHC=%SOURCE5
-%endif
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
@@ -565,6 +560,9 @@ fi
 
 
 %changelog
+* Wed Dec 24 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-26.3
+- remove the build hack to switch from llvm to llvm34 (#1161049)
+
 * Mon Dec 22 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-26.2
 - use llvm34 instead of llvm-3.5 for arm (#1161049)
 
