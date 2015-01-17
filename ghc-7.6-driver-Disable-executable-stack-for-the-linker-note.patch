@@ -1,0 +1,37 @@
+From 08a38628f29df63ac842f4d083efb414f42d7bff Mon Sep 17 00:00:00 2001
+From: "Edward Z. Yang" <ezyang@mit.edu>
+Date: Tue, 9 Jul 2013 00:01:43 -0700
+Subject: [PATCH] Disable executable stack for the linker note, fixing #703
+ (again)
+
+Signed-off-by: Edward Z. Yang <ezyang@mit.edu>
+---
+ compiler/main/DriverPipeline.hs | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/compiler/main/DriverPipeline.hs b/compiler/main/DriverPipeline.hs
+index 67377e6..26425ae 100644
+--- a/compiler/main/DriverPipeline.hs
++++ b/compiler/main/DriverPipeline.hs
+@@ -1640,7 +1640,17 @@ mkNoteObjsToLinkIntoBinary dflags dep_packages = do
+                                    text elfSectionNote,
+                                    text "\n",
+ 
+-          text "\t.ascii \"", info', text "\"\n" ]
++          text "\t.ascii \"", info', text "\"\n",
++
++          -- ALL generated assembly must have this section to disable
++          -- executable stacks.  See also
++          -- compiler/nativeGen/AsmCodeGen.lhs for another instance
++          -- where we need to do this.
++          (if platformHasGnuNonexecStack (targetPlatform dflags)
++           then text ".section .note.GNU-stack,\"\",@progbits\n"
++           else empty)
++
++           ]
+           where
+             info' = text $ escape info
+ 
+-- 
+1.8.1.2
+
