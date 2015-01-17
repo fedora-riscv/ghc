@@ -43,10 +43,6 @@ Source4: ghc-doc-index
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 # add libffi include dir to ghc wrapper for archs using gcc/llc
 #Patch10: ghc-wrapper-libffi-include.patch
-# stop warnings about unsupported version of llvm
-# NB: value affects ABI hash of libHSghc!
-# will probably be needed again for llvm-3.5
-#Patch14: ghc-7.6.3-LlvmCodeGen-llvm-version-warning.patch
 # unversion library html docdirs
 Patch16: ghc-cabal-unversion-docdir.patch
 # warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
@@ -55,6 +51,8 @@ Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 Patch21: ghc-arm64.patch
 Patch22: ghc-armv7-VFPv3D16--NEON.patch
 Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
+Patch24: ghc-7.8-arm7-use-ld-gold-8976.patch
+Patch25: ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
 
 %global Cabal_ver 1.18.1.5
 %global array_ver 0.5.0.0
@@ -125,7 +123,7 @@ BuildRequires: python
 BuildRequires: llvm34
 %endif
 %ifarch armv7hl aarch64
-# patch22
+# patch22 and patch24
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -265,10 +263,6 @@ rm -r libffi-tarballs
 #%%patch10 -p1 -b .10-ffi
 %endif
 
-%ifarch armv7hl armv5tel
-#%%patch14 -p1 -b .orig
-%endif
-
 # unversion pkgdoc htmldir
 %if 0%{?fedora} >= 21
 %patch16 -p1 -b .orig
@@ -282,6 +276,8 @@ rm -r libffi-tarballs
 
 %ifarch armv7hl
 %patch22 -p1 -b .orig
+%patch24 -p1 -b .24~
+%patch25 -p1 -b .25~
 %endif
 
 %patch23 -p1 -b .orig
@@ -561,6 +557,8 @@ fi
 - provides haskeline, terminfo and xhtml libraries
 - shared libraries on all archs
 - bindir/ghci only on ghc_arches_with_ghci
+- use ld.gold on ARMv7 (see https://ghc.haskell.org/trac/ghc/ticket/8976)
+  [thanks to nomeata for workaround patches posted upstream]
 
 * Tue Nov 18 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-28
 - remove the build hack to switch from llvm to llvm34 (#1161049)
