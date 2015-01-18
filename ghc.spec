@@ -43,8 +43,6 @@ Source4: ghc-doc-index
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 # add libffi include dir to ghc wrapper for archs using gcc/llc
 #Patch10: ghc-wrapper-libffi-include.patch
-# unversion library html docdirs
-Patch16: ghc-cabal-unversion-docdir.patch
 # warning "_BSD_SOURCE and _SVID_SOURCE are deprecated, use _DEFAULT_SOURCE"
 Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 # Debian patch
@@ -261,11 +259,6 @@ rm -r libffi-tarballs
 
 %ifnarch %{ix86} x86_64
 #%%patch10 -p1 -b .10-ffi
-%endif
-
-# unversion pkgdoc htmldir
-%if 0%{?fedora} >= 21
-%patch16 -p1 -b .orig
 %endif
 
 %patch20 -p1 -b .orig
@@ -548,6 +541,7 @@ fi
 %changelog
 * Sun Jan 18 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-40
 - production build
+- version doc htmldirs again
 
 * Sat Jan 17 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-39
 - update to 7.8.4
