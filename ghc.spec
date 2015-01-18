@@ -1,12 +1,12 @@
 # To bootstrap build a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
-%global without_testsuite 1
-%global without_prof 1
-%if 0%{?fedora} >= 22
-%{?ghc_bootstrap}
-%else
-%{?ghc_test}
-%endif
+#%%global ghc_bootstrapping 1
+#%%global without_testsuite 1
+#%%global without_prof 1
+#%%if 0%{?fedora} >= 22
+#%%{?ghc_bootstrap}
+#%%else
+#%%{?ghc_test}
+#%%endif
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
 
@@ -28,7 +28,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 39%{?dist}
+Release: 40%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -546,6 +546,9 @@ fi
 
 
 %changelog
+* Sun Jan 18 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-40
+- production build
+
 * Sat Jan 17 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-39
 - update to 7.8.4
 - bump release over haskell-platform xhtml
@@ -558,7 +561,7 @@ fi
 - shared libraries on all archs
 - bindir/ghci only on ghc_arches_with_ghci
 - use ld.gold on ARMv7 (see https://ghc.haskell.org/trac/ghc/ticket/8976)
-  [thanks to nomeata for workaround patches posted upstream]
+  [thanks to Joachim Breitner for workaround patches posted upstream]
 
 * Tue Nov 18 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-28
 - remove the build hack to switch from llvm to llvm34 (#1161049)
