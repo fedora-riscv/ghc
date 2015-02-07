@@ -540,6 +540,7 @@ fi
 * Sat Feb  7 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-39.1
 - version doc htmldirs again
 - all archs have bindir/ghci
+- update the arm64 patch for 7.8.4
 
 * Sat Jan 17 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-39
 - update to 7.8.4
