@@ -1,5 +1,7 @@
-# To bootstrap build a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
+# To bootstrap build a new version of ghc:
+#%%global ghc_bootstrapping 1
+
+%if %{defined ghc_bootstrapping}
 %global without_testsuite 1
 %global without_prof 1
 %if 0%{?fedora} >= 22
@@ -9,6 +11,7 @@
 %endif
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
+%endif
 
 # make sure to turn on shared libs for all arches
 # (for building on releases earlier than F22)
@@ -28,7 +31,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 39.1%{?dist}
+Release: 41%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -537,10 +540,13 @@ fi
 
 
 %changelog
-* Sat Feb  7 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-39.1
-- version doc htmldirs again
-- all archs have bindir/ghci
+* Mon Feb  9 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-41
 - update the arm64 patch for 7.8.4
+- all archs have bindir/ghci
+
+* Sun Jan 18 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-40
+- production build
+- version doc htmldirs again
 
 * Sat Jan 17 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-39
 - update to 7.8.4
