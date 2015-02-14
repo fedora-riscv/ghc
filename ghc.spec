@@ -31,7 +31,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 41%{?dist}
+Release: 42%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -343,6 +343,10 @@ export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
 export LANG=en_US.utf8
+echo %{?_smp_mflags}
+%ifarch %{ix86} x86_64
+%global _smp_mflags -j16
+%endif
 make %{?_smp_mflags}
 
 
@@ -540,6 +544,9 @@ fi
 
 
 %changelog
+* Sat Feb 14 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42
+- try "make -j16" on Intel arches to keep ABI hashes same as -40
+
 * Mon Feb  9 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-41
 - update the arm64 patch for 7.8.4
 - all archs have bindir/ghci
