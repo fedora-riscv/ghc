@@ -343,9 +343,7 @@ export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
 export LANG=en_US.utf8
-%if %{defined _smp_mflags}
-echo %{?_smp_mflags}
-%endif
+echo _smp_mflags is '%{?_smp_mflags}'
 %ifarch %{ix86} x86_64
 %global _smp_mflags -j16
 %endif
