@@ -343,11 +343,20 @@ export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
 export LANG=en_US.utf8
-echo _smp_mflags is '%{?_smp_mflags}'
+
+echo _smp_mflags is \'%{?_smp_mflags}\'
+# NB for future ghc versions we should probably hardcode max -j4 instead for all builds to avoid this
+MAKE_JOBS=%{?_smp_mflags}
 %ifarch %{ix86} x86_64
-%global _smp_mflags -j16
+# hack to perserve the high "make -j" ghc ABI hashes for 7.8.4 koji/mock builds
+# (-j12 seems to be sufficient but not -j8)
+if [ -z "$HOSTNAME" -a "%{?_smp_mflags}" != "-j16" ]; then
+  echo "Overriding for koji/mock Intel builds to preserve the ghc ABI hashes:"
+  MAKE_JOBS=-j16
+fi
 %endif
-make %{?_smp_mflags}
+
+make $MAKE_JOBS
 
 
 %install
