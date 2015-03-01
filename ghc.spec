@@ -123,6 +123,9 @@ BuildRequires: python
 %ifarch armv7hl armv5tel
 BuildRequires: llvm34
 %endif
+%ifarch aarch64
+BuildRequires: llvm
+%endif
 %ifarch armv7hl aarch64
 # patch22 and patch24
 BuildRequires: autoconf, automake
@@ -292,13 +295,13 @@ fi
 # cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
 %if %{undefined ghc_bootstrapping}
-%ifnarch armv7hl armv5tel
-BuildFlavour = perf
-%else
+%ifarch armv7hl armv5tel aarch64
 BuildFlavour = perf-llvm
+%else
+BuildFlavour = perf
 %endif
 %else
-%ifnarch armv7hl armv5tel
+%ifarch armv7hl armv5tel aarch64
 BuildFlavour = quick-llvm
 %else
 BuildFlavour = quick
@@ -553,6 +556,10 @@ fi
 
 
 %changelog
+* Sun Mar  1 2015 Jens Petersen <petersen@fedoraproject.org>
+- use llvm for aarch64
+- fix build.mk BuildFlavour setup
+
 * Sat Feb 14 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42
 - try "make -j16" on Intel arches to keep ABI hashes same as -40
 
