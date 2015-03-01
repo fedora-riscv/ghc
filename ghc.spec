@@ -1,3 +1,8 @@
+# for F22 and F23 ghc-7.8.4, override to high "make -j" to preserve ABI hashes
+# - set < 9 at our own risk
+# (-j9 seems sufficent but to be safe use -j12)
+%global build_minimum_smp 12
+
 # To bootstrap build a new version of ghc:
 #%%global ghc_bootstrapping 1
 
@@ -348,18 +353,27 @@ export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
 export LANG=en_US.utf8
 
 echo _smp_mflags is \'%{?_smp_mflags}\'
-# NB for future ghc versions we should probably hardcode max -j4 instead for all builds to avoid this
-MAKE_JOBS=%{?_smp_mflags}
+# NB for future ghc versions maybe should hardcode max -j4 for all builds
+# Though apparently this does not affect 7.10
+MAKE_JOBS=$(echo %{?_smp_mflags} | sed -e "s/^-j//")
 %ifarch %{ix86} x86_64
 # hack to perserve the high "make -j" ghc ABI hashes for 7.8.4 koji/mock builds
-# (-j12 seems to be sufficient but not -j8)
-if [ -z "$HOSTNAME" -a "%{?_smp_mflags}" != "-j16" ]; then
-  echo "Overriding for koji/mock Intel builds to preserve the ghc ABI hashes:"
-  MAKE_JOBS=-j16
+# (-j9 seems to be sufficient but not -j8)
+if [ "%{build_minimum_smp}" -le "8" ]; then
+  echo "** NB: ghc-7.8.4 needs to be built with 'make -j9' or higher to preserve the -j16 ABI hashes for F22/F23 i686 and x86_64 **"
+fi
+if [ -z "$MAKE_JOBS" -o "0$MAKE_JOBS" -le "%{build_minimum_smp}" ]; then
+    echo "Overriding 'make -j' SMP for Intel builds to preserve the ghc ABI hashes:"
+    MAKE_JOBS="%{build_minimum_smp}"
+fi
+%else
+# keep < 9 for all other archs
+if [ "0$MAKE_JOBS" -gt "8" ]; then
+  MAKE_JOBS=8
 fi
 %endif
 
-make $MAKE_JOBS
+make ${MAKE_JOBS:+-j$MAKE_JOBS}
 
 
 %install
@@ -559,6 +573,7 @@ fi
 * Sun Mar  1 2015 Jens Petersen <petersen@fedoraproject.org>
 - use llvm for aarch64
 - fix build.mk BuildFlavour setup
+- improve the smp make setup with build_minimum_smp
 
 * Sat Feb 14 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42
 - try "make -j16" on Intel arches to keep ABI hashes same as -40
