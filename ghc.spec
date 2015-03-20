@@ -1,10 +1,12 @@
-# for F22 and F23 ghc-7.8.4, override to high "make -j" to preserve ABI hashes
+# for F22 and F23 intel ghc-7.8.4, override to high "make -j" to preserve ABI hashes
 # - set < 9 at our own risk
 # (-j9 seems sufficent but to be safe use -j12)
 %global build_minimum_smp 12
 
-# To bootstrap build a new version of ghc:
-#%%global ghc_bootstrapping 1
+# To bootstrap build a new version of ghc, uncomment the following:
+%ifarch aarch64
+%global ghc_bootstrapping 1
+%endif
 
 %if %{defined ghc_bootstrapping}
 %global without_testsuite 1
@@ -36,7 +38,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 42%{?dist}
+Release: 42.1%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -127,9 +129,6 @@ BuildRequires: python
 %endif
 %ifarch armv7hl armv5tel
 BuildRequires: llvm34
-%endif
-%ifarch aarch64
-BuildRequires: llvm
 %endif
 %ifarch armv7hl aarch64
 # patch22 and patch24
@@ -300,13 +299,13 @@ fi
 # cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
 %if %{undefined ghc_bootstrapping}
-%ifarch armv7hl armv5tel aarch64
+%ifarch armv7hl armv5tel
 BuildFlavour = perf-llvm
 %else
 BuildFlavour = perf
 %endif
 %else
-%ifarch armv7hl armv5tel aarch64
+%ifarch armv7hl armv5tel
 BuildFlavour = quick-llvm
 %else
 BuildFlavour = quick
@@ -318,6 +317,11 @@ HADDOCK_DOCS = NO
 %endif
 %if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
+%endif
+%ifarch aarch64
+# aarch64 dynlinking causing runtime IO problems
+# https://ghc.haskell.org/trac/ghc/ticket/9673
+DYNAMIC_GHC_PROGRAMS=NO
 %endif
 ## for verbose build output
 #GhcStage1HcOpts=-v4
@@ -333,6 +337,11 @@ done
 %endif
 %ifarch aarch64 armv7hl
 autoreconf
+%endif
+# x86_64: /usr/bin/ld: utils/ghc-pwd/dist-boot/Main.o: relocation R_X86_64_32S against `.text' can not be used when making a shared object; recompile with -fPIC
+# aarch64: /usr/bin/ld: /usr/lib64/ghc-7.6.3/libHSrts.a(RtsFlags.o)(.text+0x578): unresolvable R_AARCH64_ADR_PREL_PG_HI21 relocation against symbol `stdout@@GLIBC_2.17'
+%ifarch x86_64 aarch64
+%global _hardened_ldflags %{nil}
 %endif
 export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%__global_ldflags}"
@@ -501,8 +510,10 @@ fi
 %{_bindir}/ghc-%{version}
 %{_bindir}/ghc-pkg
 %{_bindir}/ghc-pkg-%{version}
+%ifarch %ghc_arches_with_ghci
 %{_bindir}/ghci
 %{_bindir}/ghci-%{version}
+%endif
 %{_bindir}/hp2ps
 %{_bindir}/hpc
 %ghost %{_bindir}/hsc2hs
@@ -570,10 +581,10 @@ fi
 
 
 %changelog
-* Sun Mar  1 2015 Jens Petersen <petersen@fedoraproject.org>
-- use llvm for aarch64
+* Wed Mar 18 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42.1
 - fix build.mk BuildFlavour setup
 - improve the smp make setup with build_minimum_smp
+- bootstrap for aarch64 without ghci (#1195231)
 
 * Sat Feb 14 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42
 - try "make -j16" on Intel arches to keep ABI hashes same as -40
