@@ -340,7 +340,7 @@ autoreconf
 %endif
 # x86_64: /usr/bin/ld: utils/ghc-pwd/dist-boot/Main.o: relocation R_X86_64_32S against `.text' can not be used when making a shared object; recompile with -fPIC
 # aarch64: /usr/bin/ld: /usr/lib64/ghc-7.6.3/libHSrts.a(RtsFlags.o)(.text+0x578): unresolvable R_AARCH64_ADR_PREL_PG_HI21 relocation against symbol `stdout@@GLIBC_2.17'
-%ifarch x86_64 aarch64
+%ifarch x86_64 armv7hl aarch64 s390x ppc64 ppc64le
 %global _hardened_ldflags %{nil}
 %endif
 export CFLAGS="${CFLAGS:-%optflags}"
@@ -585,6 +585,7 @@ fi
 - fix build.mk BuildFlavour setup
 - improve the smp make setup with build_minimum_smp
 - bootstrap for aarch64 without ghci (#1195231)
+- disable ld hardening for F23 on 64bit and armv7hl
 
 * Sat Feb 14 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42
 - try "make -j16" on Intel arches to keep ABI hashes same as -40
