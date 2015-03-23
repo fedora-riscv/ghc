@@ -3,7 +3,9 @@
 %global build_minimum_smp 16
 
 # To bootstrap build a new version of ghc, uncomment the following:
-#%%global ghc_bootstrapping 1
+%ifarch aarch64
+%global ghc_bootstrapping 1
+%endif
 
 %if %{defined ghc_bootstrapping}
 %global without_testsuite 1
@@ -35,7 +37,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 43%{?dist}
+Release: 42.2%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -578,8 +580,8 @@ fi
 
 
 %changelog
-* Mon Mar 23 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-43
-- aarch64 production build
+* Mon Mar 23 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42.2
+- aarch64 bootstrap build
 - must use "make -j16" for Intel arches to preserve ABI hashes
   (-j12 changed array's hash on i686)
 
