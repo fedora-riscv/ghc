@@ -1,12 +1,9 @@
-# for F22 and F23 intel ghc-7.8.4, override to high "make -j" to preserve ABI hashes
-# - set < 9 at our own risk
-# (-j9 seems sufficent but to be safe use -j12)
-%global build_minimum_smp 12
+# for F22 and F23 intel ghc-7.8.4, force high "make -j" to preserve ABI hashes
+# - set < 16 at your own risk
+%global build_minimum_smp 16
 
 # To bootstrap build a new version of ghc, uncomment the following:
-%ifarch aarch64
-%global ghc_bootstrapping 1
-%endif
+#%%global ghc_bootstrapping 1
 
 %if %{defined ghc_bootstrapping}
 %global without_testsuite 1
@@ -38,7 +35,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 42.1%{?dist}
+Release: 43%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -581,6 +578,11 @@ fi
 
 
 %changelog
+* Mon Mar 23 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-43
+- aarch64 production build
+- must use "make -j16" for Intel arches to preserve ABI hashes
+  (-j12 changed array's hash on i686)
+
 * Wed Mar 18 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-42.1
 - fix build.mk BuildFlavour setup
 - improve the smp make setup with build_minimum_smp
