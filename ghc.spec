@@ -35,7 +35,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 43%{?dist}
+Release: 44%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -58,6 +58,7 @@ Patch22: ghc-armv7-VFPv3D16--NEON.patch
 Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
 Patch24: ghc-7.8-arm7-use-ld-gold-8976.patch
 Patch25: ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
+Patch26: ghc-config.mk.in-Enable-SMP-and-GHCi-support-for-Aarch64.patch
 
 %global Cabal_ver 1.18.1.5
 %global array_ver 0.5.0.0
@@ -272,6 +273,7 @@ rm -r libffi-tarballs
 
 %ifarch aarch64
 %patch21 -p1 -b .orig
+%patch26 -p1 -b .orig
 %endif
 
 %ifarch armv7hl
@@ -314,11 +316,6 @@ HADDOCK_DOCS = NO
 %endif
 %if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
-%endif
-%ifarch aarch64
-# aarch64 dynlinking causing runtime IO problems
-# https://ghc.haskell.org/trac/ghc/ticket/9673
-DYNAMIC_GHC_PROGRAMS=NO
 %endif
 ## for verbose build output
 #GhcStage1HcOpts=-v4
@@ -578,6 +575,9 @@ fi
 
 
 %changelog
+* Fri Apr 10 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-44
+- turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1210323)
+
 * Mon Mar 30 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-43
 - aarch64 production build
 
