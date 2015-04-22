@@ -56,7 +56,7 @@ Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 Patch21: ghc-arm64.patch
 Patch22: ghc-armv7-VFPv3D16--NEON.patch
 Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
-Patch24: ghc-7.8-arm7-use-ld-gold-8976.patch
+Patch24: ghc-7.8-arm-use-ld-gold.patch
 Patch25: ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
 Patch26: ghc-config.mk.in-Enable-SMP-and-GHCi-support-for-Aarch64.patch
 
@@ -276,9 +276,12 @@ rm -r libffi-tarballs
 %patch26 -p1 -b .orig
 %endif
 
+%ifarch armv7hl aarch64
+%patch24 -p1 -b .24~
+%endif
+
 %ifarch armv7hl
 %patch22 -p1 -b .orig
-%patch24 -p1 -b .24~
 %patch25 -p1 -b .25~
 %endif
 
@@ -357,6 +360,7 @@ export LANG=en_US.utf8
 
 echo _smp_mflags is \'%{?_smp_mflags}\'
 # NB for future ghc versions maybe should hardcode max -j4 for all builds
+# (s390 seems ABI unstable under -j4)
 # Though apparently this does not affect 7.10
 MAKE_JOBS=$(echo %{?_smp_mflags} | sed -e "s/^-j//")
 %ifarch %{ix86} x86_64
@@ -370,10 +374,17 @@ if [ -z "$MAKE_JOBS" -o "0$MAKE_JOBS" -le "%{build_minimum_smp}" ]; then
     MAKE_JOBS="%{build_minimum_smp}"
 fi
 %else
+%ifarch s390
+# keep < 4 for s390
+if [ "0$MAKE_JOBS" -ge "4" ]; then
+  MAKE_JOBS=3
+fi
+%else
 # keep < 9 for all other archs
 if [ "0$MAKE_JOBS" -gt "8" ]; then
   MAKE_JOBS=8
 fi
+%endif
 %endif
 
 make ${MAKE_JOBS:+-j$MAKE_JOBS}
@@ -575,8 +586,10 @@ fi
 
 
 %changelog
-* Fri Apr 10 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-44
-- turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1210323)
+* Wed Apr 22 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-44
+- use ld.gold on aarch64 like for armv7 (Erik de Castro Lopo, #1195231)
+- turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1195231)
+- use "make -j3" for s390 (#1212374)
 
 * Mon Mar 30 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-43
 - aarch64 production build
