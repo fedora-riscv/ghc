@@ -375,9 +375,9 @@ if [ -z "$MAKE_JOBS" -o "0$MAKE_JOBS" -le "%{build_minimum_smp}" ]; then
 fi
 %else
 %ifarch s390
-# keep < 4 for s390
-if [ "0$MAKE_JOBS" -ge "4" ]; then
-  MAKE_JOBS=3
+# use 2 for s390
+if [ "0$MAKE_JOBS" -ne "2" ]; then
+  MAKE_JOBS=2
 fi
 %else
 # keep < 9 for all other archs
@@ -589,7 +589,7 @@ fi
 * Wed Apr 22 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-44
 - use ld.gold on aarch64 like for armv7 (Erik de Castro Lopo, #1195231)
 - turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1195231)
-- use "make -j3" for s390 (#1212374)
+- use "make -j2" for s390 (#1212374)
 
 * Mon Mar 30 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-43
 - aarch64 production build
