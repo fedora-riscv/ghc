@@ -56,7 +56,7 @@ Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 Patch21: ghc-arm64.patch
 Patch22: ghc-armv7-VFPv3D16--NEON.patch
 Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
-Patch24: ghc-7.8-arm-use-ld-gold.patch
+Patch24: ghc-7.8-arm7-use-ld-gold-8976.patch
 Patch25: ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
 Patch26: ghc-config.mk.in-Enable-SMP-and-GHCi-support-for-Aarch64.patch
 
@@ -276,12 +276,9 @@ rm -r libffi-tarballs
 %patch26 -p1 -b .orig
 %endif
 
-%ifarch armv7hl aarch64
-%patch24 -p1 -b .24~
-%endif
-
 %ifarch armv7hl
 %patch22 -p1 -b .orig
+%patch24 -p1 -b .24~
 %patch25 -p1 -b .25~
 %endif
 
@@ -319,6 +316,11 @@ HADDOCK_DOCS = NO
 %endif
 %if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
+%endif
+%ifarch aarch64
+# aarch64 dynlinking causing runtime IO problems
+# https://ghc.haskell.org/trac/ghc/ticket/9673
+DYNAMIC_GHC_PROGRAMS=NO
 %endif
 ## for verbose build output
 #GhcStage1HcOpts=-v4
@@ -587,8 +589,7 @@ fi
 
 %changelog
 * Wed Apr 22 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-44
-- use ld.gold on aarch64 like for armv7 (Erik de Castro Lopo, #1195231)
-- turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1195231)
+- turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1203951)
 - use "make -j2" for s390 (#1212374)
 
 * Mon Mar 30 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-43
