@@ -35,7 +35,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 44%{?dist}
+Release: 45%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -56,7 +56,7 @@ Patch20: ghc-glibc-2.20_BSD_SOURCE.patch
 Patch21: ghc-arm64.patch
 Patch22: ghc-armv7-VFPv3D16--NEON.patch
 Patch23: ghc-7.8.3-Cabal-install-PATH-warning.patch
-Patch24: ghc-7.8-arm7-use-ld-gold-8976.patch
+Patch24: ghc-7.8-arm-use-ld-gold.patch
 Patch25: ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
 Patch26: ghc-config.mk.in-Enable-SMP-and-GHCi-support-for-Aarch64.patch
 
@@ -276,9 +276,12 @@ rm -r libffi-tarballs
 %patch26 -p1 -b .orig
 %endif
 
+%ifarch armv7hl aarch64
+%patch24 -p1 -b .24~
+%endif
+
 %ifarch armv7hl
 %patch22 -p1 -b .orig
-%patch24 -p1 -b .24~
 %patch25 -p1 -b .25~
 %endif
 
@@ -316,11 +319,6 @@ HADDOCK_DOCS = NO
 %endif
 %if %{defined without_manual}
 BUILD_DOCBOOK_HTML = NO
-%endif
-%ifarch aarch64
-# aarch64 dynlinking causing runtime IO problems
-# https://ghc.haskell.org/trac/ghc/ticket/9673
-DYNAMIC_GHC_PROGRAMS=NO
 %endif
 ## for verbose build output
 #GhcStage1HcOpts=-v4
@@ -588,6 +586,9 @@ fi
 
 
 %changelog
+* Thu Jun 11 2015 Jens Petersen <petersen@fedoraproject.org> - 7.8.4-45
+- use ld.gold on aarch64 like for armv7 (Erik de Castro Lopo, #1195231)
+
 * Wed Apr 22 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-44
 - turn on SMP and ghci for aarch64 (Erik de Castro Lopo, #1203951)
 - use "make -j2" for s390 (#1212374)
