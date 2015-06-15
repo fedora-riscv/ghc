@@ -11,7 +11,7 @@ arm64 backport of https://ghc.haskell.org/trac/ghc/ticket/9673#comment:28 (erikd
 +        # On arm, link using gold
 +        $3="$$3 -fuse-ld=gold"
 +        ;;
-+    aarch64)
++    aarch64*)
 +        # On arm, link using gold
 +        $3="$$3 -fuse-ld=gold"
 +        ;;
