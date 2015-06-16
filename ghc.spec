@@ -35,7 +35,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 45%{?dist}
+Release: 46%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -586,6 +586,9 @@ fi
 
 
 %changelog
+* Tue Jun 16 2015 Jens Petersen <petersen@redhat.com> - 7.8.4-46
+- rebuild
+
 * Thu Jun 11 2015 Jens Petersen <petersen@fedoraproject.org> - 7.8.4-45
 - use ld.gold on aarch64 like for armv7 (Erik de Castro Lopo, #1195231)
 
