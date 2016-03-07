@@ -35,7 +35,7 @@ Version: 7.8.4
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml moved from haskell-platform to ghc-7.8.3
-Release: 47%{?dist}
+Release: 48%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -531,7 +531,7 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/runghc
 # unknown (unregisterized) archs
-%ifnarch ppc64 s390 s390x ppc64le aarch64
+%ifnarch ppc64 s390 s390x ppc64le aarch64 %{mips}
 %{ghclibdir}/ghc-split
 %endif
 %{ghclibdir}/ghc-usage.txt
@@ -584,6 +584,9 @@ fi
 
 
 %changelog
+* Tue Mar  8 2016 Michal Toman <mtoman@fedoraproject.org> - 7.8.4-48
+- do not package ghc-split on MIPS (#1294873)
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 7.8.4-47
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
