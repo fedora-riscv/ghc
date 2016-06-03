@@ -1,5 +1,5 @@
 # To bootstrap build a new version of ghc, uncomment the following:
-%global ghc_bootstrapping 1
+#%%global ghc_bootstrapping 1
 
 %if %{defined ghc_bootstrapping}
 %global without_testsuite 1
@@ -31,7 +31,7 @@ Version: 7.10.3
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml has not had a new release for some years
-Release: 49%{?dist}
+Release: 50%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -532,6 +532,12 @@ fi
 
 
 %changelog
+* Fri Jun  3 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-50
+- perf build
+- http://downloads.haskell.org/~ghc/7.10.3/docs/html/users_guide/release-7-10-1.html
+- http://downloads.haskell.org/~ghc/7.10.3/docs/html/users_guide/release-7-10-2.html
+- http://downloads.haskell.org/~ghc/7.10.3/docs/html/users_guide/release-7-10-3.html
+
 * Wed Jun  1 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-49
 - quick build
 - use 7.10.3b respin tarballs
