@@ -532,6 +532,28 @@ fi
 
 
 %changelog
+* Wed Jun  1 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-49
+- quick build
+- use 7.10.3b respin tarballs
+- no longer need:
+  - ghc-glibc-2.20_BSD_SOURCE.patch
+  - ghc-7.8-arm-use-ld-gold.patch
+  - ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
+  - ghc-config.mk.in-Enable-SMP-and-GHCi-support-for-Aarch64.patch
+  - build_minimum_smp
+- add Debian packages:
+  - buildpath-abi-stability
+  - no-missing-haddock-file-warning
+  - reproducible-tmp-names
+- use llvm35
+- add libraries-versions.sh script
+- all library versions updates except xhtml
+- BR ghc-rpm-macros-extra for all OS versions
+- support building on EL6
+- deprecated libraries: haskell2010, haskell98, old-locale, old-time
+- symlink for integer-gmp2
+- add llvm_major
+
 * Tue Mar  8 2016 Michal Toman <mtoman@fedoraproject.org> - 7.8.4-48
 - do not package ghc-split on MIPS (#1294873)
 
