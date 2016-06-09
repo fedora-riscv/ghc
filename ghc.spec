@@ -22,7 +22,7 @@ Version: 7.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 26.3%{?dist}
+Release: 26.4%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -196,8 +196,8 @@ documention.
 
 %global ghc_version_override %{version}
 
-# currently only F21+ ghc-rpm-macros has ghc.attr
-%if 0%{?fedora} < 21
+# EL7 rpm supports fileattrs ghc.attr
+%if 0%{?rhel} && 0%{?rhel} < 7
 # needs ghc_version_override for bootstrapping
 %global _use_internal_dependency_generator 0
 %global __find_provides %{_rpmconfigdir}/ghc-deps.sh --provides %{buildroot}%{ghclibdir}
@@ -560,6 +560,11 @@ fi
 
 
 %changelog
+* Thu Jun  9 2016 Jens Petersen <petersen@redhat.com> - 7.6.3-26.4
+- rebase 7.6.3-18.3 to F21 7.6.3-26.3 to allow building for aarch64 and ppc64le
+  (#1200404)
+- use rpm fileattrs also for EPEL7
+
 * Wed Dec 24 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-26.3
 - remove the build hack to switch from llvm to llvm34 (#1161049)
 
@@ -594,7 +599,6 @@ fi
 
 -- 7.6.3-19
 - generate and ship library doc index for ghc bundled libraries
-- change ghc-cabal to make library html docdirs unversioned
 
 * Wed Jan 29 2014 Jens Petersen <petersen@redhat.com> - 7.6.3-18.3
 - fix segfault on i686 when using ffi double-mapping for selinux (#907515)
