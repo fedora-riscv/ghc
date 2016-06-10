@@ -1,3 +1,0 @@
-#!/bin/sh
-
-/usr/bin/ghc -pgmlc llc-3.4 -pgmlo opt-3.4 $*
