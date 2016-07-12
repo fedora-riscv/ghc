@@ -31,7 +31,7 @@ Version: 7.10.3
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml has not had a new release for some years
-Release: 50%{?dist}
+Release: 51%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -194,7 +194,9 @@ documention.
 %if %{defined ghclibdir}
 %ghc_lib_subpackage Cabal %{Cabal_ver}
 %ghc_lib_subpackage -l %BSDHaskellReport array %{array_ver}
+%define ghc_pkg_obsoletes ghc-haskell98-devel <= 2.0.0.3, ghc-haskell2010-devel <=  1.1.2.0
 %ghc_lib_subpackage -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base %{base_ver}
+%undefine ghc_pkg_obsoletes
 %ghc_lib_subpackage binary %{binary_ver}
 %ghc_lib_subpackage bytestring %{bytestring_ver}
 %ghc_lib_subpackage -l %BSDHaskellReport containers %{containers_ver}
@@ -532,6 +534,9 @@ fi
 
 
 %changelog
+* Tue Jul 12 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-51
+- obsolete haskell98 and haskell2010
+
 * Fri Jun  3 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-50
 - perf build
 - http://downloads.haskell.org/~ghc/7.10.3/docs/html/users_guide/release-7-10-1.html
