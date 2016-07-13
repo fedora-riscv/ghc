@@ -432,6 +432,18 @@ rm testghc/*
 make test
 %endif
 
+# check the ABI hashes
+%if %{undefined ghc_bootstrapping}
+for i in %{ghc_packages_list}; do
+old=$(ghc-pkg field $i id --simple-output)
+new=$(/usr/libexec/ghc-pkg/wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
+if [ "$old" != "$new" ]; then
+   echo "ABI hash for $i changed!:"
+   echo "$old -> $new"
+   exit 1
+done
+%endif
+
 
 %post compiler
 # Alas, GHC, Hugs, and nhc all come with different set of tools in
@@ -536,6 +548,7 @@ fi
 %changelog
 * Tue Jul 12 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-51
 - obsolete haskell98 and haskell2010
+- add an ABI change check to prevent unexpected ghc package hash changes
 
 * Fri Jun  3 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-50
 - perf build
