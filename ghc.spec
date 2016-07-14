@@ -94,6 +94,8 @@ Obsoletes: ghc-dph-seq < 0.5, ghc-dph-seq-devel < 0.5, ghc-dph-seq-prof < 0.5
 Obsoletes: ghc-feldspar-language < 0.4, ghc-feldspar-language-devel < 0.4, ghc-feldspar-language-prof < 0.4
 %if %{undefined ghc_bootstrapping}
 BuildRequires: ghc-compiler = %{version}
+# for ABI hash checking
+BuildRequires: ghc = %{version}
 %endif
 BuildRequires: ghc-rpm-macros-extra
 BuildRequires: ghc-binary-devel
