@@ -434,19 +434,22 @@ make test
 
 # check the ABI hashes
 %if %{undefined ghc_bootstrapping}
-echo "Checking package ABI hashes..."
+echo "Checking package ABI hashes:"
 for i in %{ghc_packages_list}; do
   old=$(ghc-pkg field $i id --simple-output)
-  new=$(/usr/libexec/ghc-pkg/wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
+  new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
   if [ "$old" != "$new" ]; then
     echo "ABI hash for $i changed!:" >&2
     echo "  $old -> $new" >&2
-    exit 1
+    ghc_abi_hash_change=yes
   else
     echo "($old unchanged)"
   fi
 done
-echo "done."
+if [ "$ghc_abi_hash_change" = "yes" ]; then
+   echo "ghc ABI hash change: aborting build!" >&2
+   exit 1
+fi
 %endif
 
 
