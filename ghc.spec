@@ -344,7 +344,7 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-echo "%doc libraries/$name/LICENSE" >> ghc-$name.files
+echo "%license libraries/$name/LICENSE" >> ghc-$name.files
 done
 
 # ghc-base should own ghclibdir
@@ -359,7 +359,7 @@ echo "%dir %{ghclibdir}" >> ghc-base.files
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
-echo "%doc libraries/LICENSE.%1" >> ghc-%2.files
+echo "%license libraries/LICENSE.%1" >> ghc-%2.files
 
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
@@ -483,7 +483,8 @@ fi
 %files
 
 %files compiler
-%doc ANNOUNCE LICENSE
+%license LICENSE
+%doc ANNOUNCE
 %{_bindir}/ghc
 %{_bindir}/ghc-%{version}
 %{_bindir}/ghc-pkg
