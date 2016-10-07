@@ -4,11 +4,7 @@
 %if %{defined ghc_bootstrapping}
 %global without_testsuite 1
 %global without_prof 1
-%if 0%{?fedora} >= 22
 %{?ghc_bootstrap}
-%else
-%{?ghc_test}
-%endif
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
 %endif
@@ -406,7 +402,7 @@ cd ..
 %endif
 
 # we package the library license files separately
-find %{buildroot}%ghclibdocdir -name LICENSE -exec rm '{}' ';'
+find %{buildroot}%{ghc_html_libraries_dir} -name LICENSE -exec rm '{}' ';'
 
 
 %check
@@ -505,7 +501,7 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/runghc
 # unknown (unregisterized) archs
-%ifnarch ppc64 s390 s390x ppc64le aarch64 %{mips}
+%ifnarch ppc64 s390 s390x ppc64le %{mips} aarch64
 %{ghclibdir}/ghc-split
 %endif
 %{ghclibdir}/ghc-usage.txt
@@ -518,7 +514,7 @@ fi
 %{ghclibdir}/unlit
 %{_mandir}/man1/ghc.*
 %dir %{_docdir}/ghc
-%dir %{ghcdocbasedir}
+%dir %{ghc_html_dir}
 %if %{undefined without_haddock}
 %{_bindir}/ghc-doc-index
 %{_bindir}/haddock
@@ -528,23 +524,23 @@ fi
 %{ghclibdir}/latex
 %if %{undefined without_manual}
 ## needs pandoc
-#%%{ghcdocbasedir}/Cabal
-%{ghcdocbasedir}/haddock
-%{ghcdocbasedir}/users_guide
+#%%{ghc_html_dir}/Cabal
+%{ghc_html_dir}/haddock
+%{ghc_html_dir}/users_guide
 %endif
-%dir %{ghcdocbasedir}/libraries
-%{ghcdocbasedir}/libraries/frames.html
-%{ghcdocbasedir}/libraries/gen_contents_index
-%{ghcdocbasedir}/libraries/hslogo-16.png
-%{ghcdocbasedir}/libraries/ocean.css
-%{ghcdocbasedir}/libraries/prologue.txt
-%{ghcdocbasedir}/libraries/synopsis.png
-%{ghcdocbasedir}/index.html
-%ghost %{ghcdocbasedir}/libraries/doc-index*.html
-%ghost %{ghcdocbasedir}/libraries/haddock-util.js
-%ghost %{ghcdocbasedir}/libraries/index*.html
-%ghost %{ghcdocbasedir}/libraries/minus.gif
-%ghost %{ghcdocbasedir}/libraries/plus.gif
+%dir %{ghc_html_dir}/libraries
+%{ghc_html_dir}/libraries/frames.html
+%{ghc_html_dir}/libraries/gen_contents_index
+%{ghc_html_dir}/libraries/hslogo-16.png
+%{ghc_html_dir}/libraries/ocean.css
+%{ghc_html_dir}/libraries/prologue.txt
+%{ghc_html_dir}/libraries/synopsis.png
+%{ghc_html_dir}/index.html
+%ghost %{ghc_html_dir}/libraries/doc-index*.html
+%ghost %{ghc_html_dir}/libraries/haddock-util.js
+%ghost %{ghc_html_dir}/libraries/index*.html
+%ghost %{ghc_html_dir}/libraries/minus.gif
+%ghost %{ghc_html_dir}/libraries/plus.gif
 %{_localstatedir}/lib/ghc
 %endif
 
