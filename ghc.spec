@@ -90,6 +90,7 @@ BuildRequires: libffi-devel
 # for terminfo
 BuildRequires: ncurses-devel
 # for man and docs
+BuildRequires: perl
 BuildRequires: libxslt, docbook-style-xsl
 %if %{undefined without_testsuite}
 BuildRequires: python
@@ -552,6 +553,7 @@ fi
 - minor spec file cleanups
 - drop old dph and feldspar obsoletes
 - obsoletes ghc-doc-index when without_haddock
+- BR perl
 
 * Tue Jul 12 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-51
 - obsolete haskell98 and haskell2010
