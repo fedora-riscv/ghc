@@ -336,11 +336,11 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-echo "%license libraries/$name/LICENSE" >> ghc-$name.files
+echo "%%license libraries/$name/LICENSE" >> ghc-$name.files
 done
 
 # ghc-base should own ghclibdir
-echo "%dir %{ghclibdir}" >> ghc-base.files
+echo "%%dir %{ghclibdir}" >> ghc-base.files
 
 %ghc_gen_filelists bin-package-db %{bin_package_db_ver}
 %ghc_gen_filelists ghc %{ghc_version_override}
@@ -351,14 +351,14 @@ echo "%dir %{ghclibdir}" >> ghc-base.files
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
-echo "%license libraries/LICENSE.%1" >> ghc-%2.files
+echo "%%license libraries/LICENSE.%1" >> ghc-%2.files
 
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
 %merge_filelist bin-package-db ghc
 
 # add rts libs
-echo "%dir %{ghclibdir}/rts" >> ghc-base.files
+echo "%%dir %{ghclibdir}/rts" >> ghc-base.files
 ls %{buildroot}%{ghclibdir}/rts/libHS*.so >> ghc-base.files
 %if 0%{?rhel} && 0%{?rhel} < 7
 ls %{buildroot}%{ghclibdir}/rts/libffi.so.* >> ghc-base.files
