@@ -561,7 +561,7 @@ fi
 
 %changelog
 * Thu Jun  9 2016 Jens Petersen <petersen@redhat.com> - 7.6.3-26.4
-- rebase 7.6.3-18.3 to F21 7.6.3-26.3 to allow building for aarch64 and ppc64le
+- rebase 7.6.3-18.3 to F21 7.6.3-26.3 to allow building for aarch64/ppc64le
   (#1200404)
 - use rpm fileattrs also for EPEL7
 
