@@ -241,7 +241,9 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 # gen_contents_index: use absolute path for haddock
 %patch1 -p1 -b .orig
 
+%if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
+%endif
 
 %ifarch armv7hl
 %patch22 -p1 -b .orig
