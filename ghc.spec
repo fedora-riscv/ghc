@@ -20,7 +20,7 @@ Version: 7.10.3
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml has not had a new release for some years
-Release: 52%{?dist}
+Release: 53%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -549,6 +549,9 @@ fi
 
 
 %changelog
+* Thu Jan 12 2017 Igor Gnatenko <ignatenko@redhat.com> - 7.10.3-53
+- Rebuild for readline 7.x
+
 * Wed Oct 26 2016 Jens Petersen <petersen@redhat.com> - 7.10.3-52
 - use license macro
 - update subpackaging for latest ghc-rpm-macros
