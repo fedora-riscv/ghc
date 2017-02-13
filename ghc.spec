@@ -20,7 +20,7 @@ Version: 7.10.3
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml has not had a new release for some years
-Release: 54%{?dist}
+Release: 55%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -78,7 +78,7 @@ BuildRequires: ghc-compiler = %{version}
 # for ABI hash checking
 BuildRequires: ghc = %{version}
 %endif
-BuildRequires: ghc-rpm-macros-extra
+BuildRequires: ghc-rpm-macros-extra >= 1.6.15
 BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
@@ -184,35 +184,35 @@ documention.
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
 %if %{defined ghclibdir}
-%ghc_lib_subpackage Cabal-%{Cabal_ver}
-%ghc_lib_subpackage -l %BSDHaskellReport array-%{array_ver}
+%ghc_lib_subpackage -d Cabal-%{Cabal_ver}
+%ghc_lib_subpackage -d -l %BSDHaskellReport array-%{array_ver}
 %define ghc_pkg_obsoletes ghc-haskell98-devel <= 2.0.0.3, ghc-haskell2010-devel <=  1.1.2.0
-%ghc_lib_subpackage -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
+%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage binary-%{binary_ver}
-%ghc_lib_subpackage bytestring-%{bytestring_ver}
-%ghc_lib_subpackage -l %BSDHaskellReport containers-%{containers_ver}
-%ghc_lib_subpackage -l %BSDHaskellReport deepseq-%{deepseq_ver}
-%ghc_lib_subpackage -l %BSDHaskellReport directory-%{directory_ver}
-%ghc_lib_subpackage filepath-%{filepath_ver}
+%ghc_lib_subpackage -d binary-%{binary_ver}
+%ghc_lib_subpackage -d bytestring-%{bytestring_ver}
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-%{containers_ver}
+%ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-%{deepseq_ver}
+%ghc_lib_subpackage -d -l %BSDHaskellReport directory-%{directory_ver}
+%ghc_lib_subpackage -d filepath-%{filepath_ver}
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 # in ghc not ghc-libraries:
-%ghc_lib_subpackage -x ghc-%{ghc_version_override}
+%ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage haskeline-%{haskeline_ver}
-%ghc_lib_subpackage hoopl-%{hoopl_ver}
-%ghc_lib_subpackage hpc-%{hpc_ver}
-%ghc_lib_subpackage pretty-%{pretty_ver}
+%ghc_lib_subpackage -d haskeline-%{haskeline_ver}
+%ghc_lib_subpackage -d hoopl-%{hoopl_ver}
+%ghc_lib_subpackage -d hpc-%{hpc_ver}
+%ghc_lib_subpackage -d pretty-%{pretty_ver}
 %define ghc_pkg_obsoletes ghc-process-leksah-devel < 1.0.1.4-14
-%ghc_lib_subpackage -l %BSDHaskellReport process-%{process_ver}
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-%{process_ver}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage template-haskell-%{template_haskell_ver}
-%ghc_lib_subpackage -c ncurses-devel%{?_isa} terminfo-%{terminfo_ver}
-%ghc_lib_subpackage time-%{time_ver}
-%ghc_lib_subpackage transformers-%{transformers_ver}
-%ghc_lib_subpackage unix-%{unix_ver}
+%ghc_lib_subpackage -d template-haskell-%{template_haskell_ver}
+%ghc_lib_subpackage -d -c ncurses-devel%{?_isa} terminfo-%{terminfo_ver}
+%ghc_lib_subpackage -d time-%{time_ver}
+%ghc_lib_subpackage -d transformers-%{transformers_ver}
+%ghc_lib_subpackage -d unix-%{unix_ver}
 %if %{undefined without_haddock}
-%ghc_lib_subpackage xhtml-%{xhtml_ver}
+%ghc_lib_subpackage -d xhtml-%{xhtml_ver}
 %endif
 %endif
 
@@ -316,11 +316,9 @@ export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --with-gcc=%{_bindir}/gcc \
+  --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
-%endif
-%ifarch armv7hl armv5tel
-  --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
 %endif
 %{nil}
 
@@ -549,6 +547,10 @@ fi
 
 
 %changelog
+* Mon Feb 13 2017 Jens Petersen <petersen@redhat.com> - 7.10.3-55
+- use new ghc_lib_subpackage -d option to fix handling of .files
+- configure llc-3.5 and opt-3.5 explicitly for all arch's
+
 * Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 7.10.3-54
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
 
