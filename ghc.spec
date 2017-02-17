@@ -421,7 +421,7 @@ make test
 %if %{undefined ghc_bootstrapping}
 echo "Checking package ABI hashes:"
 for i in %{ghc_packages_list}; do
-  old=$(ghc-pkg field $i id --simple-output)
+  old=$(ghc-pkg field $i id --simple-output || :)
   if [ -n "$old" ]; then
     new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
     if [ "$old" != "$new" ]; then
