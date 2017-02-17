@@ -422,13 +422,17 @@ make test
 echo "Checking package ABI hashes:"
 for i in %{ghc_packages_list}; do
   old=$(ghc-pkg field $i id --simple-output)
-  new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
-  if [ "$old" != "$new" ]; then
-    echo "ABI hash for $i changed!:" >&2
-    echo "  $old -> $new" >&2
-    ghc_abi_hash_change=yes
+  if [ -n "$old" ]; then
+    new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
+    if [ "$old" != "$new" ]; then
+      echo "ABI hash for $i changed!:" >&2
+      echo "  $old -> $new" >&2
+      ghc_abi_hash_change=yes
+    else
+      echo "($old unchanged)"
+    fi
   else
-    echo "($old unchanged)"
+    echo "($i not installed)"
   fi
 done
 if [ "$ghc_abi_hash_change" = "yes" ]; then
