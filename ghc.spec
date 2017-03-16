@@ -180,7 +180,7 @@ documention.
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage -d ghc-boot-%{ghc_version_override}
+%ghc_lib_subpackage -d -x ghc-boot-%{ghc_version_override}
 %ghc_lib_subpackage -d ghc-boot-th-%{ghc_version_override}
 %ghc_lib_subpackage -d -x ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d haskeline-0.7.3.0
@@ -334,6 +334,7 @@ done
 # ghc-base should own ghclibdir
 echo "%%dir %{ghclibdir}" >> ghc-base.files
 
+%ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghci %{ghc_version_override}
 %ghc_gen_filelists ghc-prim 0.5.0.0
