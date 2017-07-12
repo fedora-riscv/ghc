@@ -70,7 +70,7 @@ BuildRequires: libffi-devel
 # for terminfo
 BuildRequires: ncurses-devel
 # for man and docs
-BuildRequires: perl
+BuildRequires: perl-interpreter
 %if %{undefined without_testsuite}
 BuildRequires: python
 %endif
