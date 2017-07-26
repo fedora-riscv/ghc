@@ -20,7 +20,7 @@ Version: 8.0.2
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml has not had a new release for some years
-Release: 57%{?dist}
+Release: 58%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -548,6 +548,9 @@ fi
 
 
 %changelog
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 8.0.2-58
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
 * Fri Feb 17 2017 Jens Petersen <petersen@redhat.com> - 8.0.2-57
 - 8.0.2 perf build
 - http://downloads.haskell.org/~ghc/8.0.2/docs/html/users_guide/8.0.1-notes.html
