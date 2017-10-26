@@ -9,8 +9,7 @@
 #%%undefine without_haddock
 %endif
 
-%global space %(echo -n ' ')
-%global BSDHaskellReport BSD%{space}and%{space}HaskellReport
+%global BSDHaskellReport %{quote:BSD and HaskellReport}
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
@@ -20,7 +19,7 @@ Version: 8.0.2
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
 # xhtml has not had a new release for some years
-Release: 59%{?dist}
+Release: 60%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: %BSDHaskellReport
@@ -549,6 +548,10 @@ fi
 
 
 %changelog
+* Thu Oct 26 2017 Jens Petersen <petersen@redhat.com> - 8.0.2-60
+- fix space in BSDHaskellReport license macro for rpm-4.14
+- drop ghc-boot from ghc-libraries
+
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 8.0.2-59
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
