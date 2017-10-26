@@ -550,6 +550,7 @@ fi
 %changelog
 * Thu Oct 26 2017 Jens Petersen <petersen@redhat.com> - 8.0.2-60
 - fix space in BSDHaskellReport license macro for rpm-4.14
+- mark other subpackages correctly as BSD license
 - drop ghc-boot from ghc-libraries
 
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 8.0.2-59
