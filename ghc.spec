@@ -9,8 +9,6 @@
 #%%undefine without_haddock
 %endif
 
-%global BSDHaskellReport %{quote:BSD and HaskellReport}
-
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
 Version: 8.0.2
@@ -22,7 +20,7 @@ Version: 8.0.2
 Release: 60%{?dist}
 Summary: Glasgow Haskell Compiler
 
-License: %BSDHaskellReport
+License: BSD and HaskellReport
 URL: https://haskell.org/ghc/
 Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.xz
 %if %{undefined without_testsuite}
@@ -164,36 +162,38 @@ documention.
 
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
 
+%global BSDHaskellReport %{quote:BSD and HaskellReport}
+
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d Cabal-1.24.2.0
+%ghc_lib_subpackage -d -l BSD Cabal-1.24.2.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.1.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.9.1.0
-%ghc_lib_subpackage -d binary-0.8.3.0
-%ghc_lib_subpackage -d bytestring-0.10.8.1
+%ghc_lib_subpackage -d -l BSD binary-0.8.3.0
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.8.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.5.7.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.2.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.0.0
-%ghc_lib_subpackage -d filepath-1.4.1.1
+%ghc_lib_subpackage -d -l BSD filepath-1.4.1.1
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
 %undefine ghc_pkg_obsoletes
-%ghc_lib_subpackage -d -x ghc-boot-%{ghc_version_override}
-%ghc_lib_subpackage -d ghc-boot-th-%{ghc_version_override}
-%ghc_lib_subpackage -d -x ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d haskeline-0.7.3.0
-%ghc_lib_subpackage -d hoopl-3.10.2.1
-%ghc_lib_subpackage -d hpc-0.6.0.3
-%ghc_lib_subpackage -d pretty-1.1.3.3
+%ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
+%ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD ghci-%{ghc_version_override}
+%ghc_lib_subpackage -d -l BSD haskeline-0.7.3.0
+%ghc_lib_subpackage -d -l BSD hoopl-3.10.2.1
+%ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
+%ghc_lib_subpackage -d -l BSD pretty-1.1.3.3
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.4.3.0
-%ghc_lib_subpackage -d template-haskell-2.11.1.0
-%ghc_lib_subpackage -d -c ncurses-devel%{?_isa} terminfo-0.4.0.2
-%ghc_lib_subpackage -d time-1.6.0.1
-%ghc_lib_subpackage -d transformers-0.5.2.0
-%ghc_lib_subpackage -d unix-2.7.2.1
+%ghc_lib_subpackage -d -l BSD template-haskell-2.11.1.0
+%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.0.2
+%ghc_lib_subpackage -d -l BSD time-1.6.0.1
+%ghc_lib_subpackage -d -l BSD transformers-0.5.2.0
+%ghc_lib_subpackage -d -l BSD unix-2.7.2.1
 %if %{undefined without_haddock}
-%ghc_lib_subpackage -d xhtml-3000.2.1
+%ghc_lib_subpackage -d -l BSD xhtml-3000.2.1
 %endif
 %endif
 
@@ -201,7 +201,7 @@ documention.
 
 %package libraries
 Summary: GHC development libraries meta package
-License: %BSDHaskellReport
+License: BSD and HaskellReport
 Requires: ghc-compiler = %{version}-%{release}
 Obsoletes: ghc-devel < %{version}-%{release}
 Provides: ghc-devel = %{version}-%{release}
