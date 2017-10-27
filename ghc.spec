@@ -22,9 +22,9 @@ Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
 URL: https://haskell.org/ghc/
-Source0: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-src.tar.xz
+Source0: https://downloads.haskell.org/~ghc/dist/%{version}/ghc-%{version}-src.tar.xz
 %if %{undefined without_testsuite}
-Source1: http://www.haskell.org/ghc/dist/%{version}/ghc-%{version}-testsuite.tar.xz
+Source1: https://downloads.haskell.org/~ghc/dist/%{version}/ghc-%{version}-testsuite.tar.xz
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
