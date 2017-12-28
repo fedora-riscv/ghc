@@ -69,10 +69,10 @@ BuildRequires: ncurses-devel
 # for man and docs
 BuildRequires: perl-interpreter
 %if %{undefined without_testsuite}
-BuildRequires: python
+BuildRequires: python2
 %endif
 %if %{undefined without_manual}
-BuildRequires: python-sphinx
+BuildRequires: python2-sphinx
 %endif
 %ifarch armv7hl aarch64
 BuildRequires: llvm%{llvm_major}
@@ -518,7 +518,7 @@ fi
 %{ghclibdir}/latex
 %if %{undefined without_manual}
 # https://ghc.haskell.org/trac/ghc/ticket/12939
-#%{_mandir}/man1/ghc.*
+#%%{_mandir}/man1/ghc.*
 ## needs pandoc
 #%%{ghc_html_dir}/Cabal
 %{ghc_html_dir}/haddock
