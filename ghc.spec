@@ -1,61 +1,67 @@
-# To bootstrap build a new version of ghc, uncomment the following:
-#%%global ghc_bootstrapping 1
+# To bootstrap build a new version of ghc, comment out this line:
+#%%global perf_build 1
 
-%if %{defined ghc_bootstrapping}
-%global without_testsuite 1
-%global without_prof 1
+# to handle RCs
+%global ghc_release 8.2.2
+
+%if %{undefined perf_build}
+%bcond_with testsuite
+%bcond_with prof
 %{?ghc_bootstrap}
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
+%else
+%bcond_without testsuite
+%bcond_without prof
 %endif
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.0.2
+Version: 8.2.2
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-# xhtml has not had a new release for some years
-Release: 60%{?dist}
+Release: 61%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
 URL: https://haskell.org/ghc/
-Source0: https://downloads.haskell.org/~ghc/%{version}/ghc-%{version}-src.tar.xz
-%if %{undefined without_testsuite}
-Source1: https://downloads.haskell.org/~ghc/%{version}/ghc-%{version}-testsuite.tar.xz
+Source0: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-src.tar.xz
+%if %{with testsuite}
+Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
-Patch2:  ghc-7.8.3-Cabal-install-PATH-warning.patch
-Patch3:  ghc-8.0.2-Cabal-dynlibdir.patch
+Patch2:  ghc-Cabal-install-PATH-warning.patch
+# https://github.com/haskell/cabal/issues/4728
+Patch4:  https://gist.githubusercontent.com/expipiplus1/6720ebc3db90f36031d651ca2e6507c4/raw/b330b21457628dc7088236a000b4a0f16d109665/shadowed-deps.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # Debian patches:
-Patch24: ghc-Debian-buildpath-abi-stability.patch
+# doesn't apply to 8.2
+#Patch24: ghc-Debian-buildpath-abi-stability.patch
 Patch26: ghc-Debian-no-missing-haddock-file-warning.patch
 Patch27: ghc-Debian-reproducible-tmp-names.patch
 Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
-Patch29: ghc-Debian-osdecommitmemory-compat.patch
 
-# 8.0 needs llvm-3.7
-%global llvm_major 3.7
+# 8.2 needs llvm-3.9
+%global llvm_major 3.9
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
 # and retired arches: alpha sparcv9 armv5tel
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
-%if %{undefined ghc_bootstrapping}
+%if %{defined perf_build}
 BuildRequires: ghc-compiler = %{version}
 # for ABI hash checking
 BuildRequires: ghc = %{version}
 %endif
-BuildRequires: ghc-rpm-macros-extra >= 1.6.15
+BuildRequires: ghc-rpm-macros-extra >= 1.8
 BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
@@ -68,11 +74,11 @@ BuildRequires: libffi-devel
 BuildRequires: ncurses-devel
 # for man and docs
 BuildRequires: perl-interpreter
-%if %{undefined without_testsuite}
-BuildRequires: python2
+%if %{with testsuite}
+BuildRequires: python3
 %endif
 %if %{undefined without_manual}
-BuildRequires: python2-sphinx
+BuildRequires: python3-sphinx
 %endif
 %ifarch armv7hl aarch64
 BuildRequires: llvm%{llvm_major}
@@ -166,34 +172,35 @@ documention.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-1.24.2.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.1.1
-%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.9.1.0
-%ghc_lib_subpackage -d -l BSD binary-0.8.3.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.8.1
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.5.7.1
-%ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.2.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.0.0
-%ghc_lib_subpackage -d -l BSD filepath-1.4.1.1
+%ghc_lib_subpackage -d -l BSD Cabal-2.0.1.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.2.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.10.1.0
+%ghc_lib_subpackage -d -l BSD binary-0.8.5.1
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.8.2
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.5.10.2
+%ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.3.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.0.2
+%ghc_lib_subpackage -d -l BSD filepath-1.4.1.2
 %define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
 %undefine ghc_pkg_obsoletes
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
-%ghc_lib_subpackage -d -x -l BSD ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.7.3.0
-%ghc_lib_subpackage -d -l BSD hoopl-3.10.2.1
+%ghc_lib_subpackage -d -l BSD ghc-compact-0.1.0.0
+%ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
+%ghc_lib_subpackage -d -l BSD haskeline-0.7.4.0
+%ghc_lib_subpackage -d -l BSD hoopl-3.10.2.2
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.3
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.4.3.0
-%ghc_lib_subpackage -d -l BSD template-haskell-2.11.1.0
-%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.0.2
-%ghc_lib_subpackage -d -l BSD time-1.6.0.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.1.0
+%ghc_lib_subpackage -d -l BSD template-haskell-2.12.0.0
+%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.0
+%ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.2.0
-%ghc_lib_subpackage -d -l BSD unix-2.7.2.1
+%ghc_lib_subpackage -d -l BSD unix-2.7.2.2
 %if %{undefined without_haddock}
-%ghc_lib_subpackage -d -l BSD xhtml-3000.2.1
+%ghc_lib_subpackage -d -l BSD xhtml-3000.2.2
 %endif
 %endif
 
@@ -217,12 +224,12 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 
 
 %prep
-%setup -q -n %{name}-%{version} %{!?without_testsuite:-b1}
+%setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
 
 %patch1 -p1 -b .orig
 
 %patch2 -p1 -b .orig
-%patch3 -p1 -b .orig
+%patch4 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
@@ -232,11 +239,10 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
-%patch24 -p1 -b .orig
+#%%patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 %patch27 -p1 -b .orig
 %patch28 -p1 -b .orig
-%patch29 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{undefined without_haddock}
@@ -251,7 +257,7 @@ fi
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
 # cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
-%if %{undefined ghc_bootstrapping}
+%if %{defined perf_build}
 %ifarch armv7hl aarch64
 BuildFlavour = perf-llvm
 %else
@@ -264,7 +270,7 @@ BuildFlavour = quick-llvm
 BuildFlavour = quick
 %endif
 %endif
-GhcLibWays = v dyn %{!?without_prof:p}
+GhcLibWays = v dyn %{?with_prof:p}
 %if %{defined without_haddock}
 HADDOCK_DOCS = NO
 %endif
@@ -286,29 +292,27 @@ EOF
 autoreconf
 %endif
 
-# still happens when bootstrapping 8.0 with 7.10:
-# x86_64: /usr/bin/ld: utils/ghc-pwd/dist-boot/Main.o: relocation R_X86_64_32S against `.text' can not be used when making a shared object; recompile with -fPIC
-# aarch64: /usr/bin/ld: /usr/lib64/ghc-7.6.3/libHSrts.a(RtsFlags.o)(.text+0x578): unresolvable R_AARCH64_ADR_PREL_PG_HI21 relocation against symbol `stdout@@GLIBC_2.17'
-%ifarch x86_64 armv7hl aarch64 s390x ppc64 ppc64le
-%global _hardened_ldflags %{nil}
-%endif
-
-%ifnarch aarch64 ppc64 ppc64le
-export CFLAGS="${CFLAGS:-%optflags}"
+%if 0%{?fedora} > 28
+%ghc_set_cflags
 %else
-%if %{undefined ghc_bootstrapping}
-export CFLAGS="${CFLAGS:-%optflags}"
+# -Wunused-label is extremely noisy
+%ifarch aarch64 s390x
+CFLAGS="${CFLAGS:-$(echo %optflags | sed -e 's/-Wall -Werror=format-security //')}"
+%else
+CFLAGS="${CFLAGS:-%optflags}"
 %endif
+export CFLAGS
 %endif
 export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
+# for ghc-8.2
+export CC=%{_bindir}/gcc
 # * %%configure induces cross-build due to different target/host/build platform names
-# * --with-gcc=%{_bindir}/gcc is to avoid ccache hardcoding problem when bootstrapping 
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
   --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --with-gcc=%{_bindir}/gcc --docdir=%{_docdir}/ghc \
+  --docdir=%{_docdir}/ghc \
   --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
@@ -323,41 +327,59 @@ make %{?_smp_mflags}
 %install
 make DESTDIR=%{buildroot} install
 
+mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_libdir}/
+for i in $(find %{buildroot} -type f -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
+  chrpath -d $i
+done
+
+for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
+  sed -i -e 's!^dynamic-library-dirs: .*!dynamic-library-dirs: %{_libdir}!' $i
+done
+
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
+%if 0%{?rhel} && 0%{?rhel} < 8
+echo "%%doc libraries/$name/LICENSE" >> ghc-$name.files
+%else
 echo "%%license libraries/$name/LICENSE" >> ghc-$name.files
+%endif
 done
 
 # ghc-base should own ghclibdir
-echo "%%dir %{ghclibdir}" >> ghc-base.files
+echo "%%dir %{ghclibdir}" >> ghc-base-devel.files
 
 %ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghci %{ghc_version_override}
-%ghc_gen_filelists ghc-prim 0.5.0.0
-%ghc_gen_filelists integer-gmp 1.0.0.1
+%ghc_gen_filelists ghc-prim 0.5.1.1
+%ghc_gen_filelists integer-gmp 1.0.1.0
 
 %define merge_filelist()\
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
-echo "%%license libraries/LICENSE.%1" >> ghc-%2.files
+%if 0%{?rhel} && 0%{?rhel} < 8\
+echo "%%doc libraries/LICENSE.%1" >> ghc-%2.files\
+%else\
+echo "%%license libraries/LICENSE.%1" >> ghc-%2.files\
+%endif
 
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
 
 # add rts libs
-echo "%%dir %{ghclibdir}/rts" >> ghc-base.files
-ls %{buildroot}%{ghclibdir}/rts/libHS*.so >> ghc-base.files
+echo "%{ghclibdir}/rts" >> ghc-base-devel.files
+ls %{buildroot}%{_libdir}/libHSrts*.so >> ghc-base.files
 %if 0%{?rhel} && 0%{?rhel} < 7
 ls %{buildroot}%{ghclibdir}/rts/libffi.so.* >> ghc-base.files
 %endif
+sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_libdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
 
 sed -i -e "s|^%{buildroot}||g" ghc-base.files
 
-ls -d %{buildroot}%{ghclibdir}/rts/lib*.a %{buildroot}%{ghclibdir}/package.conf.d/rts.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
+ls -d %{buildroot}%{ghclibdir}/package.conf.d/rts.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
 %if 0%{?rhel} && 0%{?rhel} < 7
 ls %{buildroot}%{ghclibdir}/rts/libffi.so >> ghc-base-devel.files
 %endif
@@ -413,12 +435,12 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%if %{undefined without_testsuite}
+%if %{with testsuite}
 make test
 %endif
 
 # check the ABI hashes
-%if %{undefined ghc_bootstrapping}
+%if %{defined perf_build}
 echo "Checking package ABI hashes:"
 for i in %{ghc_packages_list}; do
   old=$(ghc-pkg field $i id --simple-output || :)
@@ -492,18 +514,20 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/ghc-iserv
 %{ghclibdir}/bin/ghc-iserv-dyn
-%if %{undefined without_prof}
+%if %{with prof}
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
 %{ghclibdir}/bin/runghc
-%ifnarch s390 s390x aarch64 %{mips}
+%ifnarch s390 s390x %{mips}
 %{ghclibdir}/bin/ghc-split
 %endif
+%{ghclibdir}/bin/hp2ps
 %{ghclibdir}/bin/unlit
 %{ghclibdir}/ghc-usage.txt
 %{ghclibdir}/ghci-usage.txt
 %dir %{ghclibdir}/package.conf.d
 %ghost %{ghclibdir}/package.conf.d/package.cache
+%{ghclibdir}/package.conf.d/package.cache.lock
 %{ghclibdir}/platformConstants
 %{ghclibdir}/settings
 %{ghclibdir}/template-hsc.h
@@ -548,6 +572,13 @@ fi
 
 
 %changelog
+* Wed Jan 24 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-61
+- 8.2.2 bootstrap build
+- install ghc libs in libdir and remove RUNPATHs
+- add shadowed-deps.patch (haskell/cabal#4728)
+- new ghc-compact library
+- exclude ghc-boot for ghc-libraries
+
 * Thu Oct 26 2017 Jens Petersen <petersen@redhat.com> - 8.0.2-60
 - fix space in BSDHaskellReport license macro for rpm-4.14
 - mark other subpackages correctly as BSD license
