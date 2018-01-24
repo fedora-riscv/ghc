@@ -1,5 +1,5 @@
 # To bootstrap build a new version of ghc, comment out this line:
-#%%global perf_build 1
+%global perf_build 1
 
 # to handle RCs
 %global ghc_release 8.2.2
@@ -22,7 +22,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 61%{?dist}
+Release: 62%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -572,6 +572,11 @@ fi
 
 
 %changelog
+* Thu Jan 25 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-62
+- 8.2.2 perf build
+- https://downloads.haskell.org/~ghc/8.2.2/docs/html/users_guide/8.2.1-notes.html
+- https://downloads.haskell.org/~ghc/8.2.2/docs/html/users_guide/8.2.2-notes.html
+
 * Wed Jan 24 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-61
 - 8.2.2 bootstrap build
 - install ghc libs in libdir and remove RUNPATHs
