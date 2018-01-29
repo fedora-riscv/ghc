@@ -22,7 +22,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 62%{?dist}
+Release: 63%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -37,7 +37,8 @@ Source4: ghc-doc-index
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://github.com/haskell/cabal/issues/4728
-Patch4:  https://gist.githubusercontent.com/expipiplus1/6720ebc3db90f36031d651ca2e6507c4/raw/b330b21457628dc7088236a000b4a0f16d109665/shadowed-deps.patch
+# https://ghc.haskell.org/trac/ghc/ticket/14381
+Patch4:  https://phabricator-files.haskell.org/file/data/pgrn3b7lw22ccodkc4nf/PHID-FILE-o3pkv37yfa5h2q3xflrd/D4159.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
@@ -572,6 +573,10 @@ fi
 
 
 %changelog
+* Tue Jan 30 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-63
+- apply Phabricator D4159.patch to workaround
+  https://ghc.haskell.org/trac/ghc/ticket/14381
+
 * Thu Jan 25 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-62
 - 8.2.2 perf build
 - https://downloads.haskell.org/~ghc/8.2.2/docs/html/users_guide/8.2.1-notes.html
