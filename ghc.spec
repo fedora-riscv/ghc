@@ -22,7 +22,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 65%{?dist}
+Release: 66%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -573,6 +573,9 @@ fi
 
 
 %changelog
+* Tue Apr 10 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-66
+- ghc-pkg: silence the abi-depends warnings
+
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 8.2.2-65
 - Escape macros in %%changelog
 
