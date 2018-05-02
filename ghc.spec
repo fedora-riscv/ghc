@@ -22,7 +22,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 65%{?dist}
+Release: 66%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -414,6 +414,8 @@ cd ..
 # we package the library license files separately
 find %{buildroot}%{ghc_html_libraries_dir} -name LICENSE -exec rm '{}' ';'
 
+touch %{buildroot}%{_localstatedir}/lib/ghc/pkg-dir.cache{,.new}
+
 
 %check
 export LANG=en_US.utf8
@@ -551,28 +553,34 @@ fi
 %endif
 %dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
-%{ghc_html_dir}/libraries/hslogo-16.png
-%{ghc_html_dir}/libraries/ocean.css
 %{ghc_html_dir}/libraries/prologue.txt
-%{ghc_html_dir}/libraries/synopsis.png
 %{ghc_html_dir}/index.html
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
 %ghost %{ghc_html_dir}/libraries/haddock-util.js
+%ghost %{ghc_html_dir}/libraries/hslogo-16.png
 %ghost %{ghc_html_dir}/libraries/index*.html
 %ghost %{ghc_html_dir}/libraries/minus.gif
+%ghost %{ghc_html_dir}/libraries/ocean.css
 %ghost %{ghc_html_dir}/libraries/plus.gif
-%{_localstatedir}/lib/ghc
+%ghost %{ghc_html_dir}/libraries/synopsis.png
 %endif
 
 %if %{undefined without_haddock}
 %files doc-index
 %config(noreplace) %{_sysconfdir}/cron.hourly/ghc-doc-index
+%dir %{_localstatedir}/lib/ghc
+%ghost %{_localstatedir}/lib/ghc/pkg-dir.cache
+%ghost %{_localstatedir}/lib/ghc/pkg-dir.cache.new
 %endif
 
 %files libraries
 
 
 %changelog
+* Wed May  2 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-66
+- ghost the ghc-doc-index local state files
+- ghost some newer libraries index files
+
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 8.2.2-65
 - Escape macros in %%changelog
 
