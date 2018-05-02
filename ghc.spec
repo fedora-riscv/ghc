@@ -593,10 +593,13 @@ fi
 
 
 %changelog
-* Wed May  2 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-66
+* Wed May  2 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-67
 - move manuals to ghc-doc
 - ghost the ghc-doc-index local state files
 - ghost some newer libraries index files
+
+* Tue Apr 10 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-66
+- ghc-pkg: silence the abi-depends warnings
 
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 8.2.2-65
 - Escape macros in %%changelog
