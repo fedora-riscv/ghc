@@ -89,6 +89,9 @@ BuildRequires: llvm%{llvm_major}
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
+%if %{undefined without_manual}
+Requires: ghc-doc = %{version}-%{release}
+%endif
 %if %{undefined without_haddock}
 Requires: ghc-doc-index = %{version}-%{release}
 %endif
@@ -126,8 +129,6 @@ Requires: ghc-base-devel%{?_isa}
 # for alternatives
 Requires(post): chkconfig
 Requires(postun): chkconfig
-# added in f14
-Obsoletes: ghc-doc < 6.12.3-4
 %if %{defined without_haddock}
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
@@ -143,12 +144,23 @@ To install all of ghc (including the ghc library),
 install the main ghc package.
 
 
+%if %{undefined without_manual}
+%package doc
+Summary: GHC documentation
+License: BSD
+BuildArch: noarch
+
+%description doc
+This package provides the User Guide and Haddock manual.
+%endif
+
 %if %{undefined without_haddock}
 %package doc-index
 Summary: GHC library development documentation indexing
 License: BSD
 Requires: ghc-compiler = %{version}-%{release}
 Requires: crontabs
+BuildArch: noarch
 
 %description doc-index
 The package provides a cronjob for re-indexing installed library development
@@ -546,15 +558,10 @@ fi
 %if %{undefined without_manual}
 # https://ghc.haskell.org/trac/ghc/ticket/12939
 #%%{_mandir}/man1/ghc.*
-## needs pandoc
-#%%{ghc_html_dir}/Cabal
-%{ghc_html_dir}/haddock
-%{ghc_html_dir}/users_guide
 %endif
 %dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
 %{ghc_html_dir}/libraries/prologue.txt
-%{ghc_html_dir}/index.html
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
 %ghost %{ghc_html_dir}/libraries/haddock-util.js
 %ghost %{ghc_html_dir}/libraries/hslogo-16.png
@@ -563,6 +570,15 @@ fi
 %ghost %{ghc_html_dir}/libraries/ocean.css
 %ghost %{ghc_html_dir}/libraries/plus.gif
 %ghost %{ghc_html_dir}/libraries/synopsis.png
+%endif
+
+%if %{undefined without_manual}
+%files doc
+## needs pandoc
+#%%{ghc_html_dir}/Cabal
+%{ghc_html_dir}/haddock
+%{ghc_html_dir}/index.html
+%{ghc_html_dir}/users_guide
 %endif
 
 %if %{undefined without_haddock}
@@ -578,6 +594,7 @@ fi
 
 %changelog
 * Wed May  2 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-66
+- move manuals to ghc-doc
 - ghost the ghc-doc-index local state files
 - ghost some newer libraries index files
 
