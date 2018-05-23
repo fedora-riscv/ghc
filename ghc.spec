@@ -38,7 +38,8 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://github.com/haskell/cabal/issues/4728
 # https://ghc.haskell.org/trac/ghc/ticket/14381
-Patch4:  https://phabricator-files.haskell.org/file/data/pgrn3b7lw22ccodkc4nf/PHID-FILE-o3pkv37yfa5h2q3xflrd/D4159.patch
+# https://phabricator.haskell.org/D4159
+Patch4:  D4159.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
