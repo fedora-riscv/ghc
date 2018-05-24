@@ -1,19 +1,20 @@
-# To bootstrap build a new version of ghc, comment out this line:
-%global perf_build 1
+# perf production build (disable for quick build)
+%bcond_without perf_build
+
+# make sure ghc libraries' ABI hashes unchanged
+%bcond_without abicheck
+
+# run testsuite
+%bcond_without testsuite
+# build profiling libraries
+%bcond_without prof
+# build manual
+%bcond_without manual
+# build library documentation
+%bcond_without haddock
 
 # to handle RCs
-%global ghc_release 8.2.2
-
-%if %{undefined perf_build}
-%bcond_with testsuite
-%bcond_with prof
-%{?ghc_bootstrap}
-### uncomment to generate haddocks for bootstrap
-#%%undefine without_haddock
-%else
-%bcond_without testsuite
-%bcond_without prof
-%endif
+%global ghc_release %{version}
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
@@ -22,7 +23,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 66%{?dist}
+Release: 67%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -38,7 +39,8 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://github.com/haskell/cabal/issues/4728
 # https://ghc.haskell.org/trac/ghc/ticket/14381
-Patch4:  https://phabricator-files.haskell.org/file/data/pgrn3b7lw22ccodkc4nf/PHID-FILE-o3pkv37yfa5h2q3xflrd/D4159.patch
+# https://phabricator.haskell.org/D4159
+Patch4:  D4159.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
@@ -57,7 +59,7 @@ Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
 # and retired arches: alpha sparcv9 armv5tel
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
-%if %{defined perf_build}
+%if %{with abicheck}
 BuildRequires: ghc-compiler = %{version}
 # for ABI hash checking
 BuildRequires: ghc = %{version}
@@ -78,22 +80,25 @@ BuildRequires: perl-interpreter
 %if %{with testsuite}
 BuildRequires: python3
 %endif
-%if %{undefined without_manual}
+%if %{with manual}
 BuildRequires: python3-sphinx
 %endif
 %ifarch armv7hl aarch64
 BuildRequires: llvm%{llvm_major}
 %endif
-%ifarch armv7hl aarch64
+%ifarch armv7hl
 # patch12
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-%if %{undefined without_haddock}
-Requires: ghc-doc-index = %{version}-%{release}
+%if %{with haddock}
+Requires: ghc-doc-cron = %{version}-%{release}
 %endif
-Requires: ghc-libraries = %{version}-%{release}
 Requires: ghc-ghc-devel = %{version}-%{release}
+Requires: ghc-libraries = %{version}-%{release}
+%if %{with manual}
+Requires: ghc-manual = %{version}-%{release}
+%endif
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -128,7 +133,9 @@ Requires(post): chkconfig
 Requires(postun): chkconfig
 # added in f14
 Obsoletes: ghc-doc < 6.12.3-4
-%if %{defined without_haddock}
+%if %{without haddock}
+Obsoletes: ghc-doc-cron < %{version}-%{release}
+# added in f28
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch armv7hl aarch64
@@ -143,16 +150,30 @@ To install all of ghc (including the ghc library),
 install the main ghc package.
 
 
-%if %{undefined without_haddock}
-%package doc-index
-Summary: GHC library development documentation indexing
+%if %{with haddock}
+%package doc-cron
+Summary: GHC library documentation indexing cronjob
 License: BSD
 Requires: ghc-compiler = %{version}-%{release}
 Requires: crontabs
+# added in f28
+Obsoletes: ghc-doc-index < %{version}-%{release}
+BuildArch: noarch
 
-%description doc-index
+%description doc-cron
 The package provides a cronjob for re-indexing installed library development
 documention.
+%endif
+
+
+%if %{with manual}
+%package manual
+Summary: GHC manual
+License: BSD
+BuildArch: noarch
+
+%description manual
+This package provides the User Guide and Haddock manual.
 %endif
 
 
@@ -200,7 +221,7 @@ documention.
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.2.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
-%if %{undefined without_haddock}
+%if %{with haddock}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2
 %endif
 %endif
@@ -246,7 +267,7 @@ rm -r libffi-tarballs
 %patch28 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
-%if %{undefined without_haddock}
+%if %{with haddock}
 if [ ! -f "libraries/%{gen_contents_index}" ]; then
   echo "Missing libraries/%{gen_contents_index}, needed at end of %%install!"
   exit 1
@@ -258,7 +279,7 @@ fi
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
 # cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
-%if %{defined perf_build}
+%if %{with perf_build}
 %ifarch armv7hl aarch64
 BuildFlavour = perf-llvm
 %else
@@ -272,11 +293,11 @@ BuildFlavour = quick
 %endif
 %endif
 GhcLibWays = v dyn %{?with_prof:p}
-%if %{defined without_haddock}
+%if %{without haddock}
 HADDOCK_DOCS = NO
 %endif
 EXTRA_HADDOCK_OPTS += --hyperlinked-source
-%if %{undefined without_manual}
+%if %{with manual}
 BUILD_MAN = yes
 %else
 BUILD_MAN = no
@@ -289,7 +310,7 @@ EOF
 ## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
 #EXTRA_HC_OPTS=-debug
 
-%ifarch armv7hl aarch64
+%ifarch armv7hl
 autoreconf
 %endif
 
@@ -399,10 +420,11 @@ done
 
 %ghc_strip_dynlinked
 
-%if %{undefined without_haddock}
+%if %{with haddock}
 mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
 install -p --mode=0755 %SOURCE3 %{buildroot}%{_sysconfdir}/cron.hourly/ghc-doc-index
 mkdir -p %{buildroot}%{_localstatedir}/lib/ghc
+touch %{buildroot}%{_localstatedir}/lib/ghc/pkg-dir.cache{,.new}
 install -p --mode=0755 %SOURCE4 %{buildroot}%{_bindir}/ghc-doc-index
 
 # generate initial lib doc index
@@ -436,32 +458,35 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
-%if %{with testsuite}
-make test
-%endif
 
 # check the ABI hashes
-%if %{defined perf_build}
-echo "Checking package ABI hashes:"
-for i in %{ghc_packages_list}; do
-  old=$(ghc-pkg field $i id --simple-output || :)
-  if [ -n "$old" ]; then
-    new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
-    if [ "$old" != "$new" ]; then
-      echo "ABI hash for $i changed!:" >&2
-      echo "  $old -> $new" >&2
-      ghc_abi_hash_change=yes
+%if %{with abicheck}
+if [ "%{version}" = "$(ghc --numeric-version)" ]; then
+  echo "Checking package ABI hashes:"
+  for i in %{ghc_packages_list}; do
+    old=$(ghc-pkg field $i id --simple-output || :)
+    if [ -n "$old" ]; then
+      new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
+      if [ "$old" != "$new" ]; then
+        echo "ABI hash for $i changed!:" >&2
+        echo "  $old -> $new" >&2
+        ghc_abi_hash_change=yes
+      else
+        echo "($old unchanged)"
+      fi
     else
-      echo "($old unchanged)"
+      echo "($i not installed)"
     fi
-  else
-    echo "($i not installed)"
+  done
+  if [ "$ghc_abi_hash_change" = "yes" ]; then
+     echo "ghc ABI hash change: aborting build!" >&2
+     exit 1
   fi
-done
-if [ "$ghc_abi_hash_change" = "yes" ]; then
-   echo "ghc ABI hash change: aborting build!" >&2
-   exit 1
 fi
+%endif
+
+%if %{with testsuite}
+make test
 %endif
 
 
@@ -534,45 +559,61 @@ fi
 %{ghclibdir}/template-hsc.h
 %dir %{_docdir}/ghc
 %dir %{ghc_html_dir}
-%if %{undefined without_haddock}
+%if %{with haddock}
 %{_bindir}/ghc-doc-index
 %{_bindir}/haddock
 %{_bindir}/haddock-ghc-%{version}
 %{ghclibdir}/bin/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
-%if %{undefined without_manual}
+%if %{with manual}
 # https://ghc.haskell.org/trac/ghc/ticket/12939
 #%%{_mandir}/man1/ghc.*
-## needs pandoc
-#%%{ghc_html_dir}/Cabal
-%{ghc_html_dir}/haddock
-%{ghc_html_dir}/users_guide
 %endif
 %dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
-%{ghc_html_dir}/libraries/hslogo-16.png
-%{ghc_html_dir}/libraries/ocean.css
 %{ghc_html_dir}/libraries/prologue.txt
-%{ghc_html_dir}/libraries/synopsis.png
-%{ghc_html_dir}/index.html
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
 %ghost %{ghc_html_dir}/libraries/haddock-util.js
+%ghost %{ghc_html_dir}/libraries/hslogo-16.png
 %ghost %{ghc_html_dir}/libraries/index*.html
 %ghost %{ghc_html_dir}/libraries/minus.gif
+%ghost %{ghc_html_dir}/libraries/ocean.css
 %ghost %{ghc_html_dir}/libraries/plus.gif
-%{_localstatedir}/lib/ghc
+%ghost %{ghc_html_dir}/libraries/synopsis.png
+%dir %{_localstatedir}/lib/ghc
+%ghost %{_localstatedir}/lib/ghc/pkg-dir.cache
+%ghost %{_localstatedir}/lib/ghc/pkg-dir.cache.new
 %endif
 
-%if %{undefined without_haddock}
-%files doc-index
+%if %{with haddock}
+%files doc-cron
 %config(noreplace) %{_sysconfdir}/cron.hourly/ghc-doc-index
 %endif
 
 %files libraries
 
 
+%if %{with manual}
+%files manual
+## needs pandoc
+#%%{ghc_html_dir}/Cabal
+%{ghc_html_dir}/haddock
+%{ghc_html_dir}/index.html
+%{ghc_html_dir}/users_guide
+%endif
+
+
 %changelog
+* Thu May 24 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-67
+- move manuals to ghc-manual.noarch
+- rename ghc-doc-index to ghc-doc-cron.noarch
+- ghost the ghc-doc-index local state files
+- ghost some newer libraries index files
+- simplify and extend bcond for build configuration
+- drop bootstrap builds and do ABI hash checks unless ghc version changed
+- no longer need autotools on aarch64
+
 * Tue Apr 10 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-66
 - ghc-pkg: silence the abi-depends warnings
 
