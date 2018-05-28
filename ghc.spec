@@ -41,6 +41,8 @@ Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://ghc.haskell.org/trac/ghc/ticket/14381
 # https://phabricator.haskell.org/D4159
 Patch4:  D4159.patch
+# https://github.com/ghc/ghc/pull/143
+Patch5:  ghc-configure-fix-sphinx-version-check.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
@@ -81,11 +83,14 @@ BuildRequires: perl-interpreter
 BuildRequires: python3
 %endif
 %if %{with manual}
-BuildRequires: python3-sphinx
+# for /usr/bin/sphinx-build
+BuildRequires: python2-sphinx
 %endif
 %ifarch armv7hl aarch64
 BuildRequires: llvm%{llvm_major}
 %endif
+# patch5
+BuildRequires: autoconf
 %ifarch armv7hl
 # patch12
 BuildRequires: autoconf, automake
@@ -252,6 +257,7 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 
 %patch2 -p1 -b .orig
 %patch4 -p1 -b .orig
+%patch5 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
@@ -310,8 +316,12 @@ EOF
 ## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
 #EXTRA_HC_OPTS=-debug
 
+# for patch12
 %ifarch armv7hl
 autoreconf
+%else
+# for patch5
+autoconf
 %endif
 
 %if 0%{?fedora} > 28
