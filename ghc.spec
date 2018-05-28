@@ -8,10 +8,10 @@
 %bcond_without testsuite
 # build profiling libraries
 %bcond_without prof
-# build manual
-%bcond_without manual
-# build library documentation
-%bcond_without haddock
+# build docs (haddock and manuals)
+# combined since disabling haddock seems to cause no manuals built
+# <https://ghc.haskell.org/trac/ghc/ticket/15190>
+%bcond_without docs
 
 # to handle RCs
 %global ghc_release %{version}
@@ -82,7 +82,7 @@ BuildRequires: perl-interpreter
 %if %{with testsuite}
 BuildRequires: python3
 %endif
-%if %{with manual}
+%if %{with docs}
 # for /usr/bin/sphinx-build
 BuildRequires: python2-sphinx
 %endif
@@ -96,12 +96,12 @@ BuildRequires: autoconf
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-%if %{with haddock}
+%if %{with docs}
 Requires: ghc-doc-cron = %{version}-%{release}
 %endif
 Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
-%if %{with manual}
+%if %{with docs}
 Requires: ghc-manual = %{version}-%{release}
 %endif
 
@@ -138,7 +138,7 @@ Requires(post): chkconfig
 Requires(postun): chkconfig
 # added in f14
 Obsoletes: ghc-doc < 6.12.3-4
-%if %{without haddock}
+%if %{without docs}
 Obsoletes: ghc-doc-cron < %{version}-%{release}
 # added in f28
 Obsoletes: ghc-doc-index < %{version}-%{release}
@@ -155,7 +155,7 @@ To install all of ghc (including the ghc library),
 install the main ghc package.
 
 
-%if %{with haddock}
+%if %{with docs}
 %package doc-cron
 Summary: GHC library documentation indexing cronjob
 License: BSD
@@ -171,7 +171,7 @@ documention.
 %endif
 
 
-%if %{with manual}
+%if %{with docs}
 %package manual
 Summary: GHC manual
 License: BSD
@@ -226,7 +226,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.2.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
-%if %{with haddock}
+%if %{with docs}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2
 %endif
 %endif
@@ -273,7 +273,7 @@ rm -r libffi-tarballs
 %patch28 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
-%if %{with haddock}
+%if %{with docs}
 if [ ! -f "libraries/%{gen_contents_index}" ]; then
   echo "Missing libraries/%{gen_contents_index}, needed at end of %%install!"
   exit 1
@@ -299,15 +299,14 @@ BuildFlavour = quick
 %endif
 %endif
 GhcLibWays = v dyn %{?with_prof:p}
-%if %{without haddock}
-HADDOCK_DOCS = NO
-%endif
-EXTRA_HADDOCK_OPTS += --hyperlinked-source
-%if %{with manual}
+%if %{with docs}
+HADDOCK_DOCS = yes
 BUILD_MAN = yes
 %else
+HADDOCK_DOCS = no
 BUILD_MAN = no
 %endif
+EXTRA_HADDOCK_OPTS += --hyperlinked-source
 BUILD_SPHINX_PDF=no
 EOF
 ## for verbose build output
@@ -430,7 +429,7 @@ done
 
 %ghc_strip_dynlinked
 
-%if %{with haddock}
+%if %{with docs}
 mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
 install -p --mode=0755 %SOURCE3 %{buildroot}%{_sysconfdir}/cron.hourly/ghc-doc-index
 mkdir -p %{buildroot}%{_localstatedir}/lib/ghc
@@ -569,14 +568,14 @@ fi
 %{ghclibdir}/template-hsc.h
 %dir %{_docdir}/ghc
 %dir %{ghc_html_dir}
-%if %{with haddock}
+%if %{with docs}
 %{_bindir}/ghc-doc-index
 %{_bindir}/haddock
 %{_bindir}/haddock-ghc-%{version}
 %{ghclibdir}/bin/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
-%if %{with manual}
+%if %{with docs}
 # https://ghc.haskell.org/trac/ghc/ticket/12939
 #%%{_mandir}/man1/ghc.*
 %endif
@@ -596,7 +595,7 @@ fi
 %ghost %{_localstatedir}/lib/ghc/pkg-dir.cache.new
 %endif
 
-%if %{with haddock}
+%if %{with docs}
 %files doc-cron
 %config(noreplace) %{_sysconfdir}/cron.hourly/ghc-doc-index
 %endif
@@ -604,11 +603,13 @@ fi
 %files libraries
 
 
-%if %{with manual}
+%if %{with docs}
 %files manual
 ## needs pandoc
 #%%{ghc_html_dir}/Cabal
+%if %{with docs}
 %{ghc_html_dir}/haddock
+%endif
 %{ghc_html_dir}/index.html
 %{ghc_html_dir}/users_guide
 %endif
