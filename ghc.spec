@@ -23,7 +23,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 67%{?dist}
+Release: 68%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -616,7 +616,11 @@ fi
 
 
 %changelog
-* Thu May 24 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-67
+* Mon May 28 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-68
+- fix sphinx-build version detection
+- merge bcond for haddock and manual
+
+* Mon May 28 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-67
 - move manuals to ghc-manual.noarch
 - rename ghc-doc-index to ghc-doc-cron.noarch
 - ghost the ghc-doc-index local state files
