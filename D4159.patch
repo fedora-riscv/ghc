@@ -17,7 +17,7 @@ diff --git a/utils/ghc-pkg/Main.hs b/utils/ghc-pkg/Main.hs
 +--  -- warn when we find any (possibly-)bogus abi-depends fields;
 +--  -- Note [Recompute abi-depends]
 +--  when (any hasAnyAbiDepends pkgsCabalFormat) $
-+--       infoLn "ignoring (possibly broken) abi-depends field for packages"
++--      infoLn "ignoring (possibly broken) abi-depends field for packages"
  
    when (verbosity > Normal) $
        infoLn ("writing cache " ++ filename)
