@@ -16,6 +16,11 @@
 # to handle RCs
 %global ghc_release %{version}
 
+# 8.2 needs llvm-3.9
+%global llvm_major 3.9
+
+%global ghc_llvm_archs armv7hl aarch64
+
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
 Version: 8.2.2
@@ -53,9 +58,6 @@ Patch26: ghc-Debian-no-missing-haddock-file-warning.patch
 Patch27: ghc-Debian-reproducible-tmp-names.patch
 Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
 
-# 8.2 needs llvm-3.9
-%global llvm_major 3.9
-
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
 # and retired arches: alpha sparcv9 armv5tel
@@ -86,7 +88,7 @@ BuildRequires: python3
 # for /usr/bin/sphinx-build
 BuildRequires: python2-sphinx
 %endif
-%ifarch armv7hl aarch64
+%ifarch %{ghc_llvm_archs}
 BuildRequires: llvm%{llvm_major}
 %endif
 # patch5
@@ -143,7 +145,7 @@ Obsoletes: ghc-doc-cron < %{version}-%{release}
 # added in f28
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
-%ifarch armv7hl aarch64
+%ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
 %endif
 
@@ -286,13 +288,13 @@ fi
 # cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
 %if %{with perf_build}
-%ifarch armv7hl aarch64
+%ifarch %{ghc_llvm_archs}
 BuildFlavour = perf-llvm
 %else
 BuildFlavour = perf
 %endif
 %else
-%ifarch armv7hl aarch64
+%ifarch %{ghc_llvm_archs}
 BuildFlavour = quick-llvm
 %else
 BuildFlavour = quick
