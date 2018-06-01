@@ -1,11 +1,14 @@
 # perf production build (disable for quick build)
 %bcond_without perf_build
 
+# to handle RCs
+%global ghc_release %{version}
+
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
-# run testsuite
-%bcond_without testsuite
+# run testsuite (takes time and not really being using)
+%bcond_with testsuite
 # build profiling libraries
 %bcond_without prof
 # build docs (haddock and manuals)
@@ -13,12 +16,8 @@
 # <https://ghc.haskell.org/trac/ghc/ticket/15190>
 %bcond_without docs
 
-# to handle RCs
-%global ghc_release %{version}
-
 # 8.2 needs llvm-3.9
 %global llvm_major 3.9
-
 %global ghc_llvm_archs armv7hl aarch64
 
 Name: ghc
@@ -63,10 +62,10 @@ Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
 # and retired arches: alpha sparcv9 armv5tel
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
-%if %{with abicheck}
-BuildRequires: ghc-compiler = %{version}
+BuildRequires: ghc-compiler
 # for ABI hash checking
-BuildRequires: ghc = %{version}
+%if %{with abicheck}
+BuildRequires: ghc
 %endif
 BuildRequires: ghc-rpm-macros-extra >= 1.8
 BuildRequires: ghc-binary-devel
@@ -86,7 +85,7 @@ BuildRequires: python3
 %endif
 %if %{with docs}
 # for /usr/bin/sphinx-build
-BuildRequires: python2-sphinx
+BuildRequires: python-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
 BuildRequires: llvm%{llvm_major}
@@ -302,7 +301,7 @@ BuildFlavour = quick
 %endif
 GhcLibWays = v dyn %{?with_prof:p}
 %if %{with docs}
-HADDOCK_DOCS = yes
+#HADDOCK_DOCS = yes
 BUILD_MAN = yes
 %else
 HADDOCK_DOCS = no
@@ -360,14 +359,15 @@ make %{?_smp_mflags}
 %install
 make DESTDIR=%{buildroot} install
 
+%if %{defined _ghcdynlibdir}
 mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_libdir}/
 for i in $(find %{buildroot} -type f -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
   chrpath -d $i
 done
-
 for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
   sed -i -e 's!^dynamic-library-dirs: .*!dynamic-library-dirs: %{_libdir}!' $i
 done
+%endif
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -380,8 +380,7 @@ echo "%%license libraries/$name/LICENSE" >> ghc-$name.files
 %endif
 done
 
-# ghc-base should own ghclibdir
-echo "%%dir %{ghclibdir}" >> ghc-base-devel.files
+echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 
 %ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
@@ -403,21 +402,26 @@ echo "%%license libraries/LICENSE.%1" >> ghc-%2.files\
 %merge_filelist ghc-prim base
 
 # add rts libs
+%if %{defined _ghcdynlibdir}
 echo "%{ghclibdir}/rts" >> ghc-base-devel.files
-ls %{buildroot}%{_libdir}/libHSrts*.so >> ghc-base.files
+%else
+echo "%%dir %{ghclibdir}/rts" >> ghc-base.files
+ls -d %{buildroot}%{ghclibdir}/rts/lib*.a >> ghc-base-devel.files
+%endif
+ls %{buildroot}%{?_ghcdynlibdir}%{!?_ghcdynlibdir:%{ghclibdir}/rts}/libHSrts*.so >> ghc-base.files
 %if 0%{?rhel} && 0%{?rhel} < 7
 ls %{buildroot}%{ghclibdir}/rts/libffi.so.* >> ghc-base.files
 %endif
+%if %{defined _ghcdynlibdir}
 sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_libdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
-
-sed -i -e "s|^%{buildroot}||g" ghc-base.files
+%endif
 
 ls -d %{buildroot}%{ghclibdir}/package.conf.d/rts.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
 %if 0%{?rhel} && 0%{?rhel} < 7
 ls %{buildroot}%{ghclibdir}/rts/libffi.so >> ghc-base-devel.files
 %endif
 
-sed -i -e "s|^%{buildroot}||g" ghc-base-devel.files
+sed -i -e "s|^%{buildroot}||g" ghc-base*.files
 
 # these are handled as alternatives
 for i in hsc2hs runhaskell; do
@@ -493,6 +497,8 @@ if [ "%{version}" = "$(ghc --numeric-version)" ]; then
      echo "ghc ABI hash change: aborting build!" >&2
      exit 1
   fi
+else
+  echo "ABI hash checks skipped: GHC changed from $(ghc --numeric-version) to %{version}"
 fi
 %endif
 
@@ -579,7 +585,7 @@ fi
 %{ghclibdir}/latex
 %if %{with docs}
 # https://ghc.haskell.org/trac/ghc/ticket/12939
-#%%{_mandir}/man1/ghc.*
+#%%{_mandir}/man1/ghc.1*
 %endif
 %dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
@@ -609,9 +615,7 @@ fi
 %files manual
 ## needs pandoc
 #%%{ghc_html_dir}/Cabal
-%if %{with docs}
 %{ghc_html_dir}/haddock
-%endif
 %{ghc_html_dir}/index.html
 %{ghc_html_dir}/users_guide
 %endif
@@ -621,10 +625,12 @@ fi
 * Mon May 28 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-68
 - fix sphinx-build version detection
 - merge bcond for haddock and manual
+- disable the testsuite to speed up builds
+- version bootstrap and packaging fixes and tweaks
 
 * Mon May 28 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-67
-- move manuals to ghc-manual.noarch
-- rename ghc-doc-index to ghc-doc-cron.noarch
+- move manuals to new ghc-manual (noarch)
+- rename ghc-doc-index to ghc-doc-cron (noarch)
 - ghost the ghc-doc-index local state files
 - ghost some newer libraries index files
 - simplify and extend bcond for build configuration
