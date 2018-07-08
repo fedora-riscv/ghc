@@ -7,7 +7,7 @@
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
-# run testsuite (takes time and not really being using)
+# skip testsuite (takes time and not really being used)
 %bcond_with testsuite
 # build profiling libraries
 %bcond_without prof
