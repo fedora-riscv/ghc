@@ -38,6 +38,9 @@ Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsu
 %endif
 Source3: ghc-doc-index.cron
 Source4: ghc-doc-index
+Source5: ghc-pkg.man
+Source6: haddock.man
+Source7: runghc.man
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
@@ -451,6 +454,10 @@ cd ..
 # we package the library license files separately
 find %{buildroot}%{ghc_html_libraries_dir} -name LICENSE -exec rm '{}' ';'
 
+mkdir -p %{buildroot}%{_mandir}/man1
+install -p -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/ghc-pkg.1
+install -p -m 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/haddock.1
+install -p -m 0644 %{SOURCE7} %{buildroot}%{_mandir}/man1/runghc.1
 
 %check
 export LANG=en_US.utf8
@@ -576,6 +583,10 @@ fi
 %{ghclibdir}/template-hsc.h
 %dir %{_docdir}/ghc
 %dir %{ghc_html_dir}
+%{_mandir}/man1/ghc-pkg.1*
+%{_mandir}/man1/haddock.1*
+%{_mandir}/man1/runghc.1*
+
 %if %{with docs}
 %{_bindir}/ghc-doc-index
 %{_bindir}/haddock
