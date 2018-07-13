@@ -27,7 +27,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 68%{?dist}
+Release: 69%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -632,6 +632,9 @@ fi
 
 
 %changelog
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.2-69
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Mon May 28 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-68
 - fix sphinx-build version detection
 - merge bcond for haddock and manual
