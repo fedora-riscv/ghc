@@ -50,6 +50,7 @@ Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
 Patch27: reproducible-tmp-names.patch
 Patch28: x32-use-native-x86_64-insn.patch
+Patch29: llvm-targets-Add-versioned-ARM-targets.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -263,6 +264,9 @@ rm -r libffi-tarballs
 %patch26 -p1 -b .orig
 #%%patch27 -p1 -b .orig
 %patch28 -p1 -b .orig
+%ifarch armv7hl
+%patch29 -p1 -b .orig
+%endif
 
 %global gen_contents_index gen_contents_index.orig
 %if %{with docs}
@@ -608,6 +612,7 @@ fi
 - simplify and extend bcond for build configuration
 - drop bootstrap builds
 - no longer need autotools on aarch64
+- add armv7l to llvm-targets (patch from OpenSuse/Debian)
 
 * Mon Apr 30 2018 Jens Petersen <petersen@redhat.com> - 8.4.2-70.6
 - 8.4.2 perf build
