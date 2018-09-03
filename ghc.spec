@@ -318,7 +318,7 @@ autoreconf
 autoconf
 %endif
 
-%if 0%{?fedora} > 28
+%if 0%{?fedora} >= 28
 %ghc_set_cflags
 %else
 # -Wunused-label is extremely noisy
