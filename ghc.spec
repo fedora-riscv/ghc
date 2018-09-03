@@ -220,7 +220,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.5.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
-%if %{undefined without_haddock}
+%if %{undefined without_docs}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
 %endif
 %endif
@@ -292,7 +292,7 @@ BuildFlavour = quick-llvm
 BuildFlavour = quick
 %endif
 %endif
-GhcLibWays = v dyn %{?with_prof:p}
+GhcLibWays = v dyn %{!?without_prof:p}
 %if %{with docs}
 HADDOCK_DOCS = YES
 BUILD_MAN = YES
