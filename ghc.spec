@@ -344,7 +344,6 @@ export CC=%{_bindir}/gcc
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
-  --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
 %endif
