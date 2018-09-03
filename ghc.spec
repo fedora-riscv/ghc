@@ -329,8 +329,13 @@ CFLAGS="${CFLAGS:-%optflags}"
 %endif
 export CFLAGS
 %endif
-export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
-# for ghc-8.2
+%ifarch aarch64 s390x
+LDFLAGS="${LDFLAGS:-$(echo %{?__global_ldflags} | sed -e 's!-specs=/usr/lib/rpm/redhat/redhat-hardened-ld!!')}"
+%else
+LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
+%endif
+export LDFLAGS
+# for ghc >= 8.2
 export CC=%{_bindir}/gcc
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
