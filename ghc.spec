@@ -220,7 +220,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.5.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
-%if %{undefined without_docs}
+%if %{with docs}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
 %endif
 %endif
@@ -531,9 +531,7 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/ghc-iserv
 %{ghclibdir}/bin/ghc-iserv-dyn
-%if %{with prof}
 %{ghclibdir}/bin/ghc-iserv-prof
-%endif
 %{ghclibdir}/bin/runghc
 %ifnarch s390 s390x %{mips}
 %{ghclibdir}/bin/ghc-split
