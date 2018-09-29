@@ -45,6 +45,9 @@ Patch5:  ghc-configure-fix-sphinx-version-check.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
+# for s390x
+Patch15: ghc-8.4.3-warnings.mk-test.patch
+
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
@@ -258,6 +261,10 @@ rm -r libffi-tarballs
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
+%endif
+
+%ifarch s390x
+%patch15 -p1 -b .orig
 %endif
 
 %patch24 -p1 -b .orig
@@ -615,6 +622,7 @@ fi
 - drop bootstrap builds
 - no longer need autotools on aarch64
 - add armv7l to llvm-targets (patch from OpenSuse/Debian)
+- s390x: silence flood of -Wunused-label warnings
 
 * Mon Apr 30 2018 Jens Petersen <petersen@redhat.com> - 8.4.2-70.6
 - 8.4.2 perf build
