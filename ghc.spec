@@ -4,13 +4,26 @@
 # to handle RCs
 %global ghc_release %{version}
 
+# disables prof and docs
+%bcond_without quickbuild
+
 %bcond_with testsuite
+
 # build profiling libraries
+%if %{with quickbuild}
+%bcond_with prof
+%else
 %bcond_without prof
+%endif
+
 # build docs (haddock and manuals)
 # combined since disabling haddock seems to cause no manuals built
 # <https://ghc.haskell.org/trac/ghc/ticket/15190>
+%if %{with quickbuild}
+%bcond_with docs
+%else
 %bcond_without docs
+%endif
 
 # 8.4 needs llvm-5.0
 %global llvm_major 5.0
