@@ -70,7 +70,6 @@ Patch28: x32-use-native-x86_64-insn.patch
 Patch29: llvm-targets-Add-versioned-ARM-targets.patch
 Patch30: fix-build-using-unregisterized-v8.2.patch
 
-
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
 # and retired arches: alpha sparcv9 armv5tel
@@ -614,7 +613,7 @@ fi
 
 
 %changelog
-* Wed May 30 2018 Jens Petersen <petersen@redhat.com> - 8.4.3-70.7
+* Sun Sep 30 2018 Jens Petersen <petersen@redhat.com> - 8.4.3-71
 - 8.4.3 release
 - package changes from Fedora Rawhide:
 - fix sphinx-build version detection
