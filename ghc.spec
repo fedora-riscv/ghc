@@ -46,6 +46,7 @@ Patch5:  ghc-configure-fix-sphinx-version-check.patch
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # for s390x
+# https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-8.4.3-warnings.mk-test.patch
 
 # Debian patches:
@@ -330,23 +331,9 @@ autoreconf
 autoconf
 %endif
 
-%if 0%{?fedora} >= 28
-%ghc_set_cflags
-%else
-# -Wunused-label is extremely noisy
-%ifarch aarch64 s390x
-CFLAGS="${CFLAGS:-$(echo %optflags | sed -e 's/-Wall //' -e 's/-Werror=format-security //')}"
-%else
-CFLAGS="${CFLAGS:-%optflags}"
-%endif
-export CFLAGS
-%endif
-%ifarch aarch64 s390x
-LDFLAGS="${LDFLAGS:-$(echo %{?__global_ldflags} | sed -e 's!-specs=/usr/lib/rpm/redhat/redhat-hardened-ld!!')}"
-%else
-LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
-%endif
-export LDFLAGS
+# replace later with ghc_set_gcc_flags
+export CFLAGS="${CFLAGS:-%optflags}"
+export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
 # * %%configure induces cross-build due to different target/host/build platform names
