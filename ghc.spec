@@ -27,7 +27,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 69%{?dist}
+Release: 70%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -137,8 +137,8 @@ License: BSD
 Requires: gcc%{?_isa}
 Requires: ghc-base-devel%{?_isa}
 # for alternatives
-Requires(post): chkconfig
-Requires(postun): chkconfig
+Requires(post): %{_sbindir}/update-alternatives
+Requires(postun):  %{_sbindir}/update-alternatives
 # added in f14
 Obsoletes: ghc-doc < 6.12.3-4
 %if %{without docs}
@@ -631,6 +631,9 @@ fi
 
 
 %changelog
+* Tue Oct 16 2018 Peter Robinson <pbrobinson@fedoraproject.org> 8.2.2-70
+- Update alternatives dependencies
+
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.2-69
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
