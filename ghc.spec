@@ -105,8 +105,7 @@ BuildRequires: perl-interpreter
 BuildRequires: python3
 %endif
 %if %{with docs}
-# for /usr/bin/sphinx-build
-BuildRequires: python-sphinx
+BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
 BuildRequires: llvm%{llvm_major}
