@@ -1,5 +1,6 @@
-# perf production build (disable for quick build)
-%bcond_without perf_build
+# disable prof, docs, perf build
+# NB This SHOULD be disabled 'bcond_with' for all koji production builds
+%bcond_with quickbuild
 
 # to handle RCs
 %global ghc_release %{version}
@@ -7,26 +8,24 @@
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
-# disables prof and docs
-%bcond_without quickbuild
-
+# skip testsuite (takes time and not really being used)
 %bcond_with testsuite
 
 # build profiling libraries
+# build docs (haddock and manuals)
+# - combined since disabling haddock seems to cause no manuals built
+# - <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# perf production build (disable for quick build)
 %if %{with quickbuild}
 %bcond_with prof
+%bcond_with docs
+%bcond_with perf_build
 %else
 %bcond_without prof
+%bcond_without docs
+%bcond_without perf_build
 %endif
 
-# build docs (haddock and manuals)
-# combined since disabling haddock seems to cause no manuals built
-# <https://ghc.haskell.org/trac/ghc/ticket/15190>
-%if %{with quickbuild}
-%bcond_with docs
-%else
-%bcond_without docs
-%endif
 
 # 8.4 needs llvm-5.0
 %global llvm_major 5.0
