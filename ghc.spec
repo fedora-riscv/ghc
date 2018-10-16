@@ -68,7 +68,7 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # for s390x
 # https://ghc.haskell.org/trac/ghc/ticket/15689
-Patch15: ghc-8.4.3-warnings.mk-test.patch
+Patch15: ghc-warnings.mk-CC-Wall.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
