@@ -65,7 +65,6 @@ Patch15: ghc-8.4.3-warnings.mk-test.patch
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
-Patch27: reproducible-tmp-names.patch
 Patch28: x32-use-native-x86_64-insn.patch
 Patch29: llvm-targets-Add-versioned-ARM-targets.patch
 Patch30: fix-build-using-unregisterized-v8.2.patch
@@ -284,7 +283,6 @@ rm -r libffi-tarballs
 
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
-#%%patch27 -p1 -b .orig
 %patch28 -p1 -b .orig
 %ifarch armv7hl
 %patch29 -p1 -b .orig
