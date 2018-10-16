@@ -4,6 +4,9 @@
 # to handle RCs
 %global ghc_release %{version}
 
+# make sure ghc libraries' ABI hashes unchanged
+%bcond_without abicheck
+
 # disables prof and docs
 %bcond_without quickbuild
 
@@ -80,6 +83,10 @@ Patch30: fix-build-using-unregisterized-v8.2.patch
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
 BuildRequires: ghc-compiler
+# for ABI hash checking
+%if %{with abicheck}
+BuildRequires: ghc
+%endif
 BuildRequires: ghc-rpm-macros-extra
 BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
@@ -491,6 +498,35 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
+
+# check the ABI hashes
+%if %{with abicheck}
+if [ "%{version}" = "$(ghc --numeric-version)" ]; then
+  echo "Checking package ABI hashes:"
+  for i in %{ghc_packages_list}; do
+    old=$(ghc-pkg field $i id --simple-output || :)
+    if [ -n "$old" ]; then
+      new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
+      if [ "$old" != "$new" ]; then
+        echo "ABI hash for $i changed!:" >&2
+        echo "  $old -> $new" >&2
+        ghc_abi_hash_change=yes
+      else
+        echo "($old unchanged)"
+      fi
+    else
+      echo "($i not installed)"
+    fi
+  done
+  if [ "$ghc_abi_hash_change" = "yes" ]; then
+     echo "ghc ABI hash change: aborting build!" >&2
+     exit 1
+  fi
+else
+  echo "ABI hash checks skipped: GHC changed from $(ghc --numeric-version) to %{version}"
+fi
+%endif
+
 %if %{with testsuite}
 make test
 %endif
