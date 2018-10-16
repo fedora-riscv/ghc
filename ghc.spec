@@ -580,7 +580,9 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/ghc-iserv
 %{ghclibdir}/bin/ghc-iserv-dyn
+%if %{with prof}
 %{ghclibdir}/bin/ghc-iserv-prof
+%endif
 %{ghclibdir}/bin/runghc
 %ifnarch s390 s390x %{mips}
 %{ghclibdir}/bin/ghc-split
