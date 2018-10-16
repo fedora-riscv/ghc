@@ -328,7 +328,7 @@ BuildFlavour = quick-llvm
 BuildFlavour = quick
 %endif
 %endif
-GhcLibWays = v dyn %{!?without_prof:p}
+GhcLibWays = v dyn %{?with_prof:p}
 %if %{with docs}
 HADDOCK_DOCS = YES
 BUILD_MAN = YES
