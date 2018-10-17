@@ -1,5 +1,6 @@
-# perf production build (disable for quick build)
-%bcond_without perf_build
+# disable prof, docs, perf build
+# NB This SHOULD be disabled 'bcond_with' for all koji production builds
+%bcond_with quickbuild
 
 # to handle RCs
 %global ghc_release %{version}
@@ -9,12 +10,22 @@
 
 # skip testsuite (takes time and not really being used)
 %bcond_with testsuite
+
 # build profiling libraries
-%bcond_without prof
 # build docs (haddock and manuals)
-# combined since disabling haddock seems to cause no manuals built
-# <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# - combined since disabling haddock seems to cause no manuals built
+# - <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# perf production build (disable for quick build)
+%if %{with quickbuild}
+%bcond_with prof
+%bcond_with docs
+%bcond_with perf_build
+%else
+%bcond_without prof
 %bcond_without docs
+%bcond_without perf_build
+%endif
+
 
 # 8.2 needs llvm-3.9
 %global llvm_major 3.9
@@ -53,9 +64,12 @@ Patch5:  ghc-configure-fix-sphinx-version-check.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
+# for s390x
+# https://ghc.haskell.org/trac/ghc/ticket/15689
+Patch15: ghc-warnings.mk-CC-Wall.patch
+
 # Debian patches:
-# doesn't apply to 8.2
-#Patch24: ghc-Debian-buildpath-abi-stability.patch
+Patch24: ghc-Debian-buildpath-abi-stability.patch
 Patch26: ghc-Debian-no-missing-haddock-file-warning.patch
 Patch27: ghc-Debian-reproducible-tmp-names.patch
 Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
@@ -270,7 +284,11 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
-#%%patch24 -p1 -b .orig
+%ifarch s390x
+%patch15 -p1 -b .orig
+%endif
+
+%patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 %patch27 -p1 -b .orig
 %patch28 -p1 -b .orig
@@ -283,8 +301,6 @@ if [ ! -f "libraries/%{gen_contents_index}" ]; then
 fi
 %endif
 
-
-%build
 # http://hackage.haskell.org/trac/ghc/wiki/Platforms
 # cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
 cat > mk/build.mk << EOF
@@ -318,6 +334,7 @@ EOF
 ## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
 #EXTRA_HC_OPTS=-debug
 
+%build
 # for patch12
 %ifarch armv7hl
 autoreconf
@@ -326,19 +343,10 @@ autoreconf
 autoconf
 %endif
 
-%if 0%{?fedora} > 28
-%ghc_set_cflags
-%else
-# -Wunused-label is extremely noisy
-%ifarch aarch64 s390x
-CFLAGS="${CFLAGS:-$(echo %optflags | sed -e 's/-Wall //' -e 's/-Werror=format-security //')}"
-%else
-CFLAGS="${CFLAGS:-%optflags}"
-%endif
-export CFLAGS
-%endif
+# replace later with ghc_set_gcc_flags
+export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
-# for ghc-8.2
+# for ghc >= 8.2
 export CC=%{_bindir}/gcc
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -624,14 +632,23 @@ fi
 %files manual
 ## needs pandoc
 #%%{ghc_html_dir}/Cabal
+%if %{with docs}
 %{ghc_html_dir}/haddock
+%endif
 %{ghc_html_dir}/index.html
 %{ghc_html_dir}/users_guide
 %endif
 
 
 %changelog
-* Tue Oct 16 2018 Peter Robinson <pbrobinson@fedoraproject.org> 8.2.2-70
+* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-70
+- backport quickbuild config from 8.4 module and extend to perf_build
+- disable -Wall on s390x like in 8.4 module to silence warning flood
+  and simplify setting of CFLAGS
+- enable buildpath-abi-stability.patch (from Debian)
+- setup build.mk in setup section, taken from copr and module
+
+* Tue Oct 16 2018 Peter Robinson <pbrobinson@fedoraproject.org>
 - Update alternatives dependencies
 
 * Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.2-69
