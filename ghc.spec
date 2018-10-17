@@ -1,17 +1,31 @@
-# perf production build (disable for quick build)
-%bcond_without perf_build
+# disable prof, docs, perf build
+# NB This SHOULD be disabled 'bcond_with' for all koji production builds
+%bcond_with quickbuild
 
 # to handle RCs
-%global ghc_release 8.6.1
+%global ghc_release %{version}
 
-# testsuite fails on rhel <= 7
+# make sure ghc libraries' ABI hashes unchanged
+%bcond_without abicheck
+
+# skip testsuite (takes time and not really being used)
 %bcond_with testsuite
+
 # build profiling libraries
-%bcond_without prof
 # build docs (haddock and manuals)
-# combined since disabling haddock seems to cause no manuals built
-# <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# - combined since disabling haddock seems to cause no manuals built
+# - <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# perf production build (disable for quick build)
+%if %{with quickbuild}
+%bcond_with prof
+%bcond_with docs
+%bcond_with perf_build
+%else
+%bcond_without prof
 %bcond_without docs
+%bcond_without perf_build
+%endif
+
 
 # 8.6 needs llvm-6.0
 %global llvm_major 6.0
@@ -19,12 +33,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: %{ghc_release}
+Version: 8.6.1
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 70.11%{?dist}
+Release: 72%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -48,10 +62,13 @@ Patch4:  D4159.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
+# for s390x
+# https://ghc.haskell.org/trac/ghc/ticket/15689
+Patch15: ghc-warnings.mk-CC-Wall.patch
+
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
-Patch27: reproducible-tmp-names.patch
 Patch28: x32-use-native-x86_64-insn.patch
 
 # fedora ghc has been bootstrapped on
@@ -60,6 +77,10 @@ Patch28: x32-use-native-x86_64-insn.patch
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
 BuildRequires: ghc-compiler
+# for ABI hash checking
+%if %{with abicheck}
+BuildRequires: ghc
+%endif
 BuildRequires: ghc-rpm-macros-extra
 BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
@@ -78,11 +99,14 @@ BuildRequires: perl-interpreter
 BuildRequires: python3
 %endif
 %if %{with docs}
-# for /usr/bin/sphinx-build
-BuildRequires: python-sphinx
+BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
+%if 0%{?fedora} >= 29
+BuildRequires: llvm%{llvm_major}
+%else
 BuildRequires: llvm >= %{llvm_major}
+%endif
 %endif
 %ifarch armv7hl
 # patch12
@@ -127,8 +151,8 @@ License: BSD
 Requires: gcc%{?_isa}
 Requires: ghc-base-devel%{?_isa}
 # for alternatives
-Requires(post): chkconfig
-Requires(postun): chkconfig
+Requires(post): %{_sbindir}/update-alternatives
+Requires(postun):  %{_sbindir}/update-alternatives
 # added in f14
 Obsoletes: ghc-doc < 6.12.3-4
 %if %{without docs}
@@ -137,7 +161,11 @@ Obsoletes: ghc-doc-cron < %{version}-%{release}
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
-Requires: llvm >= %{llvm_major}
+%if 0%{?fedora} >= 29
+BuildRequires: llvm%{llvm_major}
+%else
+BuildRequires: llvm >= %{llvm_major}
+%endif
 %endif
 
 %description compiler
@@ -210,7 +238,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD haskeline-0.7.4.3
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
-%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_release}
+%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
@@ -222,7 +250,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.5.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
-%if %{undefined without_haddock}
+%if %{with docs}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
 %endif
 %endif
@@ -262,9 +290,12 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
+%ifarch s390x
+%patch15 -p1 -b .orig
+%endif
+
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
-#%%patch27 -p1 -b .orig
 %patch28 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
@@ -314,19 +345,10 @@ EOF
 autoreconf
 %endif
 
-%if 0%{?fedora} > 28
-%ghc_set_cflags
-%else
-# -Wunused-label is extremely noisy
-%ifarch aarch64 s390x
-CFLAGS="${CFLAGS:-$(echo %optflags | sed -e 's/-Wall //' -e 's/-Werror=format-security //')}"
-%else
-CFLAGS="${CFLAGS:-%optflags}"
-%endif
-export CFLAGS
-%endif
+# replace later with ghc_set_gcc_flags
+export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
-# for ghc-8.2
+# for ghc >= 8.2
 export CC=%{_bindir}/gcc
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -335,7 +357,6 @@ export CC=%{_bindir}/gcc
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
-  --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
 %endif
@@ -468,6 +489,35 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
+
+# check the ABI hashes
+%if %{with abicheck}
+if [ "%{version}" = "$(ghc --numeric-version)" ]; then
+  echo "Checking package ABI hashes:"
+  for i in %{ghc_packages_list}; do
+    old=$(ghc-pkg field $i id --simple-output || :)
+    if [ -n "$old" ]; then
+      new=$(/usr/lib/rpm/ghc-pkg-wrapper %{buildroot}%{ghclibdir} field $i id --simple-output)
+      if [ "$old" != "$new" ]; then
+        echo "ABI hash for $i changed!:" >&2
+        echo "  $old -> $new" >&2
+        ghc_abi_hash_change=yes
+      else
+        echo "($old unchanged)"
+      fi
+    else
+      echo "($i not installed)"
+    fi
+  done
+  if [ "$ghc_abi_hash_change" = "yes" ]; then
+     echo "ghc ABI hash change: aborting build!" >&2
+     exit 1
+  fi
+else
+  echo "ABI hash checks skipped: GHC changed from $(ghc --numeric-version) to %{version}"
+fi
+%endif
+
 %if %{with testsuite}
 make test
 %endif
@@ -597,6 +647,18 @@ fi
 
 
 %changelog
+* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.6.1-72
+- initial 8.6 module build
+
+* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com>
+- add ABI hash check to build
+- use with_prof
+- BR python3-sphinx
+- extend quickbuild to handle perf_build
+
+* Tue Oct 16 2018 Peter Robinson <pbrobinson@fedoraproject.org>
+- Update alternatives dependencies
+
 * Sat Sep 22 2018 Jens Petersen <petersen@redhat.com> - 8.6.1-70.11
 - 8.6.1 release
 - https://downloads.haskell.org/~ghc/8.6.1/docs/html/users_guide/8.6.1-notes.html
