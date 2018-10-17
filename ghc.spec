@@ -301,8 +301,7 @@ if [ ! -f "libraries/%{gen_contents_index}" ]; then
 fi
 %endif
 
-# http://hackage.haskell.org/trac/ghc/wiki/Platforms
-# cf https://github.com/gentoo-haskell/gentoo-haskell/tree/master/dev-lang/ghc
+# http://ghc.haskell.org/trac/ghc/wiki/Platforms
 cat > mk/build.mk << EOF
 %if %{with perf_build}
 %ifarch %{ghc_llvm_archs}
