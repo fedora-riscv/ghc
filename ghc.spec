@@ -38,7 +38,7 @@ Version: 8.4.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 71%{?dist}
+Release: 72%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -653,6 +653,12 @@ fi
 
 
 %changelog
+* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.4.3-72
+- add ABI hash check to build
+- use with_prof
+- BR python3-sphinx
+- extend quickbuild to handle perf_build
+
 * Tue Oct 16 2018 Peter Robinson <pbrobinson@fedoraproject.org>
 - Update alternatives dependencies
 
