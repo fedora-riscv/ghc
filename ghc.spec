@@ -33,7 +33,7 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.4.3
+Version: 8.4.4
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
@@ -73,7 +73,6 @@ Patch15: ghc-warnings.mk-CC-Wall.patch
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
 Patch28: x32-use-native-x86_64-insn.patch
-Patch29: llvm-targets-Add-versioned-ARM-targets.patch
 Patch30: fix-build-using-unregisterized-v8.2.patch
 
 # fedora ghc has been bootstrapped on
@@ -240,10 +239,10 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.3.0
-%ghc_lib_subpackage -d -l BSD stm-2.4.5.0
+%ghc_lib_subpackage -d -l BSD stm-2.4.5.1
 %ghc_lib_subpackage -d -l BSD template-haskell-2.13.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.1
-%ghc_lib_subpackage -d -l BSD text-1.2.3.0
+%ghc_lib_subpackage -d -l BSD text-1.2.3.1
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
 %ghc_lib_subpackage -d -l BSD transformers-0.5.5.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
@@ -295,9 +294,6 @@ rm -r libffi-tarballs
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 %patch28 -p1 -b .orig
-%ifarch armv7hl
-%patch29 -p1 -b .orig
-%endif
 %ifarch s390x
 %patch30 -p1 -b .orig
 %endif
@@ -653,7 +649,10 @@ fi
 
 
 %changelog
-* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.4.3-72
+* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.4.4-72
+- update to 8.4.4 bugfix release
+
+* Wed Oct 17 2018 Jens Petersen <petersen@redhat.com>
 - add ABI hash check to build
 - use with_prof
 - BR python3-sphinx
