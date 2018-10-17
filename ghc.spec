@@ -154,8 +154,8 @@ License: BSD
 Requires: gcc%{?_isa}
 Requires: ghc-base-devel%{?_isa}
 # for alternatives
-Requires(post): chkconfig
-Requires(postun): chkconfig
+Requires(post): %{_sbindir}/update-alternatives
+Requires(postun):  %{_sbindir}/update-alternatives
 # added in f14
 Obsoletes: ghc-doc < 6.12.3-4
 %if %{without docs}
@@ -653,6 +653,9 @@ fi
 
 
 %changelog
+* Tue Oct 16 2018 Peter Robinson <pbrobinson@fedoraproject.org>
+- Update alternatives dependencies
+
 * Sun Sep 30 2018 Jens Petersen <petersen@redhat.com> - 8.4.3-71
 - 8.4.3 release
 - package changes from Fedora Rawhide:
