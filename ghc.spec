@@ -69,6 +69,10 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 
+# revert 8.4.4 llvm changes
+# https://ghc.haskell.org/trac/ghc/ticket/15780
+Patch16: https://github.com/ghc/ghc/commit/6e361d895dda4600a85e01c72ff219474b5c7190.patch
+
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
@@ -289,6 +293,10 @@ rm -r libffi-tarballs
 
 %ifarch s390x
 %patch15 -p1 -b .orig
+%endif
+
+%ifarch armv7hl aarch64
+%patch16 -p1 -b .orig -R
 %endif
 
 %patch24 -p1 -b .orig
