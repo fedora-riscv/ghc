@@ -114,12 +114,12 @@ BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 %if %{with docs}
-Requires: ghc-doc-cron = %{version}-%{release}
+Recommends: ghc-doc-cron = %{version}-%{release}
 %endif
 Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
 %if %{with docs}
-Requires: ghc-manual = %{version}-%{release}
+Recommends: ghc-manual = %{version}-%{release}
 %endif
 
 %description
@@ -640,6 +640,9 @@ fi
 
 
 %changelog
+* Mon Oct 22 2018 Jens Petersen <petersen@redhat.com>
+- Recommends for ghc-manual and ghc-doc-cron
+
 * Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.2.2-70
 - backport quickbuild config from 8.4 module and extend to perf_build
 - disable -Wall on s390x like in 8.4 module to silence warning flood
