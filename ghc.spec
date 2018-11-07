@@ -33,12 +33,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.6.1
+Version: 8.6.2
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 72%{?dist}
+Release: 73%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -222,7 +222,7 @@ This package provides the User Guide and Haddock manual.
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
 %ghc_lib_subpackage -d -l BSD Cabal-2.4.0.1
-%ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.2.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.3.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.12.0.0
 %ghc_lib_subpackage -d -l BSD binary-0.8.6.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.8.2
@@ -239,7 +239,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD haskeline-0.7.4.3
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
-%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
+%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-8.6.1
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
@@ -651,6 +651,10 @@ fi
 
 
 %changelog
+* Wed Nov  7 2018 Jens Petersen <petersen@redhat.com> - 8.6.2-73
+- update to 8.6.2
+- https://downloads.haskell.org/~ghc/8.6.2/docs/html/users_guide/8.6.2-notes.html
+
 * Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.6.1-72
 - initial 8.6 module build
 - add fix-build-using-unregisterized-v8.2.patch from 8.4
