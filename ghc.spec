@@ -1,15 +1,12 @@
 # disable prof, docs, perf build
-# NB This SHOULD be disabled 'bcond_with' for all koji production builds
+# NB This SHOULD be disabled (bcond_with) for all koji production builds
 %bcond_with quickbuild
-
-# to handle RCs
-%global ghc_release %{version}
 
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
-# skip testsuite (takes time and not really being used)
-%bcond_with testsuite
+# to handle RCs
+%global ghc_release %{version}
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -26,10 +23,14 @@
 %bcond_without perf_build
 %endif
 
+# no longer build testsuite (takes time and not really being used)
+%bcond_with testsuite
 
 # 8.6 needs llvm-6.0
 %global llvm_major 6.0
 %global ghc_llvm_archs armv7hl aarch64
+
+%global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
@@ -52,6 +53,9 @@ Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
+# https://bugzilla.redhat.com/show_bug.cgi?id=1648537
+# (probably applies to all unregisterised archs)
+ExcludeArch: s390x
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
@@ -122,6 +126,7 @@ Requires: ghc-libraries = %{version}-%{release}
 %if %{with docs}
 Requires: ghc-manual = %{version}-%{release}
 %endif
+Recommends: zlib-devel
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -361,6 +366,9 @@ export CC=%{_bindir}/gcc
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
+%ifarch %{ghc_unregisterized_arches}
+  --enable-unregisterised \
+%endif
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
 %endif
@@ -581,7 +589,7 @@ fi
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
 %{ghclibdir}/bin/runghc
-%ifnarch s390 s390x %{mips}
+%ifnarch %{ghc_unregisterized_arches}
 %{ghclibdir}/bin/ghc-split
 %endif
 %{ghclibdir}/bin/hp2ps
@@ -654,6 +662,8 @@ fi
 * Wed Nov  7 2018 Jens Petersen <petersen@redhat.com> - 8.6.2-73
 - update to 8.6.2
 - https://downloads.haskell.org/~ghc/8.6.2/docs/html/users_guide/8.6.2-notes.html
+- temporarily disable s390x (#1648537)
+- ghc now Recommends zlib-devel
 
 * Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.6.1-72
 - initial 8.6 module build
