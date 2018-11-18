@@ -38,7 +38,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 70%{?dist}
+Release: 71%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -361,7 +361,7 @@ export CC=%{_bindir}/gcc
 %{nil}
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
-export LANG=en_US.utf8
+export LANG=C.utf8
 make %{?_smp_mflags}
 
 
@@ -640,6 +640,10 @@ fi
 
 
 %changelog
+* Sun Nov 18 2018 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 8.2.2-71
+- Use C.UTF-8 locale
+  See https://fedoraproject.org/wiki/Changes/Remove_glibc-langpacks-all_from_buildroot
+
 * Mon Oct 22 2018 Jens Petersen <petersen@redhat.com>
 - Recommends for ghc-manual and ghc-doc-cron
 
