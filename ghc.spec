@@ -668,6 +668,7 @@ fi
 - https://downloads.haskell.org/~ghc/8.6.2/docs/html/users_guide/8.6.2-notes.html
 - temporarily disable s390x (#1648537)
 - ghc now Recommends zlib-devel
+- disable ppc64 (#1651448)
 
 * Wed Oct 17 2018 Jens Petersen <petersen@redhat.com> - 8.6.1-72
 - initial 8.6 module build
