@@ -54,6 +54,7 @@ Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
 # https://bugzilla.redhat.com/show_bug.cgi?id=1648537
+# https://ghc.haskell.org/trac/ghc/ticket/15913
 # (probably applies to all unregisterised archs)
 ExcludeArch: s390x
 # absolute haddock path (was for html/libraries -> libraries)
