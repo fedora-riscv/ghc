@@ -57,6 +57,9 @@ Source7: runghc.man
 # https://ghc.haskell.org/trac/ghc/ticket/15913
 # (probably applies to all unregisterised archs)
 ExcludeArch: s390x
+# https://bugzilla.redhat.com/show_bug.cgi?id=1651448
+# https://ghc.haskell.org/trac/ghc/ticket/15914
+ExcludeArch: ppc64
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
