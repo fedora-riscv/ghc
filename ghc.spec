@@ -11,8 +11,7 @@
 ### uncomment to generate haddocks for bootstrap
 #%%undefine without_haddock
 
-%global space %(echo -n ' ')
-%global BSDHaskellReport BSD%{space}and%{space}HaskellReport
+%global BSDHaskellReport %{quote:BSD and HaskellReport}
 
 Name: ghc
 # part of haskell-platform
