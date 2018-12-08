@@ -123,12 +123,12 @@ BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 %if %{with docs}
-Requires: ghc-doc-cron = %{version}-%{release}
+Recommends: ghc-doc-cron = %{version}-%{release}
 %endif
 Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
 %if %{with docs}
-Requires: ghc-manual = %{version}-%{release}
+Recommends: ghc-manual = %{version}-%{release}
 %endif
 Recommends: zlib-devel
 
@@ -663,6 +663,9 @@ fi
 
 
 %changelog
+* Sat Dec  8 2018 Jens Petersen <petersen@redhat.com> - 8.6.2-73
+- Recommends for ghc-manual and ghc-doc-cron
+
 * Sun Nov 18 2018 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>
 - Use C.UTF-8 locale
   See https://fedoraproject.org/wiki/Changes/Remove_glibc-langpacks-all_from_buildroot
