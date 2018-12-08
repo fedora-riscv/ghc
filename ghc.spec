@@ -379,7 +379,7 @@ export CC=%{_bindir}/gcc
 %{nil}
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
-export LANG=en_US.utf8
+export LANG=C.utf8
 make %{?_smp_mflags}
 
 
@@ -663,6 +663,10 @@ fi
 
 
 %changelog
+* Sun Nov 18 2018 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>
+- Use C.UTF-8 locale
+  See https://fedoraproject.org/wiki/Changes/Remove_glibc-langpacks-all_from_buildroot
+
 * Wed Nov  7 2018 Jens Petersen <petersen@redhat.com> - 8.6.2-73
 - update to 8.6.2
 - https://downloads.haskell.org/~ghc/8.6.2/docs/html/users_guide/8.6.2-notes.html
