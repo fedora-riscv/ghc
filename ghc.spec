@@ -34,12 +34,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.6.2
+Version: 8.6.3
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 73%{?dist}
+Release: 74%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -244,7 +244,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD haskeline-0.7.4.3
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
-%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-8.6.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-8.6.3
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
@@ -657,7 +657,9 @@ fi
 
 
 %changelog
-* Sat Dec  8 2018 Jens Petersen <petersen@redhat.com> - 8.6.2-73
+* Sat Dec  8 2018 Jens Petersen <petersen@redhat.com> - 8.6.3-74
+- update to 8.6.3 release
+- https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/8.6.3-notes.html
 - Recommends for ghc-manual and ghc-doc-cron
 
 * Sun Nov 18 2018 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>
