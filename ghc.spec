@@ -63,10 +63,6 @@ ExcludeArch: ppc64
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
-# https://github.com/haskell/cabal/issues/4728
-# https://ghc.haskell.org/trac/ghc/ticket/14381
-# https://phabricator.haskell.org/D4159
-Patch4:  D4159.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
@@ -290,7 +286,6 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 %patch1 -p1 -b .orig
 
 %patch2 -p1 -b .orig
-#%%patch4 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
