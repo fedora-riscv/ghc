@@ -38,7 +38,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 71%{?dist}
+Release: 72%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -640,6 +640,9 @@ fi
 
 
 %changelog
+* Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.2-72
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Sun Nov 18 2018 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 8.2.2-71
 - Use C.UTF-8 locale
   See https://fedoraproject.org/wiki/Changes/Remove_glibc-langpacks-all_from_buildroot
