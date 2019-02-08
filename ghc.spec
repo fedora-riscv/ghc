@@ -118,12 +118,10 @@ BuildRequires: llvm >= %{llvm_major}
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-%if %{with docs}
-Recommends: ghc-doc-cron = %{version}-%{release}
-%endif
 Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
 %if %{with docs}
+Recommends: ghc-doc-cron = %{version}-%{release}
 Recommends: ghc-manual = %{version}-%{release}
 %endif
 Recommends: zlib-devel
