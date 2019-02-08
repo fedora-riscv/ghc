@@ -1,15 +1,12 @@
 # disable prof, docs, perf build
-# NB This SHOULD be disabled 'bcond_with' for all koji production builds
+# NB This SHOULD be disabled (bcond_with) for all koji production builds
 %bcond_with quickbuild
-
-# to handle RCs
-%global ghc_release %{version}
 
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
-# skip testsuite (takes time and not really being used)
-%bcond_with testsuite
+# to handle RCs
+%global ghc_release %{version}
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -26,10 +23,14 @@
 %bcond_without perf_build
 %endif
 
+# no longer build testsuite (takes time and not really being used)
+%bcond_with testsuite
 
 # 8.2 needs llvm-3.9
 %global llvm_major 3.9
 %global ghc_llvm_archs armv7hl aarch64
+
+%global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
@@ -113,14 +114,13 @@ BuildRequires: autoconf
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-%if %{with docs}
-Recommends: ghc-doc-cron = %{version}-%{release}
-%endif
 Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
 %if %{with docs}
+Recommends: ghc-doc-cron = %{version}-%{release}
 Recommends: ghc-manual = %{version}-%{release}
 %endif
+Recommends: zlib-devel
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -207,7 +207,7 @@ This package provides the User Guide and Haddock manual.
 # needs ghc_version_override for bootstrapping
 %global _use_internal_dependency_generator 0
 %global __find_provides /usr/lib/rpm/rpmdeps --provides
-%global __find_requires %{_rpmconfigdir}/ghc-deps.sh %{buildroot}%{ghclibdir}
+%global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
 %endif
 
 %global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
@@ -355,6 +355,9 @@ export CC=%{_bindir}/gcc
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
   --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
+%ifarch %{ghc_unregisterized_arches}
+  --enable-unregisterised \
+%endif
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
 %endif
@@ -382,7 +385,7 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-%if 0%{?rhel} && 0%{?rhel} < 8
+%if 0%{?rhel} && 0%{?rhel} < 7
 echo "%%doc libraries/$name/LICENSE" >> ghc-$name.files
 %else
 echo "%%license libraries/$name/LICENSE" >> ghc-$name.files
@@ -401,7 +404,7 @@ echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
-%if 0%{?rhel} && 0%{?rhel} < 8\
+%if 0%{?rhel} && 0%{?rhel} < 7\
 echo "%%doc libraries/LICENSE.%1" >> ghc-%2.files\
 %else\
 echo "%%license libraries/LICENSE.%1" >> ghc-%2.files\
@@ -574,7 +577,7 @@ fi
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
 %{ghclibdir}/bin/runghc
-%ifnarch s390 s390x %{mips}
+%ifnarch %{ghc_unregisterized_arches}
 %{ghclibdir}/bin/ghc-split
 %endif
 %{ghclibdir}/bin/hp2ps
@@ -640,6 +643,11 @@ fi
 
 
 %changelog
+* Fri Feb  8 2019 Jens Petersen <petersen@redhat.com> - 8.2.2-72
+- add ghc_unregisterized_arches
+- Recommends zlib-devel
+- epel6 tweaks
+
 * Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 8.2.2-72
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
