@@ -58,7 +58,10 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://github.com/ghc/ghc/pull/143
 Patch5:  ghc-configure-fix-sphinx-version-check.patch
+# https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
+Patch6: ghc-sphinx-1.8-4eebc8016.patch
 
+# Arch dependent packages
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # for s390x
@@ -276,6 +279,7 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 
 %patch2 -p1 -b .orig
 %patch5 -p1 -b .orig
+%patch6 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
@@ -659,6 +663,7 @@ fi
 - new patches:
   - 6e361d895dda4600a85e01c72ff219474b5c7190.patch
   - fix-build-using-unregisterized-v8.2.patch
+  - ghc-sphinx-1.8-4eebc8016.patch
 - dropped patch:
   - D4159.patch
   - ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
