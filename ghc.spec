@@ -26,20 +26,20 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.2 needs llvm-3.9
-%global llvm_major 3.9
+# 8.4 needs llvm-5.0
+%global llvm_major 5.0
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.2.2
+Version: 8.4.4
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 72%{?dist}
+Release: 73%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -56,10 +56,6 @@ Source7: runghc.man
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
-# https://github.com/haskell/cabal/issues/4728
-# https://ghc.haskell.org/trac/ghc/ticket/14381
-# https://phabricator.haskell.org/D4159
-Patch4:  D4159.patch
 # https://github.com/ghc/ghc/pull/143
 Patch5:  ghc-configure-fix-sphinx-version-check.patch
 
@@ -69,11 +65,15 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 
+# revert 8.4.4 llvm changes
+# https://ghc.haskell.org/trac/ghc/ticket/15780
+Patch16: https://github.com/ghc/ghc/commit/6e361d895dda4600a85e01c72ff219474b5c7190.patch
+
 # Debian patches:
-Patch24: ghc-Debian-buildpath-abi-stability.patch
-Patch26: ghc-Debian-no-missing-haddock-file-warning.patch
-Patch27: ghc-Debian-reproducible-tmp-names.patch
-Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
+Patch24: buildpath-abi-stability.patch
+Patch26: no-missing-haddock-file-warning.patch
+Patch28: x32-use-native-x86_64-insn.patch
+Patch30: fix-build-using-unregisterized-v8.2.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -85,13 +85,14 @@ BuildRequires: ghc-compiler
 %if %{with abicheck}
 BuildRequires: ghc
 %endif
-BuildRequires: ghc-rpm-macros-extra >= 1.8
+BuildRequires: ghc-rpm-macros-extra
 BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
 BuildRequires: ghc-directory-devel
 BuildRequires: ghc-pretty-devel
 BuildRequires: ghc-process-devel
+BuildRequires: ghc-transformers-devel
 BuildRequires: gmp-devel
 BuildRequires: libffi-devel
 # for terminfo
@@ -216,35 +217,36 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-2.0.1.0
+%ghc_lib_subpackage -d -l BSD Cabal-2.2.0.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.2.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.10.1.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.11.1.0
 %ghc_lib_subpackage -d -l BSD binary-0.8.5.1
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.8.2
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.5.10.2
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.5.11.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.3.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.0.2
-%ghc_lib_subpackage -d -l BSD filepath-1.4.1.2
-%define ghc_pkg_obsoletes ghc-bin-package-db-devel < 0.0.0.0-12
+%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.1.5
+%ghc_lib_subpackage -d -l BSD filepath-1.4.2
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
-%undefine ghc_pkg_obsoletes
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-compact-0.1.0.0
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.7.4.0
-%ghc_lib_subpackage -d -l BSD hoopl-3.10.2.2
+%ghc_lib_subpackage -d -l BSD haskeline-0.7.4.2
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
-%ghc_lib_subpackage -d -l BSD pretty-1.1.3.3
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.1.0
-%ghc_lib_subpackage -d -l BSD template-haskell-2.12.0.0
-%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.0
+%ghc_lib_subpackage -d -l BSD mtl-2.2.2
+%ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
+%ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.3.0
+%ghc_lib_subpackage -d -l BSD stm-2.4.5.1
+%ghc_lib_subpackage -d -l BSD template-haskell-2.13.0.0
+%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.1
+%ghc_lib_subpackage -d -l BSD text-1.2.3.1
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
-%ghc_lib_subpackage -d -l BSD transformers-0.5.2.0
+%ghc_lib_subpackage -d -l BSD transformers-0.5.5.0
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
 %if %{with docs}
-%ghc_lib_subpackage -d -l BSD xhtml-3000.2.2
+%ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
 %endif
 %endif
 
@@ -273,7 +275,6 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 %patch1 -p1 -b .orig
 
 %patch2 -p1 -b .orig
-%patch4 -p1 -b .orig
 %patch5 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
@@ -288,10 +289,16 @@ rm -r libffi-tarballs
 %patch15 -p1 -b .orig
 %endif
 
+%ifarch armv7hl aarch64
+%patch16 -p1 -b .orig -R
+%endif
+
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
-%patch27 -p1 -b .orig
 %patch28 -p1 -b .orig
+%ifarch s390x
+%patch30 -p1 -b .orig
+%endif
 
 %global gen_contents_index gen_contents_index.orig
 %if %{with docs}
@@ -354,7 +361,6 @@ export CC=%{_bindir}/gcc
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
-  --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
@@ -379,6 +385,7 @@ done
 for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
   sed -i -e 's!^dynamic-library-dirs: .*!dynamic-library-dirs: %{_libdir}!' $i
 done
+sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_libdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
 %endif
 
 for i in %{ghc_packages_list}; do
@@ -397,8 +404,8 @@ echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 %ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghci %{ghc_version_override}
-%ghc_gen_filelists ghc-prim 0.5.1.1
-%ghc_gen_filelists integer-gmp 1.0.1.0
+%ghc_gen_filelists ghc-prim 0.5.2.0
+%ghc_gen_filelists integer-gmp 1.0.2.0
 
 %define merge_filelist()\
 cat ghc-%1.files >> ghc-%2.files\
@@ -584,6 +591,7 @@ fi
 %{ghclibdir}/bin/unlit
 %{ghclibdir}/ghc-usage.txt
 %{ghclibdir}/ghci-usage.txt
+%{ghclibdir}/llvm-targets
 %dir %{ghclibdir}/package.conf.d
 %ghost %{ghclibdir}/package.conf.d/package.cache
 %{ghclibdir}/package.conf.d/package.cache.lock
@@ -610,12 +618,14 @@ fi
 %{ghc_html_dir}/libraries/gen_contents_index
 %{ghc_html_dir}/libraries/prologue.txt
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
+%ghost %{ghc_html_dir}/libraries/haddock-bundle.min.js
 %ghost %{ghc_html_dir}/libraries/haddock-util.js
 %ghost %{ghc_html_dir}/libraries/hslogo-16.png
 %ghost %{ghc_html_dir}/libraries/index*.html
 %ghost %{ghc_html_dir}/libraries/minus.gif
 %ghost %{ghc_html_dir}/libraries/ocean.css
 %ghost %{ghc_html_dir}/libraries/plus.gif
+%ghost %{ghc_html_dir}/libraries/quick-jump.css
 %ghost %{ghc_html_dir}/libraries/synopsis.png
 %dir %{_localstatedir}/lib/ghc
 %ghost %{_localstatedir}/lib/ghc/pkg-dir.cache
@@ -643,6 +653,17 @@ fi
 
 
 %changelog
+* Sat Feb 16 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-73
+- update to GHC 8.4
+- https://ghc.haskell.org/trac/ghc/blog/ghc-8.4.1-released
+- new patches:
+  - 6e361d895dda4600a85e01c72ff219474b5c7190.patch
+  - fix-build-using-unregisterized-v8.2.patch
+- dropped patch:
+  - D4159.patch
+  - ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
+  - ghc-Debian-reproducible-tmp-names.patch
+
 * Fri Feb  8 2019 Jens Petersen <petersen@redhat.com> - 8.2.2-72
 - add ghc_unregisterized_arches
 - Recommends zlib-devel
