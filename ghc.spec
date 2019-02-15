@@ -456,8 +456,6 @@ for i in hsc2hs runhaskell; do
   touch %{buildroot}%{_bindir}/$i
 done
 
-%ghc_strip_dynlinked
-
 %if %{with docs}
 mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
 install -p --mode=0755 %SOURCE3 %{buildroot}%{_sysconfdir}/cron.hourly/ghc-doc-index
@@ -668,6 +666,7 @@ fi
   - D4159.patch
   - ghc-7.8-arm7_saner-linker-opt-handling-9873.patch
   - ghc-Debian-reproducible-tmp-names.patch
+- rely on rpm to strip
 
 * Fri Feb  8 2019 Jens Petersen <petersen@redhat.com> - 8.2.2-72
 - add ghc_unregisterized_arches
