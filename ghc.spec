@@ -39,7 +39,7 @@ Version: 8.4.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 73%{?dist}
+Release: 74%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -67,6 +67,9 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # for s390x
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+# https://ghc.haskell.org/trac/ghc/ticket/15853
+# https://phabricator.haskell.org/D5306 (in 8.8)
+Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
 
 # revert 8.4.4 llvm changes
 # https://ghc.haskell.org/trac/ghc/ticket/15780
@@ -291,6 +294,7 @@ rm -r libffi-tarballs
 
 %ifarch s390x
 %patch15 -p1 -b .orig
+%patch17 -p1 -b .orig
 %endif
 
 %ifarch armv7hl aarch64
@@ -655,6 +659,10 @@ fi
 
 
 %changelog
+* Mon Mar  4 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-74
+- unregisterized: fix 32bit adjacent floats issue
+  (https://ghc.haskell.org/trac/ghc/ticket/15853)
+
 * Sat Feb 16 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-73
 - update to GHC 8.4
 - https://ghc.haskell.org/trac/ghc/blog/ghc-8.4.1-released
