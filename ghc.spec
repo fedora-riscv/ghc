@@ -64,7 +64,7 @@ ExcludeArch: ppc64
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
-Patch6: ghc-sphinx-1.8-4eebc8016.patch
+Patch6: ghc-8.6.3-sphinx-1.8.patch
 
 # Arch dependent packages
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
