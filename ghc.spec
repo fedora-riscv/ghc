@@ -39,7 +39,7 @@ Version: 8.6.3
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 74%{?dist}
+Release: 75%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -63,12 +63,18 @@ ExcludeArch: ppc64
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
+# https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
+Patch6: ghc-sphinx-1.8-4eebc8016.patch
 
+# Arch dependent packages
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # for s390x
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+# https://ghc.haskell.org/trac/ghc/ticket/15853
+# https://phabricator.haskell.org/D5306 (in 8.8)
+Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
@@ -166,9 +172,9 @@ Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
 %if 0%{?fedora} >= 29
-BuildRequires: llvm%{llvm_major}
+Requires: llvm%{llvm_major}
 %else
-BuildRequires: llvm >= %{llvm_major}
+Requires: llvm >= %{llvm_major}
 %endif
 %endif
 
@@ -284,6 +290,7 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 %patch1 -p1 -b .orig
 
 %patch2 -p1 -b .orig
+%patch6 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
@@ -295,6 +302,7 @@ rm -r libffi-tarballs
 
 %ifarch s390x
 %patch15 -p1 -b .orig
+%patch17 -p1 -b .orig
 %endif
 
 %patch24 -p1 -b .orig
@@ -452,8 +460,6 @@ for i in hsc2hs runhaskell; do
   fi
   touch %{buildroot}%{_bindir}/$i
 done
-
-%ghc_strip_dynlinked
 
 %if %{with docs}
 mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
@@ -655,6 +661,12 @@ fi
 
 
 %changelog
+* Tue Mar  5 2019 Jens Petersen <petersen@redhat.com> - 8.6.3-75
+- unregisterized: fix 32bit adjacent floats issue
+  (https://ghc.haskell.org/trac/ghc/ticket/15853)
+- sphinx-1.8 no longer supports pngmath
+- Recommends zlib-devel
+
 * Sat Dec  8 2018 Jens Petersen <petersen@redhat.com> - 8.6.3-74
 - update to 8.6.3 release
 - https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/8.6.3-notes.html
