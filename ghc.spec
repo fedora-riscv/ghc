@@ -39,7 +39,7 @@ Version: 8.4.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 72%{?dist}
+Release: 74%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -58,12 +58,18 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://github.com/ghc/ghc/pull/143
 Patch5:  ghc-configure-fix-sphinx-version-check.patch
+# https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
+Patch6: ghc-sphinx-1.8-4eebc8016.patch
 
+# Arch dependent packages
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # for s390x
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+# https://ghc.haskell.org/trac/ghc/ticket/15853
+# https://phabricator.haskell.org/D5306 (in 8.8)
+Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
 
 # revert 8.4.4 llvm changes
 # https://ghc.haskell.org/trac/ghc/ticket/15780
@@ -276,6 +282,7 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 
 %patch2 -p1 -b .orig
 %patch5 -p1 -b .orig
+%patch6 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
@@ -287,6 +294,7 @@ rm -r libffi-tarballs
 
 %ifarch s390x
 %patch15 -p1 -b .orig
+%patch17 -p1 -b .orig
 %endif
 
 %ifarch armv7hl aarch64
@@ -451,8 +459,6 @@ for i in hsc2hs runhaskell; do
   fi
   touch %{buildroot}%{_bindir}/$i
 done
-
-%ghc_strip_dynlinked
 
 %if %{with docs}
 mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
@@ -653,7 +659,14 @@ fi
 
 
 %changelog
-- ghc now Recommends zlib-devel
+* Mon Mar  4 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-74
+- unregisterized: fix 32bit adjacent floats issue
+  (https://ghc.haskell.org/trac/ghc/ticket/15853)
+
+* Fri Feb  8 2019 Jens Petersen <petersen@redhat.com> - 8.2.2-73
+- add ghc_unregisterized_arches
+- Recommends zlib-devel
+- epel6 tweaks
 
 * Sun Nov 18 2018 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>
 - Use C.UTF-8 locale
