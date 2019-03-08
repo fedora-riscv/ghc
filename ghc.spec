@@ -34,12 +34,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.6.3
+Version: 8.6.4
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 75%{?dist}
+Release: 76%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -252,13 +252,13 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.3.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.5.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.14.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.2
 %ghc_lib_subpackage -d -l BSD text-1.2.3.1
 %ghc_lib_subpackage -d -l BSD time-1.8.0.2
-%ghc_lib_subpackage -d -l BSD transformers-0.5.5.0
+%ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
 %if %{with docs}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
@@ -661,6 +661,10 @@ fi
 
 
 %changelog
+* Fri Mar  8 2019 Jens Petersen <petersen@redhat.com> - 8.6.4-76
+- update to 8.6.4 bugfix release
+- https://downloads.haskell.org/~ghc/8.6.4/docs/html/users_guide/8.6.4-notes.html
+
 * Tue Mar  5 2019 Jens Petersen <petersen@redhat.com> - 8.6.3-75
 - unregisterized: fix 32bit adjacent floats issue
   (https://ghc.haskell.org/trac/ghc/ticket/15853)
