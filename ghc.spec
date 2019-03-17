@@ -80,7 +80,6 @@ Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf49211
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
 Patch28: x32-use-native-x86_64-insn.patch
-Patch30: fix-build-using-unregisterized-v8.2.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -308,9 +307,6 @@ rm -r libffi-tarballs
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 %patch28 -p1 -b .orig
-%ifarch s390x
-%patch30 -p1 -b .orig
-%endif
 
 %global gen_contents_index gen_contents_index.orig
 %if %{with docs}
