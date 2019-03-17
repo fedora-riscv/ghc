@@ -299,7 +299,7 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
-%ifarch s390x
+%ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
 %patch17 -p1 -b .orig
 %endif
