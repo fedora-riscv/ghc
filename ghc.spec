@@ -39,7 +39,7 @@ Version: 8.6.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 76%{?dist}
+Release: 77%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -53,10 +53,6 @@ Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
-# https://bugzilla.redhat.com/show_bug.cgi?id=1648537
-# https://ghc.haskell.org/trac/ghc/ticket/15913
-# (probably applies to all unregisterised archs)
-ExcludeArch: s390x
 # https://bugzilla.redhat.com/show_bug.cgi?id=1651448
 # https://ghc.haskell.org/trac/ghc/ticket/15914
 ExcludeArch: ppc64
@@ -360,10 +356,11 @@ export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
+# remove after Fedora default moves to 8.6
 %ifarch %{ghc_unregisterized_arches}
 cat > ghc-unregisterised-wrapper << EOF
 #!/usr/bin/sh
-exec /usr/bin/ghc-8.4.4 -optc-I%{_libdir}/ghc-8.4.4/include ${1+"$@"}
+exec /usr/bin/ghc-8.4.4 -optc-I%{_libdir}/ghc-8.4.4/include \${1+"\$@"}
 EOF
 chmod a+x ghc-unregisterised-wrapper
 ln -s /usr/bin/ghc-pkg-8.4.4 ghc-pkg-unregisterised-wrapper
@@ -670,6 +667,9 @@ fi
 
 
 %changelog
+* Fri Mar 22 2019 Jens Petersen <petersen@redhat.com> - 8.6.4-77
+- re-enable s390x with unregisterized workaround for 8.4 (#1648537)
+
 * Fri Mar  8 2019 Jens Petersen <petersen@redhat.com> - 8.6.4-76
 - update to 8.6.4 bugfix release
 - https://downloads.haskell.org/~ghc/8.6.4/docs/html/users_guide/8.6.4-notes.html
