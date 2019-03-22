@@ -359,6 +359,16 @@ export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
+
+%ifarch %{ghc_unregisterized_arches}
+cat > ghc-unregisterised-wrapper << EOF
+#!/usr/bin/sh
+exec /usr/bin/ghc-8.4.4 -optc-I%{_libdir}/ghc-8.4.4/include ${1+"$@"}
+EOF
+chmod a+x ghc-unregisterised-wrapper
+ln -s /usr/bin/ghc-pkg-8.4.4 ghc-pkg-unregisterised-wrapper
+%endif
+
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
@@ -371,6 +381,9 @@ export CC=%{_bindir}/gcc
 %endif
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
+%endif
+%ifarch %{ghc_unregisterized_arches}
+  --with-ghc=$PWD/ghc-unregisterised-wrapper \
 %endif
 %{nil}
 
