@@ -360,10 +360,10 @@ export CC=%{_bindir}/gcc
 %ifarch %{ghc_unregisterized_arches}
 cat > ghc-unregisterised-wrapper << EOF
 #!/usr/bin/sh
-exec /usr/bin/ghc-8.4.4 -optc-I%{_libdir}/ghc-8.4.4/include \${1+"\$@"}
+exec /usr/bin/ghc -optc-I%{_libdir}/ghc-*/include \${1+"\$@"}
 EOF
 chmod a+x ghc-unregisterised-wrapper
-ln -s /usr/bin/ghc-pkg-8.4.4 ghc-pkg-unregisterised-wrapper
+ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
 %endif
 
 # * %%configure induces cross-build due to different target/host/build platform names
