@@ -360,7 +360,7 @@ export CC=%{_bindir}/gcc
 %ifarch %{ghc_unregisterized_arches}
 cat > ghc-unregisterised-wrapper << EOF
 #!/usr/bin/sh
-exec /usr/bin/ghc -optc-I%{_libdir}/$(ghc --numeric-version)/include \${1+"\$@"}
+exec /usr/bin/ghc -optc-I%{_libdir}/ghc-$(ghc --numeric-version)/include \${1+"\$@"}
 EOF
 chmod a+x ghc-unregisterised-wrapper
 ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
