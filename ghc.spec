@@ -53,9 +53,6 @@ Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
-# https://bugzilla.redhat.com/show_bug.cgi?id=1651448
-# https://ghc.haskell.org/trac/ghc/ticket/15914
-ExcludeArch: ppc64
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
@@ -71,6 +68,14 @@ Patch15: ghc-warnings.mk-CC-Wall.patch
 # https://ghc.haskell.org/trac/ghc/ticket/15853
 # https://phabricator.haskell.org/D5306 (in 8.8)
 Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
+
+# bigendian (s390x and ppc64)
+# fix haddock-library
+# https://gitlab.haskell.org/ghc/ghc/issues/15411
+# https://gitlab.haskell.org/ghc/ghc/issues/16505
+# https://bugzilla.redhat.com/show_bug.cgi?id=1651448
+# https://ghc.haskell.org/trac/ghc/ticket/15914
+Patch18: https://gitlab.haskell.org/ghc/ghc/uploads/5deb133cf910e9e0ca9ad9fe53f7383a/Disable-unboxed-arrays.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
@@ -298,6 +303,11 @@ rm -r libffi-tarballs
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
 %patch17 -p1 -b .orig
+%endif
+
+# bigendian
+%ifarch ppc64 s390x
+%patch18 -p1 -b .orig
 %endif
 
 %patch24 -p1 -b .orig
@@ -669,6 +679,7 @@ fi
 %changelog
 * Fri Mar 22 2019 Jens Petersen <petersen@redhat.com> - 8.6.4-77
 - re-enable s390x with unregisterized workaround for 8.4 (#1648537)
+- also re-enable ppc64 with bigendian patch for containers (#1651448)
 
 * Fri Mar  8 2019 Jens Petersen <petersen@redhat.com> - 8.6.4-76
 - update to 8.6.4 bugfix release
