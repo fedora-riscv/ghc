@@ -6,7 +6,8 @@
 %bcond_without abicheck
 
 # to handle RCs
-%global ghc_release %{version}
+#%%global ghc_release %{version}
+%global ghc_release 8.6.5-rc1
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -34,12 +35,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.6.4
+Version: 8.6.4.20190406
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 77%{?dist}
+Release: 78%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -360,9 +361,13 @@ EOF
 autoreconf
 %endif
 
-# replace later with ghc_set_gcc_flags
+%if 0%{?fedora} > 28
+# included in ghc-rpm-macros-1.9.5-5.fc28
+%ghc_set_gcc_flags
+%else
 export CFLAGS="${CFLAGS:-%optflags}"
 export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
+%endif
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
@@ -677,6 +682,9 @@ fi
 
 
 %changelog
+* Fri Apr 12 2019 Jens Petersen <petersen@redhat.com> - 8.6.4.20190406-78
+- update to 8.6.5 rc1
+
 * Fri Mar 22 2019 Jens Petersen <petersen@redhat.com> - 8.6.4-77
 - re-enable s390x with unregisterized workaround for 8.4 (#1648537)
 - also re-enable ppc64 with bigendian patch for containers (#1651448)
