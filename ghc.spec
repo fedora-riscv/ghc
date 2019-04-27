@@ -6,8 +6,7 @@
 %bcond_without abicheck
 
 # to handle RCs
-#%%global ghc_release %{version}
-%global ghc_release 8.6.5-rc1
+%global ghc_release %{version}
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -35,12 +34,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.6.4.20190406
+Version: 8.6.5
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 78%{?dist}
+Release: 79%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -682,6 +681,10 @@ fi
 
 
 %changelog
+* Sat Apr 27 2019 fedora-toolbox <petersen@redhat.com> - 8.6.5-79
+- 8.6.5 release
+- https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.5-notes.html
+
 * Fri Apr 12 2019 Jens Petersen <petersen@redhat.com> - 8.6.4.20190406-78
 - update to 8.6.5 rc1
 
