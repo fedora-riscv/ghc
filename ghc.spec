@@ -63,12 +63,9 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 # Arch dependent packages
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
-# for s390x
+# for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
-# https://ghc.haskell.org/trac/ghc/ticket/15853
-# https://phabricator.haskell.org/D5306 (in 8.8)
-Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
 
 # bigendian (s390x and ppc64)
 # fix haddock-library
@@ -304,7 +301,6 @@ rm -r libffi-tarballs
 
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
-%patch17 -p1 -b .orig
 %endif
 
 # bigendian
@@ -686,6 +682,7 @@ fi
 * Sat Apr 27 2019 fedora-toolbox <petersen@redhat.com> - 8.8.0.20190424-80
 - 8.8.1 alpha1
 - BR alex
+- D5306 unregisterized patch is in 8.8
 
 * Sat Apr 27 2019 fedora-toolbox <petersen@redhat.com> - 8.6.5-79
 - 8.6.5 release
