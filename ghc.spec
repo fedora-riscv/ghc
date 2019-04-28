@@ -392,7 +392,7 @@ ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
   --with-system-libffi \
 %endif
 %ifarch %{ghc_unregisterized_arches}
-  --with-ghc=$PWD/ghc-unregisterised-wrapper \
+  GHC=$PWD/ghc-unregisterised-wrapper \
 %endif
 %{nil}
 
