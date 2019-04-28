@@ -27,8 +27,8 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.6 needs llvm-6.0
-%global llvm_major 6.0
+# 8.8 needs llvm-7.0
+%global llvm_major 7.0
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
@@ -112,7 +112,7 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} >= 29
+%if 0%{?fedora} > 29
 BuildRequires: llvm%{llvm_major}
 %else
 BuildRequires: llvm >= %{llvm_major}
@@ -683,6 +683,7 @@ fi
 - 8.8.1 alpha1
 - BR alex
 - D5306 unregisterized patch is in 8.8
+- use llvm 7.0
 
 * Sat Apr 27 2019 fedora-toolbox <petersen@redhat.com> - 8.6.5-79
 - 8.6.5 release
