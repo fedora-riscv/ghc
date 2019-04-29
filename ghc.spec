@@ -648,6 +648,7 @@ fi
 %ghost %{ghc_html_dir}/libraries/haddock-util.js
 %ghost %{ghc_html_dir}/libraries/hslogo-16.png
 %ghost %{ghc_html_dir}/libraries/index*.html
+%ghost %{ghc_html_dir}/libraries/linuwial.css
 %ghost %{ghc_html_dir}/libraries/minus.gif
 %ghost %{ghc_html_dir}/libraries/ocean.css
 %ghost %{ghc_html_dir}/libraries/plus.gif
