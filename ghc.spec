@@ -85,7 +85,7 @@ Patch28: x32-use-native-x86_64-insn.patch
 # and retired arches: alpha sparcv9 armv5tel
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
-BuildRequires: ghc-compiler
+BuildRequires: ghc-compiler > 8.4
 # for ABI hash checking
 %if %{with abicheck}
 BuildRequires: ghc
