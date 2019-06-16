@@ -7,7 +7,7 @@
 
 # to handle RCs
 #%%global ghc_release %{version}
-%global ghc_release 8.8.1-alpha1
+%global ghc_release 8.8.1-alpha2
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -35,12 +35,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.8.0.20190424
+Version: 8.8.0.20190613
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 80%{?dist}
+Release: 81%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -229,10 +229,10 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-2.5.0.0
+%ghc_lib_subpackage -d -l BSD Cabal-3.0.0.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.13.0.0
-%ghc_lib_subpackage -d -l BSD binary-0.8.6.0
+%ghc_lib_subpackage -d -l BSD binary-0.8.7.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.9.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.0.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
@@ -251,12 +251,12 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.5.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.5.1
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.15.0.0
-%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.3
+%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
 %ghc_lib_subpackage -d -l BSD text-1.2.3.1
-%ghc_lib_subpackage -d -l BSD time-1.9.2
+%ghc_lib_subpackage -d -l BSD time-1.9.3
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
 %if %{with docs}
@@ -680,6 +680,9 @@ fi
 
 
 %changelog
+* Sun Jun 16 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190613-81
+- 8.8.1 alpha2
+
 * Sat Apr 27 2019 fedora-toolbox <petersen@redhat.com> - 8.8.0.20190424-80
 - 8.8.1 alpha1
 - BR alex
