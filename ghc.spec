@@ -39,7 +39,7 @@ Version: 8.4.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 74%{?dist}
+Release: 75%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -560,6 +560,13 @@ if [ "$1" = 0 ]; then
   update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
 fi
 
+%transfiletriggerin compiler -- %{ghclibdir}/package.conf.d
+%ghc_pkg_recache
+%end
+
+%transfiletriggerpostun compiler -- %{ghclibdir}/package.conf.d
+%ghc_pkg_recache
+%end
 
 %files
 
@@ -659,6 +666,9 @@ fi
 
 
 %changelog
+* Fri Jun 28 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-75
+- add transfiletriggers that will replace individual post/postun scriptlets
+
 * Mon Mar  4 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-74
 - unregisterized: fix 32bit adjacent floats issue
   (https://ghc.haskell.org/trac/ghc/ticket/15853)
