@@ -11,20 +11,21 @@
 %global base_ver 4.11.1.0
 
 # build profiling libraries
-# build haddock and manuals
-# - earlier combined since disabling haddock seems to cause no manuals built?
-# - <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# build haddock
 # perf production build (disable for quick build)
 %if %{with quickbuild}
 %undefine with_ghc_prof
 %undefine with_haddock
-%bcond_with manual
 %bcond_with perf_build
 %undefine _enable_debug_packages
 %else
-%bcond_without manual
 %bcond_without perf_build
 %endif
+
+# locked together since disabling haddock causes no manuals built
+# and disabling haddock still created index.html
+# https://ghc.haskell.org/trac/ghc/ticket/15190
+%{?with_haddock:%bcond_without manual}
 
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
@@ -347,8 +348,10 @@ HADDOCK_DOCS = NO
 %endif
 %if %{with manual}
 BUILD_MAN = YES
+BUILD_SPHINX_HTML = YES
 %else
 BUILD_MAN = NO
+BUILD_SPHINX_HTML = NO
 %endif
 BUILD_SPHINX_PDF = NO
 EOF
@@ -623,9 +626,9 @@ make test
 #%%{ghc_html_dir}/Cabal
 %if %{with haddock}
 %{ghc_html_dir}/haddock
-%endif
 %{ghc_html_dir}/index.html
 %{ghc_html_dir}/users_guide
+%endif
 %endif
 
 %if %{with ghc_prof}
