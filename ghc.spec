@@ -342,7 +342,7 @@ BuildFlavour = quick
 GhcLibWays = v dyn %{?with_ghc_prof:p}
 %if %{with haddock}
 HADDOCK_DOCS = YES
-EXTRA_HADDOCK_OPTS += --hyperlinked-source
+EXTRA_HADDOCK_OPTS += --hyperlinked-source --hoogle --quickjump
 %else
 HADDOCK_DOCS = NO
 %endif
