@@ -60,6 +60,10 @@ Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
 
+# https://github.com/haskell/process/pull/148
+Patch10: https://github.com/haskell/process/commit/73ea41b3622e2e578d928f7513941aac9d873279.patch
+Patch11: https://github.com/haskell/process/commit/3e0812fe9d3f4712638a1c4c49bf2b2a7dc4311b.patch
+
 # Arch dependent patches
 
 # arm
@@ -303,6 +307,12 @@ packages to be automatically installed too.
 %patch6 -p1 -b .orig
 
 rm -r libffi-tarballs
+
+(
+cd libraries/process
+%patch10 -p1 -b .orig10
+%patch11 -p1 -b .orig11
+)
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
@@ -665,6 +675,8 @@ make test
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.3-notes.html
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.4-notes.html
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.5-notes.html
+- fix process library initgroups issue
+  (https://github.com/haskell/process/pull/148)
 - enable s390x with unregisterized workaround for 8.4 (#1648537)
 - also re-enable ppc64 with bigendian patch for containers (#1651448)
 
