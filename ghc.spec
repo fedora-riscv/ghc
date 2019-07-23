@@ -7,7 +7,7 @@
 
 # to handle RCs
 #%%global ghc_release %{version}
-%global ghc_release 8.8.1-alpha2
+%global ghc_release 8.8.1-rc1
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -35,12 +35,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.8.0.20190613
+Version: 8.8.0.20190721
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 81%{?dist}
+Release: 82%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -233,8 +233,8 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.13.0.0
 %ghc_lib_subpackage -d -l BSD binary-0.8.7.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.9.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.0.1
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.3.2
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
@@ -249,7 +249,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
 %ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
-%ghc_lib_subpackage -d -l BSD parsec-3.1.13.0
+%ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.5.1
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
@@ -414,6 +414,9 @@ for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
 done
 sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_libdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
 %endif
+
+# containers src moved to a subdir
+cp -p libraries/containers/containers/LICENSE libraries/containers/LICENSE
 
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
@@ -680,6 +683,10 @@ fi
 
 
 %changelog
+* Tue Jul 23 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190721-82
+- 8.8.1 RC1
+- https://downloads.haskell.org/ghc/8.8.1-rc1/docs/html/users_guide/8.8.1-notes.html
+
 * Sun Jun 16 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190613-81
 - 8.8.1 alpha2
 

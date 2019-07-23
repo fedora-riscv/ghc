@@ -7,4 +7,4 @@ fi
 
 cd libraries
 
-grep -i ^version: Cabal/Cabal/Cabal.cabal */*.cabal | grep -v -e "\(Win32\|gmp.old\|gmp2\|integer-simple\)" | sed -e "s!/.*: \+!-!"
+grep -i ^version: $(find * -name "*.cabal" | sort) | grep -v -e "\(Win32\|cabal-\|gmp.old\|gmp2\|integer-simple\|tests\|bench\)" | sed -e "s!.*/\([^/]*\).cabal:[Vv]ersion: \+!\1-!"
