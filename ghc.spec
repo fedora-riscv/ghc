@@ -67,14 +67,6 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 
-# bigendian (s390x and ppc64)
-# fix haddock-library
-# https://gitlab.haskell.org/ghc/ghc/issues/15411
-# https://gitlab.haskell.org/ghc/ghc/issues/16505
-# https://bugzilla.redhat.com/show_bug.cgi?id=1651448
-# https://ghc.haskell.org/trac/ghc/ticket/15914
-Patch18: https://gitlab.haskell.org/ghc/ghc/uploads/5deb133cf910e9e0ca9ad9fe53f7383a/Disable-unboxed-arrays.patch
-
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
@@ -301,11 +293,6 @@ rm -r libffi-tarballs
 
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
-%endif
-
-# bigendian
-%ifarch ppc64 s390x
-%patch18 -p1 -b .orig
 %endif
 
 %patch24 -p1 -b .orig
