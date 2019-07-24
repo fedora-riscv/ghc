@@ -1,0 +1,25 @@
+--- ghc-8.8.0.20190721/configure.ac~	2019-07-22 07:19:41.000000000 +0000
++++ ghc-8.8.0.20190721/configure.ac	2019-07-24 08:13:27.347297256 +0000
+@@ -641,9 +641,9 @@
+ # tools we are looking for. In the past, GHC supported a number of
+ # versions of LLVM simultaneously, but that stopped working around
+ # 3.5/3.6 release of LLVM.
+-LlvmVersion=7
++LlvmVersion=7.0
+ AC_SUBST([LlvmVersion])
+-sUPPORTED_LLVM_VERSION=$(echo \($LlvmVersion\) | sed 's/\./,/')
++sUPPORTED_LLVM_VERSION=$(echo $LlvmVersion | sed 's/\./ /')
+ AC_DEFINE_UNQUOTED([sUPPORTED_LLVM_VERSION], ${sUPPORTED_LLVM_VERSION}, [The supported LLVM version number])
+ 
+ dnl ** Which LLVM clang to use?
+--- ghc-8.8.0.20190721/compiler/llvmGen/LlvmCodeGen/Base.hs~	2019-07-22 07:19:41.000000000 +0000
++++ ghc-8.8.0.20190721/compiler/llvmGen/LlvmCodeGen/Base.hs	2019-07-24 14:37:28.543866692 +0000
+@@ -188,7 +188,7 @@
+ 
+ -- | The LLVM Version that is currently supported.
+ supportedLlvmVersion :: LlvmVersion
+-supportedLlvmVersion = LlvmVersion sUPPORTED_LLVM_VERSION
++supportedLlvmVersion = LlvmVersionOld sUPPORTED_LLVM_VERSION
+ 
+ llvmVersionStr :: LlvmVersion -> String
+ llvmVersionStr v =
