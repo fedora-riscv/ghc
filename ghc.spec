@@ -39,7 +39,7 @@ Version: 8.4.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 75%{?dist}
+Release: 76%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -666,6 +666,9 @@ fi
 
 
 %changelog
+* Thu Jul 25 2019 Fedora Release Engineering <releng@fedoraproject.org>
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
 * Fri Jun 28 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-75
 - add transfiletriggers that will replace individual post/postun scriptlets
 
