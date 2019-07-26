@@ -54,6 +54,8 @@ Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
+# https://gitlab.haskell.org/ghc/ghc/issues/16973
+ExcludeArch: s390x
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
@@ -679,6 +681,7 @@ fi
 * Tue Jul 23 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190721-82
 - 8.8.1 RC1
 - https://downloads.haskell.org/ghc/8.8.1-rc1/docs/html/users_guide/8.8.1-notes.html
+- excluded s390x since build is failing (#1733030)
 
 * Sun Jun 16 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190613-81
 - 8.8.1 alpha2
