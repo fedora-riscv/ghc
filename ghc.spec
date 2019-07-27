@@ -69,12 +69,14 @@ Patch11: https://github.com/haskell/process/commit/3e0812fe9d3f4712638a1c4c49bf2
 # arm
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
-# for s390x
+# for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 # https://gitlab.haskell.org/ghc/ghc/issues/15853
 # https://phabricator.haskell.org/D5306 (in 8.8)
-Patch17: https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
+# https://gitlab.haskell.org/ghc/ghc/commit/35a897782b6b0a252da7fdcf4921198ad4e1d96c.patch
+# https://salsa.debian.org/haskell-team/DHG_packages/blob/master/p/ghc/debian/patches/PprC-Add-support-for-adjacent-floats
+Patch17: PprC-Add-support-for-adjacent-floats.patch
 
 # bigendian (s390x and ppc64)
 # fix haddock-library
@@ -88,6 +90,10 @@ Patch18: https://gitlab.haskell.org/ghc/ghc/uploads/5deb133cf910e9e0ca9ad9fe53f7
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
 Patch28: x32-use-native-x86_64-insn.patch
+# https://salsa.debian.org/haskell-team/DHG_packages/blob/master/p/ghc/debian/patches/add_-latomic_to_ghc-prim
+Patch30: add_-latomic_to_ghc-prim.patch
+# https://salsa.debian.org/haskell-team/DHG_packages/blob/master/p/ghc/debian/patches/e175aaf6918bb2b497b83618dc4c270a0d231a1c.patch
+Patch32: https://salsa.debian.org/haskell-team/DHG_packages/raw/master/p/ghc/debian/patches/e175aaf6918bb2b497b83618dc4c270a0d231a1c.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -328,9 +334,12 @@ cd libraries/process
 %patch18 -p1 -b .orig
 %endif
 
+# debian
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 %patch28 -p1 -b .orig
+%patch30 -p1 -b .orig
+%patch32 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{with haddock}
