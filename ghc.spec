@@ -680,8 +680,13 @@ make test
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.5-notes.html
 - fix process library initgroups issue
   (https://github.com/haskell/process/pull/148)
-- enable s390x with unregisterized workaround for 8.4 (#1648537)
-- also re-enable ppc64 with bigendian patch for containers (#1651448)
+- add fix-build-using-unregisterized-v8.4.patch for s390x (#1648537)
+  https://gitlab.haskell.org/ghc/ghc/issues/15913
+- add bigendian patch for containers (#1651448)
+  https://gitlab.haskell.org/ghc/ghc/issues/15411
+- Debian patches:
+  - add_-latomic_to_ghc-prim.patch,
+  - rts osReserveHeapMemory block alignment
 
 * Tue Jul 16 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-99
 - subpackage library haddock documentation and profiling libraries
