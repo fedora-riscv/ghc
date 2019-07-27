@@ -54,8 +54,6 @@ Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
-# https://gitlab.haskell.org/ghc/ghc/issues/16973
-ExcludeArch: s390x
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
@@ -70,6 +68,15 @@ Patch13: ghc-8.8-configure-llvm-7.0.patch
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+
+# bigendian (s390x and ppc64)
+# https://gitlab.haskell.org/ghc/ghc/issues/15411
+# https://gitlab.haskell.org/ghc/ghc/issues/16505
+# https://bugzilla.redhat.com/show_bug.cgi?id=1651448
+# https://ghc.haskell.org/trac/ghc/ticket/15914
+# https://gitlab.haskell.org/ghc/ghc/issues/16973
+# https://bugzilla.redhat.com/show_bug.cgi?id=1733030
+Patch18: Disable-unboxed-arrays.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
@@ -301,6 +308,11 @@ rm -r libffi-tarballs
 
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
+%endif
+
+# bigendian
+%ifarch ppc64 s390x
+%patch18 -p1 -b .orig
 %endif
 
 %patch24 -p1 -b .orig
@@ -681,7 +693,6 @@ fi
 * Tue Jul 23 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190721-82
 - 8.8.1 RC1
 - https://downloads.haskell.org/ghc/8.8.1-rc1/docs/html/users_guide/8.8.1-notes.html
-- excluded s390x since build is failing (#1733030)
 
 * Sun Jun 16 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190613-81
 - 8.8.1 alpha2
