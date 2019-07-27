@@ -94,6 +94,10 @@ Patch28: x32-use-native-x86_64-insn.patch
 Patch30: add_-latomic_to_ghc-prim.patch
 # https://salsa.debian.org/haskell-team/DHG_packages/blob/master/p/ghc/debian/patches/e175aaf6918bb2b497b83618dc4c270a0d231a1c.patch
 Patch32: https://salsa.debian.org/haskell-team/DHG_packages/raw/master/p/ghc/debian/patches/e175aaf6918bb2b497b83618dc4c270a0d231a1c.patch
+# https://gitlab.haskell.org/ghc/ghc/issues/15913
+# remove after Fedora default moves to 8.6
+# https://salsa.debian.org/haskell-team/DHG_packages/blob/master/p/ghc/debian/patches/fix-build-using-unregisterized-v8.4
+Patch34: fix-build-using-unregisterized-v8.4.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -327,6 +331,7 @@ cd libraries/process
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
 %patch17 -p1 -b .orig
+%patch34 -p1 -b .orig
 %endif
 
 # bigendian
@@ -401,16 +406,6 @@ export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
-# remove after Fedora default moves to 8.6
-%ifarch %{ghc_unregisterized_arches}
-cat > ghc-unregisterised-wrapper << EOF
-#!/usr/bin/sh
-exec /usr/bin/ghc -optc-I%{_libdir}/ghc-$(ghc --numeric-version)/include \${1+"\$@"}
-EOF
-chmod a+x ghc-unregisterised-wrapper
-ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
-%endif
-
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
   --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
@@ -421,7 +416,6 @@ ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
   --with-system-libffi \
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
-  --with-ghc=$PWD/ghc-unregisterised-wrapper \
 %endif
 %{nil}
 
