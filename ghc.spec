@@ -40,7 +40,7 @@ Version: 8.8.0.20190721
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 82%{?dist}
+Release: 83%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -690,9 +690,13 @@ fi
 
 
 %changelog
+* Sat Jul 27 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190721-83
+- re-enable s390x (#1733030)
+
 * Tue Jul 23 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190721-82
 - 8.8.1 RC1
 - https://downloads.haskell.org/ghc/8.8.1-rc1/docs/html/users_guide/8.8.1-notes.html
+- excluded s390x since build is failing (#1733030)
 
 * Sun Jun 16 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190613-81
 - 8.8.1 alpha2
