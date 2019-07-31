@@ -688,7 +688,7 @@ make test
   - add_-latomic_to_ghc-prim.patch,
   - rts osReserveHeapMemory block alignment
 
-* Tue Jul 16 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-99
+* Tue Jul 30 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-99
 - subpackage library haddock documentation and profiling libraries
 - add ghc-doc and ghc-prof metapackages to pull in lib docs and prof libs
 - rename ghc-doc-cron with ghc-doc-index using file triggers
