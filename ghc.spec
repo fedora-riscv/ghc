@@ -671,7 +671,7 @@ make test
 
 
 %changelog
-* Wed Jul 17 2019 Jens Petersen <petersen@redhat.com> - 8.6.5-100
+* Wed Jul 31 2019 Jens Petersen <petersen@redhat.com> - 8.6.5-100
 - update to GHC 8.6.5 (backport ghc:8.6 module stream)
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.1-notes.html
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.2-notes.html
