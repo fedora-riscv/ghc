@@ -19,6 +19,7 @@
 %bcond_with perf_build
 %undefine _enable_debug_packages
 %else
+%bcond_without haddock
 %bcond_without perf_build
 %endif
 
