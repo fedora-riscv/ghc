@@ -6,8 +6,7 @@
 %bcond_without abicheck
 
 # to handle RCs
-#%%global ghc_release %{version}
-%global ghc_release 8.8.1-rc1
+%global ghc_release %{version}
 
 # build profiling libraries
 # build docs (haddock and manuals)
@@ -35,12 +34,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.8.0.20190721
+Version: 8.8.1
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 83%{?dist}
+Release: 84%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -236,7 +235,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.13.0.0
 %ghc_lib_subpackage -d -l BSD binary-0.8.7.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.9.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.3.2
@@ -258,7 +257,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.15.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
-%ghc_lib_subpackage -d -l BSD text-1.2.3.1
+%ghc_lib_subpackage -d -l BSD text-1.2.4.0
 %ghc_lib_subpackage -d -l BSD time-1.9.3
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
@@ -690,6 +689,10 @@ fi
 
 
 %changelog
+* Mon Aug 26 2019 Jens Petersen <petersen@redhat.com> - 8.8.1-84
+- 8.8.1 final release
+- https://downloads.haskell.org/~ghc/8.8.1/docs/html/users_guide/8.8.1-notes.html
+
 * Sat Jul 27 2019 Jens Petersen <petersen@redhat.com> - 8.8.0.20190721-83
 - re-enable s390x (#1733030)
 
