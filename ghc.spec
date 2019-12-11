@@ -39,7 +39,7 @@ Version: 8.4.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 74%{?dist}
+Release: 74.1%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -659,6 +659,9 @@ fi
 
 
 %changelog
+* Wed Dec 11 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-74.1
+- rebuild to gain static provides for devel subpackages
+
 * Mon Mar  4 2019 Jens Petersen <petersen@redhat.com> - 8.4.4-74
 - unregisterized: fix 32bit adjacent floats issue
   (https://ghc.haskell.org/trac/ghc/ticket/15853)
