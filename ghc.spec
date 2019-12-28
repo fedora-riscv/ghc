@@ -446,6 +446,10 @@ echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 %define merge_filelist()\
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
+%if %{defined ghc_devel_prof}\
+cat ghc-%1-doc.files >> ghc-%2-doc.files\
+cat ghc-%1-prof.files >> ghc-%2-prof.files\
+%endif\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
 %if 0%{?rhel} && 0%{?rhel} < 7\
 echo "%%doc libraries/LICENSE.%1" >> ghc-%2.files\
