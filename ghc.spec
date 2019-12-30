@@ -1,5 +1,5 @@
-# disable prof, docs, perf build
-# NB This SHOULD be disabled (bcond_with) for all koji production builds
+# disable prof, docs, perf build, debuginfo
+# NB This must be disabled (bcond_with) for all koji production builds
 %bcond_with quickbuild
 
 # make sure ghc libraries' ABI hashes unchanged
@@ -8,20 +8,34 @@
 # to handle RCs
 %global ghc_release %{version}
 
+%global base_ver 4.13.0.0
+
 # build profiling libraries
-# build docs (haddock and manuals)
-# - combined since disabling haddock seems to cause no manuals built
-# - <https://ghc.haskell.org/trac/ghc/ticket/15190>
+# build haddock
 # perf production build (disable for quick build)
 %if %{with quickbuild}
+# f30
 %bcond_with prof
-%bcond_with docs
+# f31
+%undefine with_ghc_prof
+# all
+%undefine with_haddock
 %bcond_with perf_build
+%undefine _enable_debug_packages
 %else
+# f30
 %bcond_without prof
-%bcond_without docs
+# f31
+%bcond_without ghc_prof
+# all
+%bcond_without haddock
 %bcond_without perf_build
 %endif
+
+# locked together since disabling haddock causes no manuals built
+# and disabling haddock still created index.html
+# https://ghc.haskell.org/trac/ghc/ticket/15190
+%{?with_haddock:%bcond_without manual}
 
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
@@ -33,7 +47,6 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-# ghc must be rebuilt after a version bump to avoid ABI change problems
 Version: 8.8.1.20191211
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
@@ -48,8 +61,6 @@ Source0: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-src.ta
 %if %{with testsuite}
 Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
 %endif
-Source3: ghc-doc-index.cron
-Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
@@ -59,7 +70,7 @@ Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
 
-# Arch dependent packages
+# Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
 Patch13: ghc-8.8-configure-llvm-7.0.patch
@@ -103,14 +114,14 @@ BuildRequires: ghc-transformers-devel
 BuildRequires: alex
 BuildRequires: gmp-devel
 BuildRequires: libffi-devel
+BuildRequires: make
 # for terminfo
 BuildRequires: ncurses-devel
-# for man and docs
 BuildRequires: perl-interpreter
 %if %{with testsuite}
 BuildRequires: python3
 %endif
-%if %{with docs}
+%if %{with manual}
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
@@ -126,10 +137,16 @@ BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-ghc-devel = %{version}-%{release}
-Requires: ghc-libraries = %{version}-%{release}
-%if %{with docs}
-Recommends: ghc-doc-cron = %{version}-%{release}
-Recommends: ghc-manual = %{version}-%{release}
+Requires: ghc-devel = %{version}-%{release}
+%if %{with haddock}
+Suggests: ghc-doc = %{version}-%{release}
+Suggests: ghc-doc-index = %{version}-%{release}
+%endif
+%if %{with manual}
+Suggests: ghc-manual = %{version}-%{release}
+%endif
+%if %{with ghc_prof} && 0%{defined ghc_devel_prof}
+Suggests: ghc-prof = %{version}-%{release}
 %endif
 Recommends: zlib-devel
 
@@ -160,15 +177,9 @@ for the functional language Haskell. Highlights:
 Summary: GHC compiler and utilities
 License: BSD
 Requires: gcc%{?_isa}
-Requires: ghc-base-devel%{?_isa}
-# for alternatives
-Requires(post): %{_sbindir}/update-alternatives
-Requires(postun):  %{_sbindir}/update-alternatives
-# added in f14
-Obsoletes: ghc-doc < 6.12.3-4
-%if %{without docs}
-Obsoletes: ghc-doc-cron < %{version}-%{release}
-# added in f28
+Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
+%if %{without haddock}
+# added during f31
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
@@ -182,28 +193,35 @@ Requires: llvm >= %{llvm_major}
 %description compiler
 The package contains the GHC compiler, tools and utilities.
 
-The ghc libraries are provided by ghc-libraries.
+The ghc libraries are provided by ghc-devel.
 To install all of ghc (including the ghc library),
 install the main ghc package.
 
 
-%if %{with docs}
-%package doc-cron
-Summary: GHC library documentation indexing cronjob
+%if %{with haddock}
+%if %{defined ghc_devel_prof}
+%package doc
+Summary: Haskell library documentation meta package
 License: BSD
+
+%description doc
+Installing this package causes ghc-*-doc packages corresponding to ghc-*-devel
+packages to be automatically installed too.
+%endif
+
+%package doc-index
+Summary: GHC library documentation indexing
+License: BSD
+Obsoletes: ghc-doc-cron < %{version}-%{release}
 Requires: ghc-compiler = %{version}-%{release}
-Requires: crontabs
-# added in f28
-Obsoletes: ghc-doc-index < %{version}-%{release}
 BuildArch: noarch
 
-%description doc-cron
-The package provides a cronjob for re-indexing installed library development
-documention.
+%description doc-index
+The package enables re-indexing of installed library documention.
 %endif
 
 
-%if %{with docs}
+%if %{with manual}
 %package manual
 Summary: GHC manual
 License: BSD
@@ -225,15 +243,13 @@ This package provides the User Guide and Haddock manual.
 %global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
 %endif
 
-%global ghc_pkg_c_deps ghc-compiler = %{ghc_version_override}-%{release}
-
 %global BSDHaskellReport %{quote:BSD and HaskellReport}
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
 %ghc_lib_subpackage -d -l BSD Cabal-3.0.1.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.13.0.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.7.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
@@ -263,28 +279,38 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD time-1.9.3
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
-%if %{with docs}
+%if %{with haddock}
 %ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
 %endif
 %endif
 
 %global version %{ghc_version_override}
 
-%package libraries
+%package devel
 Summary: GHC development libraries meta package
 License: BSD and HaskellReport
 Requires: ghc-compiler = %{version}-%{release}
-Obsoletes: ghc-devel < %{version}-%{release}
-Provides: ghc-devel = %{version}-%{release}
-Obsoletes: ghc-prof < %{version}-%{release}
-Provides: ghc-prof = %{version}-%{release}
-# since f15
-Obsoletes: ghc-libs < 7.0.1-3
+Obsoletes: ghc-libraries < %{version}-%{release}
+Provides: ghc-libraries = %{version}-%{release}
 %{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/ghc-\1-devel = \2-%{release},/g")}
 
-%description libraries
+%description devel
 This is a meta-package for all the development library packages in GHC
 except the ghc library, which is installed by the toplevel ghc metapackage.
+
+
+%if %{defined ghc_devel_prof}
+%if %{with ghc_prof}
+%package prof
+Summary: GHC profiling libraries meta package
+License: BSD
+Requires: ghc-compiler = %{version}-%{release}
+
+%description prof
+Installing this package causes ghc-*-prof packages corresponding to ghc-*-devel
+packages to be automatically installed too.
+%endif
+%endif
 
 
 %prep
@@ -321,7 +347,7 @@ rm -r libffi-tarballs
 %patch28 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
-%if %{with docs}
+%if %{with haddock}
 if [ ! -f "libraries/%{gen_contents_index}" ]; then
   echo "Missing libraries/%{gen_contents_index}, needed at end of %%install!"
   exit 1
@@ -343,15 +369,20 @@ BuildFlavour = quick-llvm
 BuildFlavour = quick
 %endif
 %endif
-GhcLibWays = v dyn %{?with_prof:p}
-%if %{with docs}
+GhcLibWays = v dyn %{?with_ghc_prof:p}
+%if %{with haddock}
 HADDOCK_DOCS = YES
-BUILD_MAN = YES
+EXTRA_HADDOCK_OPTS += --hyperlinked-source --hoogle --quickjump
 %else
 HADDOCK_DOCS = NO
-BUILD_MAN = NO
 %endif
-EXTRA_HADDOCK_OPTS += --hyperlinked-source
+%if %{with manual}
+BUILD_MAN = YES
+BUILD_SPHINX_HTML = YES
+%else
+BUILD_MAN = NO
+BUILD_SPHINX_HTML = NO
+%endif
 BUILD_SPHINX_PDF = NO
 EOF
 ## for verbose build output
@@ -367,7 +398,6 @@ autoreconf
 %endif
 
 %if 0%{?fedora} > 28
-# included in ghc-rpm-macros-1.9.5-5.fc28
 %ghc_set_gcc_flags
 %else
 export CFLAGS="${CFLAGS:-%optflags}"
@@ -413,14 +443,14 @@ make %{?_smp_mflags}
 make DESTDIR=%{buildroot} install
 
 %if %{defined _ghcdynlibdir}
-mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_libdir}/
-for i in $(find %{buildroot} -type f -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
+mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_ghcdynlibdir}/
+for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
   chrpath -d $i
 done
 for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
-  sed -i -e 's!^dynamic-library-dirs: .*!dynamic-library-dirs: %{_libdir}!' $i
+  sed -i -e 's!^dynamic-library-dirs: .*!dynamic-library-dirs: %{_ghcdynlibdir}!' $i
 done
-sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_libdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
+sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_ghcdynlibdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
 %endif
 
 # containers src moved to a subdir
@@ -484,23 +514,7 @@ ls %{buildroot}%{ghclibdir}/rts/libffi.so >> ghc-base-devel.files
 
 sed -i -e "s|^%{buildroot}||g" ghc-base*.files
 
-# these are handled as alternatives
-for i in hsc2hs runhaskell; do
-  if [ -x %{buildroot}%{_bindir}/$i-ghc ]; then
-    rm %{buildroot}%{_bindir}/$i
-  else
-    mv %{buildroot}%{_bindir}/$i{,-ghc}
-  fi
-  touch %{buildroot}%{_bindir}/$i
-done
-
-%if %{with docs}
-mkdir -p %{buildroot}%{_sysconfdir}/cron.hourly
-install -p --mode=0755 %SOURCE3 %{buildroot}%{_sysconfdir}/cron.hourly/ghc-doc-index
-mkdir -p %{buildroot}%{_localstatedir}/lib/ghc
-touch %{buildroot}%{_localstatedir}/lib/ghc/pkg-dir.cache{,.new}
-install -p --mode=0755 %SOURCE4 %{buildroot}%{_bindir}/ghc-doc-index
-
+%if %{with haddock}
 # generate initial lib doc index
 cd libraries
 sh %{gen_contents_index} --intree --verbose
@@ -570,29 +584,26 @@ make test
 %endif
 
 
-%post compiler
-# Alas, GHC, Hugs, and nhc all come with different set of tools in
-# addition to a runFOO:
-#
-#   * GHC:  hsc2hs
-#   * Hugs: hsc2hs, cpphs
-#   * nhc:  cpphs
-#
-# Therefore it is currently not possible to use --slave below to form
-# link groups under a single name 'runhaskell'. Either these tools
-# should be disentangled from the Haskell implementations, or all
-# implementations should have the same set of tools. *sigh*
+%if %{defined ghclibdir}
+%transfiletriggerin compiler -- %{ghclibdir}/package.conf.d
+%ghc_pkg_recache
+%end
 
-update-alternatives --install %{_bindir}/runhaskell runhaskell \
-  %{_bindir}/runghc 500
-update-alternatives --install %{_bindir}/hsc2hs hsc2hs \
-  %{_bindir}/hsc2hs-ghc 500
+%transfiletriggerpostun compiler -- %{ghclibdir}/package.conf.d
+%ghc_pkg_recache
+%end
 
-%preun compiler
-if [ "$1" = 0 ]; then
-  update-alternatives --remove runhaskell %{_bindir}/runghc
-  update-alternatives --remove hsc2hs     %{_bindir}/hsc2hs-ghc
-fi
+
+%if %{with haddock}
+%transfiletriggerin doc-index -- %{ghc_html_libraries_dir}
+%{ghc_html_libraries_dir}/gen_contents_index
+%end
+
+%transfiletriggerpostun doc-index -- %{ghc_html_libraries_dir}
+%{ghc_html_libraries_dir}/gen_contents_index
+%end
+%endif
+%endif
 
 
 %files
@@ -608,11 +619,10 @@ fi
 %{_bindir}/ghci-%{version}
 %{_bindir}/hp2ps
 %{_bindir}/hpc
-%ghost %{_bindir}/hsc2hs
-%{_bindir}/hsc2hs-ghc
-%{_bindir}/runghc*
-%ghost %{_bindir}/runhaskell
-%{_bindir}/runhaskell-ghc
+%{_bindir}/hsc2hs
+%{_bindir}/runghc
+%{_bindir}/runghc-%{ghc_version}
+%{_bindir}/runhaskell
 %dir %{ghclibdir}/bin
 %{ghclibdir}/bin/ghc
 %{ghclibdir}/bin/ghc-pkg
@@ -620,7 +630,7 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/ghc-iserv
 %{ghclibdir}/bin/ghc-iserv-dyn
-%if %{with prof}
+%if %{with ghc_prof}
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
 %{ghclibdir}/bin/runghc
@@ -645,16 +655,12 @@ fi
 %{_mandir}/man1/haddock.1*
 %{_mandir}/man1/runghc.1*
 
-%if %{with docs}
-%{_bindir}/ghc-doc-index
+%if %{with haddock}
 %{_bindir}/haddock
 %{_bindir}/haddock-ghc-%{version}
 %{ghclibdir}/bin/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
-%if %{with docs}
-%{_mandir}/man1/ghc.1*
-%endif
 %dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
 %{ghc_html_dir}/libraries/prologue.txt
@@ -669,28 +675,36 @@ fi
 %ghost %{ghc_html_dir}/libraries/plus.gif
 %ghost %{ghc_html_dir}/libraries/quick-jump.css
 %ghost %{ghc_html_dir}/libraries/synopsis.png
-%dir %{_localstatedir}/lib/ghc
-%ghost %{_localstatedir}/lib/ghc/pkg-dir.cache
-%ghost %{_localstatedir}/lib/ghc/pkg-dir.cache.new
+%endif
+%if %{with manual}
+%{_mandir}/man1/ghc.1*
 %endif
 
-%if %{with docs}
-%files doc-cron
-%config(noreplace) %{_sysconfdir}/cron.hourly/ghc-doc-index
+%files devel
+
+%if %{with haddock}
+%if %{defined ghc_devel_prof}
+%files doc
 %endif
 
-%files libraries
+%files doc-index
+%endif
 
-
-%if %{with docs}
+%if %{with manual}
 %files manual
 ## needs pandoc
 #%%{ghc_html_dir}/Cabal
-%if %{with docs}
+%if %{with haddock}
 %{ghc_html_dir}/haddock
-%endif
 %{ghc_html_dir}/index.html
 %{ghc_html_dir}/users_guide
+%endif
+%endif
+
+%if %{defined ghc_devel_prof}
+%if %{with ghc_prof}
+%files prof
+%endif
 %endif
 
 
@@ -698,6 +712,7 @@ fi
 * Mon Dec 30 2019 Jens Petersen <petersen@redhat.com> - 8.8.1.20191211-85
 - 8.8.2 RC1
 - https://downloads.haskell.org/ghc/8.8.2-rc1/docs/html/users_guide/8.8.2-notes.html
+- merge f31 8.6.5 packaging changes
 
 * Mon Aug 26 2019 Jens Petersen <petersen@redhat.com> - 8.8.1-84
 - 8.8.1 final release
