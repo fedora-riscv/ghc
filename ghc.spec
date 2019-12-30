@@ -34,12 +34,12 @@
 
 Name: ghc
 # ghc must be rebuilt after a version bump to avoid ABI change problems
-Version: 8.8.1
+Version: 8.8.1.20191211
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 84%{?dist}
+Release: 85%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -231,14 +231,14 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-3.0.0.0
+%ghc_lib_subpackage -d -l BSD Cabal-3.0.1.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-4.13.0.0
 %ghc_lib_subpackage -d -l BSD binary-0.8.7.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.9.0
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.3.2
+%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.4.0
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
@@ -246,14 +246,16 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-compact-0.1.0.0
 %ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
+# see below for ghc-prim
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD haskeline-0.7.5.0
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
+# see below for integer-gmp
 %ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.5.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.7.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.15.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
@@ -693,6 +695,10 @@ fi
 
 
 %changelog
+* Mon Dec 30 2019 Jens Petersen <petersen@redhat.com> - 8.8.1.20191211-85
+- 8.8.2 RC1
+- https://downloads.haskell.org/ghc/8.8.2-rc1/docs/html/users_guide/8.8.2-notes.html
+
 * Mon Aug 26 2019 Jens Petersen <petersen@redhat.com> - 8.8.1-84
 - 8.8.1 final release
 - https://downloads.haskell.org/~ghc/8.8.1/docs/html/users_guide/8.8.1-notes.html
