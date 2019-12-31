@@ -330,7 +330,7 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch %{ghc_llvm_archs}
-%patch13 -p1 -b .orig13
+#%%patch13 -p1 -b .orig13
 %endif
 
 %ifarch %{ghc_unregisterized_arches}
