@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.13.0.0
+%global base_ver 4.14.0.0
 
 # build profiling libraries
 # build haddock
@@ -41,18 +41,18 @@
 %bcond_with testsuite
 
 # 8.8 needs llvm-7.0
-%global llvm_major 7.0
+%global llvm_major 9.0
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.8.1.20191211
+Version: 8.10.0.20191210
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 85%{?dist}
+Release: 90%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -247,14 +247,15 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-3.0.1.0
+%ghc_lib_subpackage -d -l BSD Cabal-3.1.0.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.7.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.9.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.4.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.3
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
@@ -264,18 +265,18 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.7.5.0
+%ghc_lib_subpackage -d -l BSD haskeline-0.8.0.0
 %ghc_lib_subpackage -d -l BSD hpc-0.6.0.3
 # see below for integer-gmp
 %ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.7.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.6.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
-%ghc_lib_subpackage -d -l BSD template-haskell-2.15.0.0
+%ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
-%ghc_lib_subpackage -d -l BSD text-1.2.4.0
+%ghc_lib_subpackage -d -l BSD text-1.2.3.1
 %ghc_lib_subpackage -d -l BSD time-1.9.3
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
@@ -330,7 +331,7 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch %{ghc_llvm_archs}
-%patch13 -p1 -b .orig13
+#%%patch13 -p1 -b .orig13
 %endif
 
 %ifarch %{ghc_unregisterized_arches}
@@ -342,7 +343,7 @@ rm -r libffi-tarballs
 %patch18 -p1 -b .orig
 %endif
 
-%patch24 -p1 -b .orig
+#%%patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 %patch28 -p1 -b .orig
 
@@ -472,7 +473,7 @@ echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 %ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
 %ghc_gen_filelists ghci %{ghc_version_override}
-%ghc_gen_filelists ghc-prim 0.5.3
+%ghc_gen_filelists ghc-prim 0.6.1
 %ghc_gen_filelists integer-gmp 1.0.2.0
 
 %define merge_filelist()\
@@ -610,7 +611,7 @@ make test
 
 %files compiler
 %license LICENSE
-%doc ANNOUNCE
+#%%doc ANNOUNCE
 %{_bindir}/ghc
 %{_bindir}/ghc-%{version}
 %{_bindir}/ghc-pkg
@@ -635,7 +636,7 @@ make test
 %endif
 %{ghclibdir}/bin/runghc
 %ifnarch %{ghc_unregisterized_arches}
-%{ghclibdir}/bin/ghc-split
+#%%{ghclibdir}/bin/ghc-split
 %endif
 %{ghclibdir}/bin/hp2ps
 %{ghclibdir}/bin/unlit
@@ -709,6 +710,9 @@ make test
 
 
 %changelog
+* Tue Dec 31 2019 Jens Petersen <petersen@redhat.com> - 8.10.0.20191210-90
+- 8.10.1 alpha2
+
 * Mon Dec 30 2019 Jens Petersen <petersen@redhat.com> - 8.8.1.20191211-85
 - 8.8.2 RC1
 - https://downloads.haskell.org/ghc/8.8.2-rc1/docs/html/users_guide/8.8.2-notes.html
