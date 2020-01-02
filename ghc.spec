@@ -125,7 +125,7 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} > 29
+%if 0%{?fedora} < 31
 BuildRequires: llvm%{llvm_major}
 %else
 BuildRequires: llvm >= %{llvm_major}
