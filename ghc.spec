@@ -47,7 +47,7 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.8.1.20191211
+Version: 8.8.2
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
@@ -58,8 +58,9 @@ Summary: Glasgow Haskell Compiler
 License: BSD and HaskellReport
 URL: https://haskell.org/ghc/
 Source0: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-src.tar.xz
+Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-src.tar.xz.sig
 %if %{with testsuite}
-Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
+Source3: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
 %endif
 Source5: ghc-pkg.man
 Source6: haddock.man
@@ -134,6 +135,9 @@ BuildRequires: llvm >= %{llvm_major}
 %ifarch armv7hl %{ghc_llvm_archs}
 # patch12, patch13
 BuildRequires: autoconf, automake
+%endif
+%if %{without quickbuild}
+BuildRequires: gnupg2
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-ghc-devel = %{version}-%{release}
@@ -314,10 +318,12 @@ packages to be automatically installed too.
 
 
 %prep
-%setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
+%setup -q -n %{name}-%{version} %{?with_testsuite:-b3}
+%if %{without quickbuild}
+#gpgv2 --keyring %{SOURCE2} %{SOURCE1} %{SOURCE0}
+%endif
 
 %patch1 -p1 -b .orig
-
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
 
@@ -709,9 +715,9 @@ make test
 
 
 %changelog
-* Mon Dec 30 2019 Jens Petersen <petersen@redhat.com> - 8.8.1.20191211-85
-- 8.8.2 RC1
-- https://downloads.haskell.org/ghc/8.8.2-rc1/docs/html/users_guide/8.8.2-notes.html
+* Fri Jan 17 2020 Jens Petersen <petersen@redhat.com> - 8.8.2-85
+- 8.8.2
+- https://downloads.haskell.org/ghc/8.8.2/docs/html/users_guide/8.8.2-notes.html
 - merge f31 8.6.5 packaging changes
 
 * Mon Aug 26 2019 Jens Petersen <petersen@redhat.com> - 8.8.1-84
