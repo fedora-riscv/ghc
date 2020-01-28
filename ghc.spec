@@ -43,7 +43,7 @@ Version: 8.6.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 100%{?dist}
+Release: 101%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -672,6 +672,9 @@ make test
 
 
 %changelog
+* Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 8.6.5-101
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
 * Wed Jul 31 2019 Jens Petersen <petersen@redhat.com> - 8.6.5-100
 - update to GHC 8.6.5 (backport ghc:8.6 module stream)
 - https://downloads.haskell.org/~ghc/8.6.5/docs/html/users_guide/8.6.1-notes.html
