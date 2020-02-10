@@ -52,7 +52,7 @@ Version: 8.8.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 85%{?dist}
+Release: 86%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -715,6 +715,9 @@ make test
 
 
 %changelog
+* Mon Feb 10 2020 Jens Petersen <petersen@redhat.com> - 8.8.2-86
+- rebuild
+
 * Fri Jan 17 2020 Jens Petersen <petersen@redhat.com> - 8.8.2-85
 - 8.8.2
 - https://downloads.haskell.org/ghc/8.8.2/docs/html/users_guide/8.8.2-notes.html
