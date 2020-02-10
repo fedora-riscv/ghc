@@ -52,7 +52,7 @@ Version: 8.10.0.20200123
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 91%{?dist}
+Release: 92%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -711,6 +711,9 @@ make test
 
 
 %changelog
+* Mon Feb 10 2020 Jens Petersen <petersen@redhat.com> - 8.10.0.20200123-92
+- rebuild
+
 * Tue Jan 28 2020 Jens Petersen <petersen@redhat.com> - 8.10.0.20200123-91
 - 8.10.1 rc1
 
