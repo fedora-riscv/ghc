@@ -47,12 +47,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.8.2
+Version: 8.8.3
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 86%{?dist}
+Release: 87%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -258,7 +258,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.4.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
@@ -275,7 +275,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.7.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.8.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.15.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
@@ -715,6 +715,10 @@ make test
 
 
 %changelog
+* Tue Feb 25 2020 Jens Petersen <petersen@redhat.com> - 8.8.3-87
+- https://downloads.haskell.org/ghc/8.8.3/docs/html/users_guide/8.8.3-notes.html
+- directory-1.3.6.0 and process-1.6.8.0
+
 * Mon Feb 10 2020 Jens Petersen <petersen@redhat.com> - 8.8.2-86
 - rebuild
 
