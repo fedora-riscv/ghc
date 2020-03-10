@@ -23,9 +23,10 @@
 %bcond_without perf_build
 %endif
 
-# to enable dwarf-unwind debug (only on intel archs)
+# to enable dwarf info (only on intel archs): overrides perf
+# default is off: bcond_with
 %ifarch x86_64 i686
-%bcond_with dwarf_unwind
+%bcond_with dwarf
 %endif
 
 # locked together since disabling haddock causes no manuals built
@@ -146,7 +147,7 @@ BuildRequires: llvm%{llvm_major}
 BuildRequires: llvm >= %{llvm_major}
 %endif
 %endif
-%if %{with dwarf_unwind}
+%if %{with dwarf}
 BuildRequires: elfutils-devel
 %endif
 %ifarch armv7hl
@@ -369,7 +370,11 @@ cat > mk/build.mk << EOF
 %ifarch %{ghc_llvm_archs}
 BuildFlavour = perf-llvm
 %else
+%if %{with dwarf}
+BuildFlavour = dwarf
+%else
 BuildFlavour = perf
+%endif
 %endif
 %else
 %ifarch %{ghc_llvm_archs}
@@ -379,10 +384,6 @@ BuildFlavour = quick
 %endif
 %endif
 GhcLibWays = v dyn %{?with_ghc_prof:p}
-%if %{with dwarf_unwind}
-GhcLibHcOpts += -g3
-GhcRtsHcOpts += -g3
-%endif
 %if %{with haddock}
 HADDOCK_DOCS = YES
 EXTRA_HADDOCK_OPTS += --hyperlinked-source --hoogle --quickjump
@@ -398,11 +399,6 @@ BUILD_SPHINX_HTML = NO
 %endif
 BUILD_SPHINX_PDF = NO
 EOF
-## for verbose build output
-#GhcStage1HcOpts=-v4
-## enable RTS debugging:
-## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
-#EXTRA_HC_OPTS=-debug
 
 %build
 # for patch12
@@ -430,7 +426,7 @@ export CC=%{_bindir}/gcc
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
-  %{?with_dwarf_unwind:--enable-dwarf-unwind} \
+  %{?with_dwarf:--enable-dwarf-unwind} \
 %{nil}
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
@@ -686,7 +682,7 @@ make test
 
 %changelog
 * Tue Mar 10 2020 Jens Petersen <petersen@redhat.com>
-- add bcond for dwarf-unwind debuginfo
+- add bcond for dwarf info
 
 * Mon Feb 10 2020 Jens Petersen <petersen@redhat.com> - 8.6.5-102
 - rebuild against ghc-rpm-macros fixed for subpackage prof deps
