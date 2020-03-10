@@ -23,6 +23,11 @@
 %bcond_without perf_build
 %endif
 
+# to enable dwarf-unwind debug (only on intel archs)
+%ifarch x86_64 i686
+%bcond_with dwarf_unwind
+%endif
+
 # locked together since disabling haddock causes no manuals built
 # and disabling haddock still created index.html
 # https://ghc.haskell.org/trac/ghc/ticket/15190
@@ -140,6 +145,9 @@ BuildRequires: llvm%{llvm_major}
 %else
 BuildRequires: llvm >= %{llvm_major}
 %endif
+%endif
+%if %{with dwarf_unwind}
+BuildRequires: elfutils-devel
 %endif
 %ifarch armv7hl
 # patch12
@@ -371,6 +379,10 @@ BuildFlavour = quick
 %endif
 %endif
 GhcLibWays = v dyn %{?with_ghc_prof:p}
+%if %{with dwarf_unwind}
+GhcLibHcOpts += -g3
+GhcRtsHcOpts += -g3
+%endif
 %if %{with haddock}
 HADDOCK_DOCS = YES
 EXTRA_HADDOCK_OPTS += --hyperlinked-source --hoogle --quickjump
@@ -418,6 +430,7 @@ export CC=%{_bindir}/gcc
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
+  %{?with_dwarf_unwind:--enable-dwarf-unwind} \
 %{nil}
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
@@ -672,6 +685,9 @@ make test
 
 
 %changelog
+* Tue Mar 10 2020 Jens Petersen <petersen@redhat.com>
+- add bcond for dwarf-unwind debuginfo
+
 * Mon Feb 10 2020 Jens Petersen <petersen@redhat.com> - 8.6.5-102
 - rebuild against ghc-rpm-macros fixed for subpackage prof deps
 
