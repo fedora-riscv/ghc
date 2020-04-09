@@ -49,7 +49,7 @@ Version: 8.6.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 102%{?dist}
+Release: 103%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -64,6 +64,7 @@ Source7: runghc.man
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
+Patch3:  ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
 
@@ -232,6 +233,7 @@ License: BSD
 Obsoletes: ghc-doc-cron < %{version}-%{release}
 Requires: ghc-compiler = %{version}-%{release}
 BuildArch: noarch
+#Recommends: ghc-base-doc = %{base_ver}-%{release}
 
 %description doc-index
 The package enables re-indexing of installed library documention.
@@ -322,6 +324,7 @@ packages to be automatically installed too.
 %setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
 
 %patch1 -p1 -b .orig
+%patch3 -p1 -b .orig
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
@@ -574,11 +577,11 @@ make test
 
 %if %{with haddock}
 %transfiletriggerin doc-index -- %{ghc_html_libraries_dir}
-%{ghc_html_libraries_dir}/gen_contents_index
+env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %end
 
 %transfiletriggerpostun doc-index -- %{ghc_html_libraries_dir}
-%{ghc_html_libraries_dir}/gen_contents_index
+env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %end
 %endif
 
@@ -681,8 +684,8 @@ make test
 
 
 %changelog
-* Tue Mar 10 2020 Jens Petersen <petersen@redhat.com>
-- add bcond for dwarf info
+* Thu Apr  9 2020 Jens Petersen <petersen@redhat.com> - 8.6.5-103
+- fix running of gen_contents_index when no haddocks (#1813548)
 
 * Mon Feb 10 2020 Jens Petersen <petersen@redhat.com> - 8.6.5-102
 - rebuild against ghc-rpm-macros fixed for subpackage prof deps
