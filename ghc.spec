@@ -233,7 +233,6 @@ License: BSD
 Obsoletes: ghc-doc-cron < %{version}-%{release}
 Requires: ghc-compiler = %{version}-%{release}
 BuildArch: noarch
-#Recommends: ghc-base-doc = %{base_ver}-%{release}
 
 %description doc-index
 The package enables re-indexing of installed library documention.
