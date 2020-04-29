@@ -40,7 +40,7 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.8 needs llvm-7.0
+# 8.10 needs llvm-9.0
 %global llvm_major 9.0
 %global ghc_llvm_archs armv7hl aarch64
 
