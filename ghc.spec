@@ -49,7 +49,7 @@ Version: 8.6.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 103%{?dist}
+Release: 104%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -135,7 +135,7 @@ BuildRequires: perl-interpreter
 BuildRequires: python3
 %endif
 %if %{with manual}
-%if 0%{?fedora} >= 31
+%if 0%{?fedora} >= 31 || 0%{?rhel} >= 8
 BuildRequires: python3-sphinx
 %else
 BuildRequires: python2-sphinx
@@ -683,6 +683,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Mon Jul  6 2020 Jens Petersen <petersen@redhat.com> - 8.6.5-104
+- use python3-sphinx also for rhel8
+
 * Thu Apr  9 2020 Jens Petersen <petersen@redhat.com> - 8.6.5-103
 - fix running of gen_contents_index when no haddocks (#1813548)
 
