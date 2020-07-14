@@ -77,6 +77,7 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+Patch16: fix-build-using-unregisterised-v8.6.patch
 
 # bigendian (s390x and ppc64)
 # https://gitlab.haskell.org/ghc/ghc/issues/15411
@@ -327,6 +328,7 @@ rm -r libffi-tarballs
 
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
+%patch16 -p1 -b .orig
 %endif
 
 # bigendian
