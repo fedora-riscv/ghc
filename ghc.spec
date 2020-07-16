@@ -44,12 +44,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.8.3
+Version: 8.8.4
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 105%{?dist}
+Release: 106%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -248,7 +248,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.7.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
@@ -264,7 +264,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.8.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.9.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.15.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
@@ -670,6 +670,11 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Thu Jul 16 2020 Jens Petersen <petersen@redhat.com> - 8.8.4-106
+- 8.8.4 bugfix releases
+- https://downloads.haskell.org/ghc/8.8.4/docs/html/users_guide/8.8.4-notes.html
+- bytestring-0.10.10.1 and process-1.6.9.0
+
 * Tue Jul 14 2020 Jens Petersen <petersen@redhat.com> - 8.8.3-105
 - rebase to 8.8.3 from ghc:8.8 module stream
 - https://downloads.haskell.org/ghc/8.8.1/docs/html/users_guide/8.8.1-notes.html
