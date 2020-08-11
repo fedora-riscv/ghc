@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.14.0.0
+%global base_ver 4.14.1.0
 
 # build profiling libraries
 # build haddock
@@ -47,12 +47,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.10.1
+Version: 8.10.2
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 93%{?dist}
+Release: 94%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -73,7 +73,7 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 # Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
-Patch13: ghc-8.8-configure-llvm-7.0.patch
+#Patch13: ghc-8.8-configure-llvm-7.0.patch
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
@@ -91,7 +91,7 @@ Patch18: Disable-unboxed-arrays.patch
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
-Patch28: x32-use-native-x86_64-insn.patch
+#Patch28: x32-use-native-x86_64-insn.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -265,14 +265,14 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.8.0.0
+%ghc_lib_subpackage -d -l BSD haskeline-0.8.0.1
 %ghc_lib_subpackage -d -l BSD hpc-0.6.1.0
 # see below for integer-gmp
 %ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.8.2
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.9.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
@@ -345,7 +345,6 @@ rm -r libffi-tarballs
 
 #%%patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
-%patch28 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{with haddock}
@@ -711,6 +710,10 @@ make test
 
 
 %changelog
+* Tue Aug 11 2020 Jens Petersen <petersen@redhat.com> - 8.10.2-94
+- https://downloads.haskell.org/ghc/8.10.2/docs/html/users_guide/8.10.2-notes.html
+- base 4.14.1.0, haskeline-0.8.0.1, and process-1.6.9.0
+
 * Thu Mar 26 2020 Jens Petersen <petersen@redhat.com> - 8.10.1-93
 - https://downloads.haskell.org/ghc/8.10.1/docs/html/users_guide/8.10.1-notes.html
 
