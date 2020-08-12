@@ -125,11 +125,7 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} > 29
 BuildRequires: llvm%{llvm_major}
-%else
-BuildRequires: llvm >= %{llvm_major}
-%endif
 %endif
 %if %{with dwarf}
 BuildRequires: elfutils-devel
