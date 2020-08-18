@@ -185,11 +185,7 @@ Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} >= 29
 Requires: llvm%{llvm_major}
-%else
-Requires: llvm >= %{llvm_major}
-%endif
 %endif
 
 %description compiler
@@ -387,12 +383,7 @@ EOF
 autoreconf
 %endif
 
-%if 0%{?fedora} > 28
 %ghc_set_gcc_flags
-%else
-export CFLAGS="${CFLAGS:-%optflags}"
-export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
-%endif
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
