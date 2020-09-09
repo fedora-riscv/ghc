@@ -49,7 +49,7 @@ Version: 8.8.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 107%{?dist}
+Release: 108%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -657,6 +657,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Tue Aug 18 2020 Troy Dawson <tdawson@redhat.com> - 8.8.4-108
+- Cleanup old %if statements
+
 * Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 8.8.4-107
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
