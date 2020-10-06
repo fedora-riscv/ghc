@@ -98,7 +98,7 @@ Patch26: no-missing-haddock-file-warning.patch
 # and retired arches: alpha sparcv9 armv5tel
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
-BuildRequires: ghc-compiler > 8.4
+BuildRequires: ghc-compiler > 8.8
 # for ABI hash checking
 %if %{with abicheck}
 BuildRequires: ghc
@@ -260,6 +260,7 @@ This package provides the User Guide and Haddock manual.
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
+%ghc_lib_subpackage -d -l BSD ghc-bignum-1.0
 %ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-compact-0.1.0.0
 %ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
@@ -712,6 +713,7 @@ make test
 %changelog
 * Tue Oct  6 2020 Jens Petersen <petersen@redhat.com> - 9.0.0.20200925-95
 - 9.0.1-alpha1
+- https://downloads.haskell.org/ghc/9.0.1-alpha1/docs/html/users_guide/9.0.1-notes.html
 
 * Tue Aug 11 2020 Jens Petersen <petersen@redhat.com> - 8.10.2-94
 - https://downloads.haskell.org/ghc/8.10.2/docs/html/users_guide/8.10.2-notes.html
