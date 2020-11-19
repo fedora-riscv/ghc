@@ -52,7 +52,7 @@ Version: 9.0.0.20200925
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 95%{?dist}
+Release: 96%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -136,8 +136,15 @@ BuildRequires: llvm >= %{llvm_major}
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
+Requires: ghc-ghc-devel = %{version}-%{release}
+Requires: ghc-ghc-bignum-devel
+Requires: ghc-ghc-boot-devel = %{version}-%{release}
+Requires: ghc-ghc-compact-devel
+Requires: ghc-ghc-heap-devel = %{version}-%{release}
+Requires: ghc-ghci-devel = %{version}-%{release}
+Requires: ghc-hpc-devel
+Requires: ghc-libiserv-devel = %{version}-%{release}
 %if %{with haddock}
 Suggests: ghc-doc = %{version}-%{release}
 Suggests: ghc-doc-index = %{version}-%{release}
@@ -259,17 +266,17 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD ghc-bignum-1.0
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD ghc-bignum-1.0
-%ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD ghc-compact-0.1.0.0
-%ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD ghc-boot-th-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD ghc-compact-0.1.0.0
+%ghc_lib_subpackage -d -x -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
-%ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD -x ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD haskeline-0.8.1.0
-%ghc_lib_subpackage -d -l BSD hpc-0.6.1.0
+%ghc_lib_subpackage -d -x -l BSD hpc-0.6.1.0
 # see below for integer-gmp
-%ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
@@ -711,6 +718,10 @@ make test
 
 
 %changelog
+* Thu Nov 19 2020 Jens Petersen <petersen@redhat.com> - 9.0.0.20200925-96
+- exclude more ghc libs from ghc-devel: ghc-bignum, ghc-compact, ghc-heap,
+  ghci, hpc, libiserv
+
 * Tue Oct  6 2020 Jens Petersen <petersen@redhat.com> - 9.0.0.20200925-95
 - 9.0.1-alpha1
 - https://downloads.haskell.org/ghc/9.0.1-alpha1/docs/html/users_guide/9.0.1-notes.html
