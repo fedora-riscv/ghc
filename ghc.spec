@@ -9,6 +9,8 @@
 %global ghc_release 9.0.1-alpha1
 
 %global base_ver 4.15.0.0
+%global ghc_compact_ver 0.1.0.0
+%global hpc_ver 0.6.1.0
 
 # build profiling libraries
 # build haddock
@@ -138,12 +140,11 @@ BuildRequires: autoconf, automake
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
 Requires: ghc-ghc-devel = %{version}-%{release}
-Requires: ghc-ghc-bignum-devel
 Requires: ghc-ghc-boot-devel = %{version}-%{release}
-Requires: ghc-ghc-compact-devel
+Requires: ghc-ghc-compact-devel = %{ghc_compact_ver}-%{release}
 Requires: ghc-ghc-heap-devel = %{version}-%{release}
 Requires: ghc-ghci-devel = %{version}-%{release}
-Requires: ghc-hpc-devel
+Requires: ghc-hpc-devel = %{hpc_ver}-%{release}
 Requires: ghc-libiserv-devel = %{version}-%{release}
 %if %{with haddock}
 Suggests: ghc-doc = %{version}-%{release}
@@ -266,15 +267,15 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
-%ghc_lib_subpackage -d -x -l BSD ghc-bignum-1.0
+%ghc_lib_subpackage -d -l BSD ghc-bignum-1.0
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
-%ghc_lib_subpackage -d -x -l BSD ghc-boot-th-%{ghc_version_override}
-%ghc_lib_subpackage -d -x -l BSD ghc-compact-0.1.0.0
+%ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD ghc-compact-%{ghc_compact_ver}
 %ghc_lib_subpackage -d -x -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
-%ghc_lib_subpackage -d -x -l BSD -x ghci-%{ghc_version_override}
+%ghc_lib_subpackage -d -x -l BSD ghci-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD haskeline-0.8.1.0
-%ghc_lib_subpackage -d -x -l BSD hpc-0.6.1.0
+%ghc_lib_subpackage -d -x -l BSD hpc-%{hpc_ver}
 # see below for integer-gmp
 %ghc_lib_subpackage -d -x -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
@@ -464,6 +465,7 @@ sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_ghcdynl
 # containers src moved to a subdir
 cp -p libraries/containers/containers/LICENSE libraries/containers/LICENSE
 
+# FIXME replace with ghc_subpackages_list
 for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
@@ -477,9 +479,14 @@ done
 
 echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 
-%ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
+%ghc_gen_filelists ghc-boot %{ghc_version_override}
+%ghc_gen_filelists ghc-compact %{ghc_compact_ver}
+%ghc_gen_filelists ghc-heap %{ghc_version_override}
 %ghc_gen_filelists ghci %{ghc_version_override}
+%ghc_gen_filelists hpc %{hpc_ver}
+%ghc_gen_filelists libiserv %{ghc_version_override}
+
 %ghc_gen_filelists ghc-prim 0.7.0
 %ghc_gen_filelists integer-gmp 1.1
 
@@ -719,8 +726,8 @@ make test
 
 %changelog
 * Thu Nov 19 2020 Jens Petersen <petersen@redhat.com> - 9.0.0.20200925-96
-- exclude more ghc libs from ghc-devel: ghc-bignum, ghc-compact, ghc-heap,
-  ghci, hpc, libiserv
+- exclude more ghc libs from ghc-devel:
+    ghc-compact, ghc-heap, ghci, hpc, libiserv
 
 * Tue Oct  6 2020 Jens Petersen <petersen@redhat.com> - 9.0.0.20200925-95
 - 9.0.1-alpha1
