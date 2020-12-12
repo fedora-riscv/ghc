@@ -41,7 +41,7 @@
 %global llvm_major 7.0
 %global ghc_llvm_archs armv7hl aarch64
 
-%global ghc_unregisterized_arches s390 s390x %{mips}
+%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
 Name: ghc
 Version: 8.8.4
@@ -657,6 +657,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Wed Dec 02 2020 David Abdurachmanov <david.abdurachmanov@sifive.com>
+- Add riscv64 to ghc_unregisterized_arches
+
 * Tue Aug 18 2020 Troy Dawson <tdawson@redhat.com> - 8.8.4-108
 - Cleanup old %if statements
 
