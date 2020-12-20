@@ -47,12 +47,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.10.2
+Version: 8.10.3
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 94%{?dist}
+Release: 95%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -245,11 +245,11 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-3.2.0.0
+%ghc_lib_subpackage -d -l BSD Cabal-3.2.1.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.10.0
+%ghc_lib_subpackage -d -l BSD bytestring-0.10.12.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
@@ -274,7 +274,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
-%ghc_lib_subpackage -d -l BSD text-1.2.3.2
+%ghc_lib_subpackage -d -l BSD text-1.2.4.1
 %ghc_lib_subpackage -d -l BSD time-1.9.3
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
@@ -700,6 +700,11 @@ make test
 
 
 %changelog
+* Sun Dec 20 2020 Jens Petersen <petersen@redhat.com> - 8.10.3-95
+- 8.10.3 release
+  https://downloads.haskell.org/~ghc/8.10.3/docs/html/users_guide/8.10.3-notes.html
+- Cabal-3.2.1.0, bytestring-0.10.12.0, text-1.2.4.1
+
 * Tue Aug 11 2020 Jens Petersen <petersen@redhat.com> - 8.10.2-94
 - https://downloads.haskell.org/ghc/8.10.2/docs/html/users_guide/8.10.2-notes.html
 - base 4.14.1.0, haskeline-0.8.0.1, and process-1.6.9.0
