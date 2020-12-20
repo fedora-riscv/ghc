@@ -145,7 +145,7 @@ Suggests: ghc-doc-index = %{version}-%{release}
 %if %{with manual}
 Suggests: ghc-manual = %{version}-%{release}
 %endif
-%if %{with ghc_prof} && 0%{defined ghc_devel_prof}
+%if %{with ghc_prof}
 Suggests: ghc-prof = %{version}-%{release}
 %endif
 Recommends: zlib-devel
@@ -199,7 +199,6 @@ install the main ghc package.
 
 
 %if %{with haddock}
-%if %{defined ghc_devel_prof}
 %package doc
 Summary: Haskell library documentation meta package
 License: BSD
@@ -207,7 +206,6 @@ License: BSD
 %description doc
 Installing this package causes ghc-*-doc packages corresponding to ghc-*-devel
 packages to be automatically installed too.
-%endif
 
 %package doc-index
 Summary: GHC library documentation indexing
@@ -300,7 +298,6 @@ This is a meta-package for all the development library packages in GHC
 except the ghc library, which is installed by the toplevel ghc metapackage.
 
 
-%if %{defined ghc_devel_prof}
 %if %{with ghc_prof}
 %package prof
 Summary: GHC profiling libraries meta package
@@ -310,7 +307,6 @@ Requires: ghc-compiler = %{version}-%{release}
 %description prof
 Installing this package causes ghc-*-prof packages corresponding to ghc-*-devel
 packages to be automatically installed too.
-%endif
 %endif
 
 
@@ -478,10 +474,8 @@ echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 %define merge_filelist()\
 cat ghc-%1.files >> ghc-%2.files\
 cat ghc-%1-devel.files >> ghc-%2-devel.files\
-%if %{defined ghc_devel_prof}\
 cat ghc-%1-doc.files >> ghc-%2-doc.files\
 cat ghc-%1-prof.files >> ghc-%2-prof.files\
-%endif\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
 %if 0%{?rhel} && 0%{?rhel} < 7\
 echo "%%doc libraries/LICENSE.%1" >> ghc-%2.files\
@@ -684,9 +678,7 @@ make test
 %files devel
 
 %if %{with haddock}
-%if %{defined ghc_devel_prof}
 %files doc
-%endif
 
 %files doc-index
 %endif
@@ -702,10 +694,8 @@ make test
 %endif
 %endif
 
-%if %{defined ghc_devel_prof}
 %if %{with ghc_prof}
 %files prof
-%endif
 %endif
 
 
