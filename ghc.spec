@@ -75,7 +75,6 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 # Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
-#Patch13: ghc-8.8-configure-llvm-7.0.patch
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
@@ -134,7 +133,7 @@ BuildRequires: llvm >= %{llvm_major}
 %endif
 %endif
 %ifarch armv7hl %{ghc_llvm_archs}
-# patch12, patch13
+# patch12
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -339,10 +338,6 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_llvm_archs}
-#%%patch13 -p1 -b .orig13
-%endif
-
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
 %endif
@@ -401,7 +396,7 @@ EOF
 #EXTRA_HC_OPTS=-debug
 
 %build
-# for patch12 and patch13
+# for patch12
 %ifarch armv7hl %{ghc_llvm_archs}
 autoreconf
 %endif
