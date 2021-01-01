@@ -6,7 +6,7 @@
 %bcond_without abicheck
 
 # to handle RCs
-%global ghc_release 9.0.1-alpha1
+%global ghc_release 9.0.1-rc1
 
 %global base_ver 4.15.0.0
 %global ghc_compact_ver 0.1.0.0
@@ -49,12 +49,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 9.0.0.20200925
+Version: 9.0.0.20201227
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 96%{?dist}
+Release: 97%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -725,6 +725,10 @@ make test
 
 
 %changelog
+* Fri Jan  1 2021 Jens Petersen <petersen@redhat.com> - 9.0.0.20201227-97
+- 9.0.1-rc1
+- https://downloads.haskell.org/ghc/9.0.1-rc1/docs/html/users_guide/9.0.1-notes.html
+
 * Thu Nov 19 2020 Jens Petersen <petersen@redhat.com> - 9.0.0.20200925-96
 - exclude more ghc libs from ghc-devel:
     ghc-compact, ghc-heap, ghci, hpc, libiserv
