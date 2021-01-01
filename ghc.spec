@@ -126,11 +126,7 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} < 31
 BuildRequires: llvm%{llvm_major}
-%else
-BuildRequires: llvm >= %{llvm_major}
-%endif
 %endif
 %ifarch armv7hl %{ghc_llvm_archs}
 # patch12
@@ -190,11 +186,7 @@ Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} >= 29
 Requires: llvm%{llvm_major}
-%else
-Requires: llvm >= %{llvm_major}
-%endif
 %endif
 
 %description compiler
