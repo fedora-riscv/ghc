@@ -74,6 +74,7 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 
 # Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
+Patch13: ghc-9.0.0.20201227-armv7hl-aclocal-19173.patch
 # https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
 
 # for unregisterized (s390x)
@@ -129,7 +130,7 @@ BuildRequires: python3-sphinx
 BuildRequires: llvm%{llvm_major}
 %endif
 %ifarch armv7hl %{ghc_llvm_archs}
-# patch12
+# patch12 and patch13
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -328,6 +329,7 @@ rm -r libffi-tarballs
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
+%patch13 -p1 -b .orig
 %endif
 
 %ifarch %{ghc_unregisterized_arches}
@@ -388,8 +390,8 @@ EOF
 #EXTRA_HC_OPTS=-debug
 
 %build
-# for patch12
-%ifarch armv7hl %{ghc_llvm_archs}
+# for patch12 and patch13
+%ifarch armv7hl
 autoreconf
 %endif
 
