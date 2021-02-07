@@ -47,12 +47,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 8.10.3
+Version: 8.10.4
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 95%{?dist}
+Release: 96%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -692,6 +692,9 @@ make test
 
 
 %changelog
+* Sun Feb  7 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-96
+- https://downloads.haskell.org/~ghc/8.10.4/docs/html/users_guide/8.10.4-notes.html
+
 * Sun Dec 20 2020 Jens Petersen <petersen@redhat.com> - 8.10.3-95
 - 8.10.3 release
   https://downloads.haskell.org/~ghc/8.10.3/docs/html/users_guide/8.10.3-notes.html
