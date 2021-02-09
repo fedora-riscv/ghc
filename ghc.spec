@@ -28,6 +28,7 @@
 
 # 8.2 needs llvm-3.9
 %global llvm_major 3.9
+%global llvm_version %{llvm_major}.1
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
@@ -39,7 +40,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 72%{?dist}
+Release: 73%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -53,6 +54,9 @@ Source4: ghc-doc-index
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
+
+Source10: http://llvm.org/releases/%{llvm_version}/llvm-%{llvm_version}.src.tar.xz
+
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
@@ -74,6 +78,10 @@ Patch24: ghc-Debian-buildpath-abi-stability.patch
 Patch26: ghc-Debian-no-missing-haddock-file-warning.patch
 Patch27: ghc-Debian-reproducible-tmp-names.patch
 Patch28: ghc-Debian-x32-use-native-x86_64-insn.patch
+
+# llvm3.9 patches + 100
+Patch106: llvm-install_dirs.patch
+Patch174: llvm-D25865-cmakeshlib.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -99,13 +107,10 @@ BuildRequires: ncurses-devel
 # for man and docs
 BuildRequires: perl-interpreter
 %if %{with testsuite}
-BuildRequires: python3
+BuildRequires: %{_bindir}/python3
 %endif
 %if %{with docs}
 BuildRequires: python3-sphinx
-%endif
-%ifarch %{ghc_llvm_archs}
-BuildRequires: llvm%{llvm_major}
 %endif
 # patch5
 BuildRequires: autoconf
@@ -113,6 +118,18 @@ BuildRequires: autoconf
 # patch12
 BuildRequires: autoconf, automake
 %endif
+
+# llvm
+%ifarch %{ghc_llvm_archs}
+BuildRequires:	cmake3
+BuildRequires:	zlib-devel
+BuildRequires:	libedit-devel
+BuildRequires:	libffi-devel
+BuildRequires:	ncurses-devel
+BuildRequires:	valgrind-devel
+BuildRequires:	libstdc++-static
+%endif
+
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-libraries = %{version}-%{release}
@@ -159,9 +176,6 @@ Obsoletes: ghc-doc < 6.12.3-4
 Obsoletes: ghc-doc-cron < %{version}-%{release}
 # added in f28
 Obsoletes: ghc-doc-index < %{version}-%{release}
-%endif
-%ifarch %{ghc_llvm_archs}
-Requires: llvm%{llvm_major}
 %endif
 
 %description compiler
@@ -268,7 +282,16 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 
 
 %prep
+%ifarch %{ghc_llvm_archs}
+%setup -q -n %{name}-%{version} %{?with_testsuite:-b1} -a10
+(
+cd llvm-%{llvm_version}.src
+%patch106 -p1 -b .instdirs
+%patch174 -p1 -b .julia4
+)
+%else
 %setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
+%endif
 
 %patch1 -p1 -b .orig
 
@@ -299,6 +322,54 @@ if [ ! -f "libraries/%{gen_contents_index}" ]; then
   echo "Missing libraries/%{gen_contents_index}, needed at end of %%install!"
   exit 1
 fi
+%endif
+
+
+%build
+%ifarch %{ghc_llvm_archs}
+(
+cd llvm-%{llvm_version}.src
+mkdir -p _build
+cd _build
+%cmake3 .. \
+	-DBUILD_SHARED_LIBS:BOOL=OFF \
+	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic -static-libstdc++" \
+	-DCMAKE_INSTALL_PREFIX=%{ghclibdir}/llvm \
+	-DLLVM_TARGETS_TO_BUILD="X86;AArch64" \
+	-DLLVM_ENABLE_LIBCXX:BOOL=OFF \
+	-DLLVM_ENABLE_ZLIB:BOOL=ON \
+	-DLLVM_ENABLE_FFI:BOOL=ON \
+	-DLLVM_ENABLE_RTTI:BOOL=ON \
+	\
+	-DLLVM_BUILD_RUNTIME:BOOL=ON \
+	\
+	-DLLVM_INCLUDE_TOOLS:BOOL=ON \
+	-DLLVM_BUILD_TOOLS:BOOL=ON \
+	\
+	-DLLVM_INCLUDE_TESTS:BOOL=OFF \
+	-DLLVM_BUILD_TESTS:BOOL=OFF \
+	\
+	-DLLVM_INCLUDE_EXAMPLES:BOOL=OFF \
+	-DLLVM_BUILD_EXAMPLES:BOOL=OFF \
+	\
+	-DLLVM_INCLUDE_UTILS:BOOL=OFF \
+	-DLLVM_INSTALL_UTILS:BOOL=OFF \
+	\
+	-DLLVM_INCLUDE_DOCS:BOOL=OFF \
+	-DLLVM_BUILD_DOCS:BOOL=OFF \
+	-DLLVM_ENABLE_SPHINX:BOOL=OFF \
+	-DLLVM_ENABLE_DOXYGEN:BOOL=OFF \
+	-DSPHINX_OUTPUT_HTML:BOOL=OFF \
+	-DSPHINX_WARNINGS_AS_ERRORS:BOOL=OFF \
+	\
+	-DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
+	-DLLVM_LINK_LLVM_DYLIB:BOOL=ON \
+	-DLLVM_BUILD_EXTERNAL_COMPILER_RT:BOOL=ON \
+	-DLLVM_INSTALL_TOOLCHAIN_ONLY:BOOL=OFF \
+
+make %{?_smp_mflags}
+)
 %endif
 
 # http://ghc.haskell.org/trac/ghc/wiki/Platforms
@@ -333,7 +404,6 @@ EOF
 ## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
 #EXTRA_HC_OPTS=-debug
 
-%build
 # for patch12
 %ifarch armv7hl
 autoreconf
@@ -342,8 +412,17 @@ autoreconf
 autoconf
 %endif
 
-# replace later with ghc_set_gcc_flags
-export CFLAGS="${CFLAGS:-%optflags}"
+%if 0%{?fedora} > 28 || 0%{?rhel} > 7
+%ghc_set_cflags
+%else
+# -Wunused-label is extremely noisy
+%ifarch aarch64 s390x
+CFLAGS="${CFLAGS:-$(echo %optflags | sed -e 's/-Wall -Werror=format-security //')}"
+%else
+CFLAGS="${CFLAGS:-%optflags}"
+%endif
+export CFLAGS
+%endif
 export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
@@ -354,7 +433,11 @@ export CC=%{_bindir}/gcc
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
+%ifarch %{ghc_llvm_archs}
+  --with-llc=$PWD/llvm-%{llvm_version}.src/_build/bin/llc --with-opt=$PWD/llvm-%{llvm_version}.src/_build/bin/opt \
+%else
   --with-llc=%{_bindir}/llc-%{llvm_major} --with-opt=%{_bindir}/opt-%{llvm_major} \
+%endif
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
@@ -369,11 +452,19 @@ make %{?_smp_mflags}
 
 
 %install
+%ifarch %{ghc_llvm_archs}
+(
+cd llvm-%{llvm_version}.src
+cd _build
+make install DESTDIR=%{buildroot}
+)
+%endif
+
 make DESTDIR=%{buildroot} install
 
 %if %{defined _ghcdynlibdir}
 mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_libdir}/
-for i in $(find %{buildroot} -type f -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
+for i in $(find %{buildroot} -path %{buildroot}%{ghclibdir}/llvm -prune -o -type f -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
   chrpath -d $i
 done
 for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
@@ -467,6 +558,12 @@ mkdir -p %{buildroot}%{_mandir}/man1
 install -p -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/ghc-pkg.1
 install -p -m 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/haddock.1
 install -p -m 0644 %{SOURCE7} %{buildroot}%{_mandir}/man1/runghc.1
+
+# fix llvm paths
+%ifarch %{ghc_llvm_archs}
+sed -i -e "s!$PWD/llvm-%{llvm_version}.src/_build!%{ghclibdir}/llvm!" %{buildroot}%{ghclibdir}/settings
+%endif
+
 
 %check
 export LANG=en_US.utf8
@@ -573,6 +670,10 @@ fi
 %{ghclibdir}/bin/hsc2hs
 %{ghclibdir}/bin/ghc-iserv
 %{ghclibdir}/bin/ghc-iserv-dyn
+%ifarch %{ghc_llvm_archs}
+%license llvm-3.9.1.src/LICENSE.TXT
+%{ghclibdir}/llvm
+%endif
 %if %{with prof}
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
@@ -634,15 +735,16 @@ fi
 %files manual
 ## needs pandoc
 #%%{ghc_html_dir}/Cabal
-%if %{with docs}
 %{ghc_html_dir}/haddock
-%endif
 %{ghc_html_dir}/index.html
 %{ghc_html_dir}/users_guide
 %endif
 
 
 %changelog
+* Tue Feb  9 2021 Jens Petersen <petersen@redhat.com> - 8.2.2-73
+- bundle llvm-3.9 for arm archs (like in EL8)
+
 * Fri Feb  8 2019 Jens Petersen <petersen@redhat.com> - 8.2.2-72
 - add ghc_unregisterized_arches
 - Recommends zlib-devel
