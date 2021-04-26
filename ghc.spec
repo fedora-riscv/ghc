@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.15.0.0
+%global base_ver 4.16.0.0
 %global ghc_compact_ver 0.1.0.0
 %global hpc_ver 0.6.1.0
 
@@ -35,18 +35,18 @@
 %bcond_with testsuite
 
 # 9.0 needs llvm-9.0
-%global llvm_major 9.0
+%global llvm_major 11
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 9.0.1
+Version: 9.2.0.20210422
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 98%{?dist}
+Release: 99%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -92,7 +92,7 @@ Patch26: no-missing-haddock-file-warning.patch
 # and retired arches: alpha sparcv9 armv5tel
 # see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
 
-BuildRequires: ghc-compiler > 8.8
+BuildRequires: ghc-compiler > 8.10
 # for ABI hash checking
 %if %{with abicheck}
 BuildRequires: ghc
@@ -239,13 +239,13 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-3.4.0.0
+%ghc_lib_subpackage -d -l BSD Cabal-3.5.0.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
-%ghc_lib_subpackage -d -l BSD bytestring-0.10.12.1
+%ghc_lib_subpackage -d -l BSD bytestring-0.11.1.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.4.1
-%ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.5.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.6.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.4
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
@@ -267,10 +267,10 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.11.0
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
-%ghc_lib_subpackage -d -l BSD template-haskell-2.17.0.0
+%ghc_lib_subpackage -d -l BSD template-haskell-2.18.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
-%ghc_lib_subpackage -d -l BSD text-1.2.4.1
-%ghc_lib_subpackage -d -l BSD time-1.9.3
+%ghc_lib_subpackage -d -l BSD text-1.2.4.2
+%ghc_lib_subpackage -d -l BSD time-1.11.1.1
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
 %if %{with haddock}
@@ -320,7 +320,7 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch armv7hl
-%patch12 -p1 -b .orig
+#%%patch12 -p1 -b .orig
 # maybe needed for 9.2
 #%%patch13 -p1 -b .orig
 %endif
@@ -469,7 +469,7 @@ echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 %ghc_gen_filelists hpc %{hpc_ver}
 %ghc_gen_filelists libiserv %{ghc_version_override}
 
-%ghc_gen_filelists ghc-prim 0.7.0
+%ghc_gen_filelists ghc-prim 0.8.0
 %ghc_gen_filelists integer-gmp 1.1
 
 %define merge_filelist()\
@@ -707,6 +707,10 @@ make test
 
 
 %changelog
+* Mon Apr 26 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210422-99
+- 9.2.1-alpha2
+- https://downloads.haskell.org/ghc/9.2.1-alpha2/docs/html/users_guide/9.2.1-notes.html
+
 * Fri Feb  5 2021 Jens Petersen <petersen@redhat.com> - 9.0.1-98
 - 9.0.1 release
 - https://downloads.haskell.org/ghc/9.0.1/docs/html/users_guide/9.0.1-notes.html
