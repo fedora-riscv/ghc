@@ -34,8 +34,12 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 9.0 needs llvm-9.0
+# 9.2 needs llvm 10 or 11
+%if 0%{?fedora} >= 33
 %global llvm_major 11
+%else
+%global llvm_major 10
+%endif
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
@@ -119,7 +123,11 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
+%if 0%{?fedora} >= 34
 BuildRequires: llvm%{llvm_major}
+%else
+BuildRequires: llvm >= 10
+%endif
 %endif
 %ifarch armv7hl %{ghc_llvm_archs}
 # patch12 and patch13
