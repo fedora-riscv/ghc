@@ -22,7 +22,12 @@
 %undefine _enable_debug_packages
 %else
 %bcond_without ghc_prof
+# https://gitlab.haskell.org/ghc/ghc/-/issues/19754
+%ifnarch armv7hl
 %bcond_without haddock
+%else
+%undefine with_haddock
+%endif
 %bcond_without perf_build
 %endif
 
@@ -71,7 +76,6 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 # Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 Patch13: ghc-9.0.0.20201227-armv7hl-aclocal-19173.patch
-# https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
