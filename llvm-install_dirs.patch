@@ -1,0 +1,392 @@
+diff -up llvm-3.9.1.src/bindings/ocaml/backends/CMakeLists.txt.instdirs llvm-3.9.1.src/bindings/ocaml/backends/CMakeLists.txt
+--- llvm-3.9.1.src/bindings/ocaml/backends/CMakeLists.txt.instdirs	2014-12-29 20:24:07.000000000 -0700
++++ llvm-3.9.1.src/bindings/ocaml/backends/CMakeLists.txt	2017-02-13 13:36:43.999154756 -0700
+@@ -23,5 +23,5 @@ foreach(TARGET ${LLVM_TARGETS_TO_BUILD})
+     "${LLVM_LIBRARY_DIR}/ocaml/META.llvm_${TARGET}")
+ 
+   install(FILES "${LLVM_LIBRARY_DIR}/ocaml/META.llvm_${TARGET}"
+-          DESTINATION lib/ocaml)
++          DESTINATION ${CMAKE_INSTALL_LIBDIR}/ocaml)
+ endforeach()
+diff -up llvm-3.9.1.src/bindings/ocaml/llvm/CMakeLists.txt.instdirs llvm-3.9.1.src/bindings/ocaml/llvm/CMakeLists.txt
+--- llvm-3.9.1.src/bindings/ocaml/llvm/CMakeLists.txt.instdirs	2014-12-29 20:24:07.000000000 -0700
++++ llvm-3.9.1.src/bindings/ocaml/llvm/CMakeLists.txt	2017-02-13 13:36:43.999154756 -0700
+@@ -8,4 +8,4 @@ configure_file(
+   "${LLVM_LIBRARY_DIR}/ocaml/META.llvm")
+ 
+ install(FILES "${LLVM_LIBRARY_DIR}/ocaml/META.llvm"
+-        DESTINATION lib/ocaml)
++        DESTINATION ${CMAKE_INSTALL_LIBDIR}/ocaml)
+diff -up llvm-3.9.1.src/CMakeLists.txt.instdirs llvm-3.9.1.src/CMakeLists.txt
+--- llvm-3.9.1.src/CMakeLists.txt.instdirs	2016-09-13 07:44:50.000000000 -0600
++++ llvm-3.9.1.src/CMakeLists.txt	2017-02-13 13:36:44.003154733 -0700
+@@ -194,13 +194,15 @@ if (CMAKE_BUILD_TYPE AND
+ endif()
+ 
+ set(LLVM_LIBDIR_SUFFIX "" CACHE STRING "Define suffix of library directory name (32/64)" )
+-
+-set(LLVM_TOOLS_INSTALL_DIR "bin" CACHE STRING "Path for binary subdirectory (defaults to 'bin')")
+-mark_as_advanced(LLVM_TOOLS_INSTALL_DIR)
++set(CMAKE_INSTALL_BINDIR bin CACHE STRING "Path for binary subdirectory relative to prefix (defaults to 'bin')" )
++set(CMAKE_INSTALL_LIBDIR lib${LLVM_LIBDIR_SUFFIX} CACHE STRING "Path for library subdirectory (defaults to 'lib${LLVM_LIBDIR_SUFFIX}'" )
++set(CMAKE_INSTALL_INCLUDEDIR include CACHE STRING "Path for include subdirectory relative to prefix (defaults to 'include'" )
++set(CMAKE_INSTALL_DOCDIR share/doc/${project} CACHE STRING "Path for documentation subdirectory relative to prefix (defaults to 'share/doc/${project}')" )
++set(CMAKE_INSTALL_MANDIR share/man CACHE STRING "Path for manpages subdirectory relative to prefix (defaults to 'share/man')" )
+ 
+ # They are used as destination of target generators.
+-set(LLVM_RUNTIME_OUTPUT_INTDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/bin)
+-set(LLVM_LIBRARY_OUTPUT_INTDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib${LLVM_LIBDIR_SUFFIX})
++set(LLVM_RUNTIME_OUTPUT_INTDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${CMAKE_INSTALL_BINDIR})
++set(LLVM_LIBRARY_OUTPUT_INTDIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${CMAKE_INSTALL_LIBDIR})
+ if(WIN32 OR CYGWIN)
+   # DLL platform -- put DLLs into bin.
+   set(LLVM_SHLIB_OUTPUT_INTDIR ${LLVM_RUNTIME_OUTPUT_INTDIR})
+@@ -613,8 +615,8 @@ configure_file(
+ 
+ # They are not referenced. See set_output_directory().
+ set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/bin )
+-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX} )
+-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/lib${LLVM_LIBDIR_SUFFIX} )
++set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} )
++set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LLVM_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR} )
+ 
+ set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+ if (APPLE)
+@@ -622,7 +624,7 @@ if (APPLE)
+   set(CMAKE_INSTALL_RPATH "@executable_path/../lib")
+ else(UNIX)
+   if(NOT DEFINED CMAKE_INSTALL_RPATH)
+-    set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib${LLVM_LIBDIR_SUFFIX}")
++    set(CMAKE_INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+     if(${CMAKE_SYSTEM_NAME} MATCHES "(FreeBSD|DragonFly)")
+       set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,origin")
+       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,origin")
+@@ -799,7 +801,7 @@ add_subdirectory(cmake/modules)
+ 
+ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+   install(DIRECTORY include/llvm include/llvm-c
+-    DESTINATION include
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+     COMPONENT llvm-headers
+     FILES_MATCHING
+     PATTERN "*.def"
+@@ -811,7 +813,7 @@ if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+     )
+ 
+   install(DIRECTORY ${LLVM_INCLUDE_DIR}/llvm
+-    DESTINATION include
++    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+     COMPONENT llvm-headers
+     FILES_MATCHING
+     PATTERN "*.def"
+diff -up llvm-3.9.1.src/cmake/modules/AddLLVM.cmake.instdirs llvm-3.9.1.src/cmake/modules/AddLLVM.cmake
+--- llvm-3.9.1.src/cmake/modules/AddLLVM.cmake.instdirs	2016-07-09 20:43:47.000000000 -0600
++++ llvm-3.9.1.src/cmake/modules/AddLLVM.cmake	2017-02-13 13:36:44.012154680 -0700
+@@ -546,7 +558,7 @@ macro(add_llvm_library name)
+     set_target_properties( ${name} PROPERTIES EXCLUDE_FROM_ALL ON)
+   elseif(NOT _is_gtest)
+     if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY OR ${name} STREQUAL "LTO")
+-      set(install_dir lib${LLVM_LIBDIR_SUFFIX})
++      set(install_dir ${CMAKE_INSTALL_LIBDIR})
+       if(ARG_SHARED OR BUILD_SHARED_LIBS)
+         if(WIN32 OR CYGWIN OR MINGW)
+           set(install_type RUNTIME)
+@@ -590,12 +602,12 @@ macro(add_llvm_loadable_module name)
+           # DLL platform
+           set(dlldir "bin")
+         else()
+-          set(dlldir "lib${LLVM_LIBDIR_SUFFIX}")
++          set(dlldir "${CMAKE_INSTALL_LIBDIR}")
+         endif()
+         install(TARGETS ${name}
+           EXPORT LLVMExports
+           LIBRARY DESTINATION ${dlldir}
+-          ARCHIVE DESTINATION lib${LLVM_LIBDIR_SUFFIX})
++          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+       endif()
+       set_property(GLOBAL APPEND PROPERTY LLVM_EXPORTS ${name})
+     endif()
+@@ -770,7 +782,7 @@ macro(add_llvm_tool name)
+     if( LLVM_BUILD_TOOLS )
+       install(TARGETS ${name}
+               EXPORT LLVMExports
+-              RUNTIME DESTINATION ${LLVM_TOOLS_INSTALL_DIR}
++              RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+               COMPONENT ${name})
+ 
+       if (NOT CMAKE_CONFIGURATION_TYPES)
+@@ -795,7 +807,7 @@ macro(add_llvm_example name)
+   endif()
+   add_llvm_executable(${name} ${ARGN})
+   if( LLVM_BUILD_EXAMPLES )
+-    install(TARGETS ${name} RUNTIME DESTINATION examples)
++    install(TARGETS ${name} RUNTIME DESTINATION ${CMAKE_INSTALL_DOCDIR}/examples)
+   endif()
+   set_target_properties(${name} PROPERTIES FOLDER "Examples")
+ endmacro(add_llvm_example name)
+@@ -811,7 +823,7 @@ macro(add_llvm_utility name)
+   set_target_properties(${name} PROPERTIES FOLDER "Utils")
+   if( LLVM_INSTALL_UTILS AND LLVM_BUILD_UTILS )
+     install (TARGETS ${name}
+-      RUNTIME DESTINATION bin
++      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+       COMPONENT ${name})
+     if (NOT CMAKE_CONFIGURATION_TYPES)
+       add_custom_target(install-${name}
+@@ -1173,7 +1185,7 @@ function(llvm_install_library_symlink na
+   set(full_name ${CMAKE_${type}_LIBRARY_PREFIX}${name}${CMAKE_${type}_LIBRARY_SUFFIX})
+   set(full_dest ${CMAKE_${type}_LIBRARY_PREFIX}${dest}${CMAKE_${type}_LIBRARY_SUFFIX})
+ 
+-  set(output_dir lib${LLVM_LIBDIR_SUFFIX})
++  set(output_dir ${CMAKE_INSTALL_LIBDIR})
+   if(WIN32 AND "${type}" STREQUAL "SHARED")
+     set(output_dir bin)
+   endif()
+@@ -1210,7 +1222,7 @@ function(llvm_install_symlink name dest)
+   set(full_dest ${dest}${CMAKE_EXECUTABLE_SUFFIX})
+ 
+   install(SCRIPT ${INSTALL_SYMLINK}
+-          CODE "install_symlink(${full_name} ${full_dest} ${LLVM_TOOLS_INSTALL_DIR})"
++          CODE "install_symlink(${full_name} ${full_dest} ${CMAKE_INSTALL_BINDIR})"
+           COMPONENT ${component})
+ 
+   if (NOT CMAKE_CONFIGURATION_TYPES AND NOT ARG_ALWAYS_GENERATE)
+diff -up llvm-3.9.1.src/cmake/modules/AddOCaml.cmake.instdirs llvm-3.9.1.src/cmake/modules/AddOCaml.cmake
+--- llvm-3.9.1.src/cmake/modules/AddOCaml.cmake.instdirs	2016-06-21 17:10:37.000000000 -0600
++++ llvm-3.9.1.src/cmake/modules/AddOCaml.cmake	2017-02-13 13:36:44.001154744 -0700
+@@ -189,12 +189,12 @@ function(add_ocaml_library name)
+   endforeach()
+ 
+   install(FILES ${install_files}
+-          DESTINATION lib/ocaml)
++          DESTINATION ${CMAKE_INSTALL_LIBDIR}/ocaml)
+   install(FILES ${install_shlibs}
+           PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                       GROUP_READ GROUP_EXECUTE
+                       WORLD_READ WORLD_EXECUTE
+-          DESTINATION lib/ocaml)
++          DESTINATION ${CMAKE_INSTALL_LIBDIR}/ocaml)
+ 
+   foreach( install_file ${install_files} ${install_shlibs} )
+     get_filename_component(filename "${install_file}" NAME)
+diff -up llvm-3.9.1.src/cmake/modules/AddSphinxTarget.cmake.instdirs llvm-3.9.1.src/cmake/modules/AddSphinxTarget.cmake
+--- llvm-3.9.1.src/cmake/modules/AddSphinxTarget.cmake.instdirs	2014-08-14 05:57:16.000000000 -0600
++++ llvm-3.9.1.src/cmake/modules/AddSphinxTarget.cmake	2017-02-13 13:36:44.001154744 -0700
+@@ -50,11 +50,11 @@ function (add_sphinx_target builder proj
+       if (builder STREQUAL man)
+         # FIXME: We might not ship all the tools that these man pages describe
+         install(DIRECTORY "${SPHINX_BUILD_DIR}/" # Slash indicates contents of
+-                DESTINATION share/man/man1)
++                DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
+ 
+       elseif (builder STREQUAL html)
+         install(DIRECTORY "${SPHINX_BUILD_DIR}"
+-                DESTINATION "share/doc/${project}")
++                DESTINATION ${CMAKE_INSTALL_DOCDIR})
+       else()
+         message(WARNING Installation of ${builder} not supported)
+       endif()
+diff -up llvm-3.9.1.src/cmake/modules/CMakeLists.txt.instdirs llvm-3.9.1.src/cmake/modules/CMakeLists.txt
+--- llvm-3.9.1.src/cmake/modules/CMakeLists.txt.instdirs	2017-02-13 13:36:43.995154779 -0700
++++ llvm-3.9.1.src/cmake/modules/CMakeLists.txt	2017-02-13 13:40:40.508732673 -0700
+@@ -1,4 +1,4 @@
+-set(LLVM_INSTALL_PACKAGE_DIR lib${LLVM_LIBDIR_SUFFIX}/cmake/llvm)
++set(LLVM_INSTALL_PACKAGE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/llvm CACHE STRING "Path for CMake subdirectory (defaults to 'cmake/llvm')")
+ set(llvm_cmake_builddir "${LLVM_BINARY_DIR}/${LLVM_INSTALL_PACKAGE_DIR}")
+ 
+ get_property(LLVM_EXPORTS GLOBAL PROPERTY LLVM_EXPORTS)
+@@ -49,20 +49,12 @@ file(COPY .
+ 
+ # Generate LLVMConfig.cmake for the install tree.
+ set(LLVM_CONFIG_CODE "
+-# Compute the installation prefix from this LLVMConfig.cmake file location.
+-get_filename_component(LLVM_INSTALL_PREFIX \"\${CMAKE_CURRENT_LIST_FILE}\" PATH)")
+-# Construct the proper number of get_filename_component(... PATH)
+-# calls to compute the installation prefix.
+-string(REGEX REPLACE "/" ";" _count "${LLVM_INSTALL_PACKAGE_DIR}")
+-foreach(p ${_count})
+-  set(LLVM_CONFIG_CODE "${LLVM_CONFIG_CODE}
+-get_filename_component(LLVM_INSTALL_PREFIX \"\${LLVM_INSTALL_PREFIX}\" PATH)")
+-endforeach(p)
+-set(LLVM_CONFIG_INCLUDE_DIRS "\${LLVM_INSTALL_PREFIX}/include")
+-set(LLVM_CONFIG_LIBRARY_DIRS "\${LLVM_INSTALL_PREFIX}/lib\${LLVM_LIBDIR_SUFFIX}")
++set(LLVM_INSTALL_PREFIX \"${CMAKE_INSTALL_PREFIX}\")")
++set(LLVM_CONFIG_INCLUDE_DIRS "\${LLVM_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
++set(LLVM_CONFIG_LIBRARY_DIRS "\${LLVM_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+ set(LLVM_CONFIG_CMAKE_DIR "\${LLVM_INSTALL_PREFIX}/${LLVM_INSTALL_PACKAGE_DIR}")
+ set(LLVM_CONFIG_BINARY_DIR "\${LLVM_INSTALL_PREFIX}")
+-set(LLVM_CONFIG_TOOLS_BINARY_DIR "\${LLVM_INSTALL_PREFIX}/bin")
++set(LLVM_CONFIG_TOOLS_BINARY_DIR "\${LLVM_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+ set(LLVM_CONFIG_EXPORTS_FILE "\${LLVM_CMAKE_DIR}/LLVMExports.cmake")
+ configure_file(
+   LLVMConfig.cmake.in
+diff -up llvm-3.9.1.src/cmake/modules/LLVMConfig.cmake.in.instdirs llvm-3.9.1.src/cmake/modules/LLVMConfig.cmake.in
+--- llvm-3.9.1.src/cmake/modules/LLVMConfig.cmake.in.instdirs	2016-07-01 08:22:52.000000000 -0600
++++ llvm-3.9.1.src/cmake/modules/LLVMConfig.cmake.in	2017-02-13 13:36:44.002154738 -0700
+@@ -59,7 +59,7 @@ set(LLVM_DEFINITIONS "@LLVM_DEFINITIONS@
+ set(LLVM_CMAKE_DIR "@LLVM_CONFIG_CMAKE_DIR@")
+ set(LLVM_BINARY_DIR "@LLVM_CONFIG_BINARY_DIR@")
+ set(LLVM_TOOLS_BINARY_DIR "@LLVM_CONFIG_TOOLS_BINARY_DIR@")
+-set(LLVM_TOOLS_INSTALL_DIR "@LLVM_TOOLS_INSTALL_DIR@")
++set(LLVM_TOOLS_INSTALL_DIR "@CMAKE_INSTALL_BINDIR@")
+ 
+ if(NOT TARGET LLVMSupport)
+   set(LLVM_EXPORTED_TARGETS "@LLVM_EXPORTS@")
+diff -up llvm-3.9.1.src/cmake/modules/TableGen.cmake.instdirs llvm-3.9.1.src/cmake/modules/TableGen.cmake
+--- llvm-3.9.1.src/cmake/modules/TableGen.cmake.instdirs	2016-06-08 15:19:26.000000000 -0600
++++ llvm-3.9.1.src/cmake/modules/TableGen.cmake	2017-02-13 13:47:59.832154520 -0700
+@@ -6,7 +6,6 @@ function(tablegen project ofn)
+   # Validate calling context.
+   foreach(v
+       ${project}_TABLEGEN_EXE
+-      LLVM_MAIN_SRC_DIR
+       LLVM_MAIN_INCLUDE_DIR
+       )
+     if(NOT ${v})
+@@ -23,10 +22,14 @@ function(tablegen project ofn)
+     set(LLVM_TARGET_DEFINITIONS_ABSOLUTE
+       ${CMAKE_CURRENT_SOURCE_DIR}/${LLVM_TARGET_DEFINITIONS})
+   endif()
++  if (LLVM_MAIN_SRC_DIR)
++    set(TABLEGEN_INCLUDES -I ${LLVM_MAIN_SRC_DIR}/lib/Target)
++  endif()
++  set(TABLEGEN_INCLUDES ${TABLEGEN_INCLUDES} -I ${LLVM_MAIN_INCLUDE_DIR})
+   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${ofn}.tmp
+     # Generate tablegen output in a temporary file.
+     COMMAND ${${project}_TABLEGEN_EXE} ${ARGN} -I ${CMAKE_CURRENT_SOURCE_DIR}
+-    -I ${LLVM_MAIN_SRC_DIR}/lib/Target -I ${LLVM_MAIN_INCLUDE_DIR}
++    ${TABLEGEN_INCLUDES}
+     ${LLVM_TARGET_DEFINITIONS_ABSOLUTE}
+     -o ${CMAKE_CURRENT_BINARY_DIR}/${ofn}.tmp
+     # The file in LLVM_TARGET_DEFINITIONS may be not in the current
+@@ -141,7 +144,7 @@ macro(add_tablegen target project)
+   if (${project} STREQUAL LLVM AND NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+     install(TARGETS ${target}
+             EXPORT LLVMExports
+-            RUNTIME DESTINATION ${LLVM_TOOLS_INSTALL_DIR})
++            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+   endif()
+   set_property(GLOBAL APPEND PROPERTY LLVM_EXPORTS ${target})
+ endmacro()
+diff -up llvm-3.9.1.src/docs/CMakeLists.txt.instdirs llvm-3.9.1.src/docs/CMakeLists.txt
+--- llvm-3.9.1.src/docs/CMakeLists.txt.instdirs	2015-08-17 17:24:17.000000000 -0600
++++ llvm-3.9.1.src/docs/CMakeLists.txt	2017-02-13 13:36:44.004154727 -0700
+@@ -94,7 +94,7 @@ if (LLVM_ENABLE_DOXYGEN)
+ 
+   if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
+-      DESTINATION docs/html)
++      DESTINATION ${CMAKE_INSTALL_DOCDIR}/html)
+   endif()
+ endif()
+ endif()
+@@ -155,6 +155,6 @@ if( NOT uses_ocaml LESS 0 )
+ 
+   if (NOT LLVM_INSTALL_TOOLCHAIN_ONLY)
+     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ocamldoc/html
+-      DESTINATION docs/ocaml/html)
++      DESTINATION ${CMAKE_INSTALL_DOCDIR}/ocaml/html)
+   endif()
+ endif()
+diff -up llvm-3.9.1.src/include/llvm/CMakeLists.txt.instdirs llvm-3.9.1.src/include/llvm/CMakeLists.txt
+--- llvm-3.9.1.src/include/llvm/CMakeLists.txt.instdirs	2014-08-13 18:51:47.000000000 -0600
++++ llvm-3.9.1.src/include/llvm/CMakeLists.txt	2017-02-13 13:36:44.004154727 -0700
+@@ -3,5 +3,5 @@ add_subdirectory(IR)
+ # If we're doing an out-of-tree build, copy a module map for generated
+ # header files into the build area.
+ if (NOT "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+-  configure_file(module.modulemap.build module.modulemap COPYONLY)
++  configure_file(module.modulemap.build ${LLVM_INCLUDE_DIR}/module.modulemap COPYONLY)
+ endif (NOT "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+diff -up llvm-3.9.1.src/tools/llvm-config/BuildVariables.inc.in.instdirs llvm-3.9.1.src/tools/llvm-config/BuildVariables.inc.in
+--- llvm-3.9.1.src/tools/llvm-config/BuildVariables.inc.in.instdirs	2016-03-07 17:02:50.000000000 -0700
++++ llvm-3.9.1.src/tools/llvm-config/BuildVariables.inc.in	2017-02-13 13:36:44.005154721 -0700
+@@ -23,7 +23,9 @@
+ #define LLVM_LDFLAGS "@LLVM_LDFLAGS@"
+ #define LLVM_CXXFLAGS "@LLVM_CXXFLAGS@"
+ #define LLVM_BUILDMODE "@LLVM_BUILDMODE@"
+-#define LLVM_LIBDIR_SUFFIX "@LLVM_LIBDIR_SUFFIX@"
++#define LLVM_BINARY_DIR "@CMAKE_INSTALL_BINDIR@"
++#define LLVM_LIBRARY_DIR "@CMAKE_INSTALL_LIBDIR@"
++#define LLVM_INCLUDE_DIR "@CMAKE_INSTALL_INCLUDEDIR@"
+ #define LLVM_TARGETS_BUILT "@LLVM_TARGETS_BUILT@"
+ #define LLVM_SYSTEM_LIBS "@LLVM_SYSTEM_LIBS@"
+ #define LLVM_BUILD_SYSTEM "@LLVM_BUILD_SYSTEM@"
+diff -up llvm-3.9.1.src/tools/llvm-config/llvm-config.cpp.instdirs llvm-3.9.1.src/tools/llvm-config/llvm-config.cpp
+--- llvm-3.9.1.src/tools/llvm-config/llvm-config.cpp.instdirs	2016-03-14 15:39:58.000000000 -0600
++++ llvm-3.9.1.src/tools/llvm-config/llvm-config.cpp	2017-02-13 13:36:44.006154715 -0700
+@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
+     DevelopmentTreeLayout = CMakeStyle;
+     ActiveObjRoot = LLVM_OBJ_ROOT;
+   } else if (sys::fs::equivalent(CurrentExecPrefix,
+-                                 Twine(LLVM_OBJ_ROOT) + "/bin")) {
++                                 Twine(LLVM_OBJ_ROOT) + "/" + LLVM_BINARY_DIR)) {
+     IsInDevelopmentTree = true;
+     DevelopmentTreeLayout = CMakeBuildModeStyle;
+     ActiveObjRoot = LLVM_OBJ_ROOT;
+@@ -304,32 +304,32 @@ int main(int argc, char **argv) {
+   std::string ActivePrefix, ActiveBinDir, ActiveIncludeDir, ActiveLibDir;
+   std::string ActiveIncludeOption;
+   if (IsInDevelopmentTree) {
+-    ActiveIncludeDir = std::string(LLVM_SRC_ROOT) + "/include";
++    ActiveIncludeDir = std::string(LLVM_SRC_ROOT) + "/" + LLVM_INCLUDE_DIR;
+     ActivePrefix = CurrentExecPrefix;
+ 
+     // CMake organizes the products differently than a normal prefix style
+     // layout.
+     switch (DevelopmentTreeLayout) {
+     case CMakeStyle:
+-      ActiveBinDir = ActiveObjRoot + "/bin";
+-      ActiveLibDir = ActiveObjRoot + "/lib" + LLVM_LIBDIR_SUFFIX;
++      ActiveBinDir = ActiveObjRoot + "/" + LLVM_BINARY_DIR;
++      ActiveLibDir = ActiveObjRoot + LLVM_LIBRARY_DIR;
+       break;
+     case CMakeBuildModeStyle:
+       ActivePrefix = ActiveObjRoot;
+-      ActiveBinDir = ActiveObjRoot + "/bin/" + build_mode;
++      ActiveBinDir = ActiveObjRoot + "/" + LLVM_BINARY_DIR + "/" + build_mode;
+       ActiveLibDir =
+-          ActiveObjRoot + "/lib" + LLVM_LIBDIR_SUFFIX + "/" + build_mode;
++          ActiveObjRoot + "/" + LLVM_LIBRARY_DIR + "/" + build_mode;
+       break;
+     }
+ 
+     // We need to include files from both the source and object trees.
+     ActiveIncludeOption =
+-        ("-I" + ActiveIncludeDir + " " + "-I" + ActiveObjRoot + "/include");
++        ("-I" + ActiveIncludeDir + " " + "-I" + ActiveObjRoot + "/" + LLVM_INCLUDE_DIR);
+   } else {
+     ActivePrefix = CurrentExecPrefix;
+-    ActiveIncludeDir = ActivePrefix + "/include";
+-    ActiveBinDir = ActivePrefix + "/bin";
+-    ActiveLibDir = ActivePrefix + "/lib" + LLVM_LIBDIR_SUFFIX;
++    ActiveIncludeDir = ActivePrefix + "/" + LLVM_INCLUDE_DIR;
++    ActiveBinDir = ActivePrefix + "/" + LLVM_BINARY_DIR;
++    ActiveLibDir = ActivePrefix + "/" + LLVM_LIBRARY_DIR;
+     ActiveIncludeOption = "-I" + ActiveIncludeDir;
+   }
+ 
+diff -up llvm-3.9.1.src/tools/llvm-shlib/CMakeLists.txt.instdirs llvm-3.9.1.src/tools/llvm-shlib/CMakeLists.txt
+--- llvm-3.9.1.src/tools/llvm-shlib/CMakeLists.txt.instdirs	2016-05-25 22:35:35.000000000 -0600
++++ llvm-3.9.1.src/tools/llvm-shlib/CMakeLists.txt	2017-02-13 13:36:44.065154372 -0700
+@@ -68,7 +66,7 @@ if(LLVM_BUILD_LLVM_C_DYLIB)
+ 
+   set(LLVM_EXPORTED_SYMBOL_FILE ${CMAKE_BINARY_DIR}/libllvm-c.exports)
+ 
+-  set(LIB_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib${LLVM_LIBDIR_SUFFIX})
++  set(LIB_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${CMAKE_INSTALL_LIBDIR})
+   set(LIB_NAME ${LIB_DIR}/${CMAKE_SHARED_LIBRARY_PREFIX}LLVM)
+   set(LIB_PATH ${LIB_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX})
+   set(LIB_EXPORTS_PATH ${LIB_NAME}.exports)
+diff -up llvm-3.9.1.src/tools/lto/CMakeLists.txt.instdirs llvm-3.9.1.src/tools/lto/CMakeLists.txt
+--- llvm-3.9.1.src/tools/lto/CMakeLists.txt.instdirs	2016-07-11 21:01:22.000000000 -0600
++++ llvm-3.9.1.src/tools/lto/CMakeLists.txt	2017-02-13 13:36:44.007154709 -0700
+@@ -19,7 +19,7 @@ set(LLVM_EXPORTED_SYMBOL_FILE ${CMAKE_CU
+ add_llvm_library(LTO SHARED ${SOURCES})
+ 
+ install(FILES ${LLVM_MAIN_INCLUDE_DIR}/llvm-c/lto.h
+-  DESTINATION include/llvm-c
++  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/llvm-c
+   COMPONENT LTO)
+ 
+ if (APPLE)
