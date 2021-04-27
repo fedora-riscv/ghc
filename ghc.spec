@@ -328,9 +328,9 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch armv7hl
-#%%patch12 -p1 -b .orig
+%patch12 -p1 -b .orig
 # maybe needed for 9.2
-#%%patch13 -p1 -b .orig
+%patch13 -p1 -b .orig
 %endif
 
 %ifarch %{ghc_unregisterized_arches}
