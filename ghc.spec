@@ -28,7 +28,7 @@ Version: 8.2.2
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 68.3%{?dist}
+Release: 68.4%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -53,6 +53,10 @@ Patch4:  D4159.patch
 Patch5:  ghc-configure-fix-sphinx-version-check.patch
 
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
+
+# for s390x
+# https://ghc.haskell.org/trac/ghc/ticket/15689
+Patch15: ghc-warnings.mk-CC-Wall.patch
 
 # Debian patches:
 # doesn't apply to 8.2
@@ -288,6 +292,10 @@ rm -r libffi-tarballs
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
+%endif
+
+%ifarch s390x
+%patch15 -p1 -b .orig
 %endif
 
 #%%patch24 -p1 -b .orig
@@ -711,6 +719,9 @@ fi
 
 
 %changelog
+* Wed Apr 28 2021 Jens Petersen <petersen@redhat.com> - 8.2.2-68.4
+- disable CC -Wall on s390x to silence the warning flood
+
 * Tue Aug 14 2018 Petr Viktorin <pviktori@redhat.com> - 8.2.2-68.3
 - Fix BuildRequires for /usr/bin/python3
 - Resolves: #1615517
