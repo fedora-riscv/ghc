@@ -49,7 +49,7 @@ Version: 8.8.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 109%{?dist}
+Release: 110%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -180,6 +180,7 @@ Summary: GHC compiler and utilities
 License: BSD
 Requires: gcc%{?_isa}
 Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
+Requires: ghc-filesystem
 %if %{without haddock}
 # added during f31
 Obsoletes: ghc-doc-index < %{version}-%{release}
@@ -601,8 +602,6 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %{ghclibdir}/platformConstants
 %{ghclibdir}/settings
 %{ghclibdir}/template-hsc.h
-%dir %{_docdir}/ghc
-%dir %{ghc_html_dir}
 %{_mandir}/man1/ghc-pkg.1*
 %{_mandir}/man1/haddock.1*
 %{_mandir}/man1/runghc.1*
@@ -613,7 +612,6 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %{ghclibdir}/bin/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
-%dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
 %{ghc_html_dir}/libraries/prologue.txt
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
@@ -657,6 +655,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Tue May 25 2021 Jens Petersen <petersen@redhat.com> - 8.8.4-110
+- ghc-compiler now requires ghc-filesystem for html docdirs
+
 * Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 8.8.4-109
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
 
