@@ -41,10 +41,10 @@
 %bcond_with testsuite
 
 # 8.10 needs llvm-9.0
-%global llvm_major 9.0
-%global ghc_llvm_archs armv7hl aarch64
+%global llvm_major 10
+%global ghc_llvm_archs armv7hl aarch64 s390x
 
-%global ghc_unregisterized_arches s390 s390x %{mips}
+%global ghc_unregisterized_arches s390 %{mips}
 
 Name: ghc
 Version: 8.10.4
@@ -52,7 +52,7 @@ Version: 8.10.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 96%{?dist}
+Release: 97%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -72,8 +72,7 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 
 # Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
-# https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
-#Patch13: ghc-8.8-configure-llvm-7.0.patch
+Patch13: ghc-8.10-llvm10.patch
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
@@ -87,6 +86,11 @@ Patch15: ghc-warnings.mk-CC-Wall.patch
 # https://gitlab.haskell.org/ghc/ghc/issues/16973
 # https://bugzilla.redhat.com/show_bug.cgi?id=1733030
 Patch18: Disable-unboxed-arrays.patch
+# breaks s390x at least:
+# compiler/deSugar/DsForeign.hs:551:7: error:
+#    • No instance for (Ord PlatformWordSize) arising from a use of ‘>’
+#    • In the expression: platformWordSize platform > 4
+#Patch19: fix-big-endian-ffi.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
@@ -125,7 +129,11 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
+%if 0%{?fedora} >= 33
 BuildRequires: llvm%{llvm_major}
+%else
+BuildRequires: llvm >= %{llvm_major}
+%endif
 %endif
 %ifarch armv7hl %{ghc_llvm_archs}
 # patch12, patch13
@@ -179,7 +187,11 @@ Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
+%if 0%{?fedora} >= 33
 Requires: llvm%{llvm_major}
+%else
+Requires: llvm >= %{llvm_major}
+%endif
 %endif
 
 %description compiler
@@ -319,8 +331,9 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch %{ghc_llvm_archs}
-#%%patch13 -p1 -b .orig13
+%patch13 -p1 -b .orig13
 %endif
+
 
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
@@ -329,9 +342,10 @@ rm -r libffi-tarballs
 # bigendian
 %ifarch ppc64 s390x
 %patch18 -p1 -b .orig
+#%%patch19 -p1 -b .orig
 %endif
 
-#%%patch24 -p1 -b .orig
+%patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
@@ -620,9 +634,6 @@ make test
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
 %{ghclibdir}/bin/runghc
-%ifnarch %{ghc_unregisterized_arches}
-#%%{ghclibdir}/bin/ghc-split
-%endif
 %{ghclibdir}/bin/hp2ps
 %{ghclibdir}/bin/unlit
 %{ghclibdir}/ghc-usage.txt
@@ -692,6 +703,9 @@ make test
 
 
 %changelog
+* Thu May  6 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-97
+- use llvm 10 (needed for s390x)
+
 * Sun Feb  7 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-96
 - https://downloads.haskell.org/~ghc/8.10.4/docs/html/users_guide/8.10.4-notes.html
 
