@@ -121,7 +121,7 @@ BuildRequires: autoconf, automake
 
 # llvm
 %ifarch %{ghc_llvm_archs}
-BuildRequires:	cmake3
+BuildRequires:	cmake
 BuildRequires:	zlib-devel
 BuildRequires:	libedit-devel
 BuildRequires:	libffi-devel
@@ -331,7 +331,7 @@ fi
 cd llvm-%{llvm_version}.src
 mkdir -p _build
 cd _build
-%cmake3 .. \
+%cmake .. \
 	-DBUILD_SHARED_LIBS:BOOL=OFF \
 	-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-Bsymbolic -static-libstdc++" \
