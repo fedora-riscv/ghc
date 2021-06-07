@@ -42,9 +42,9 @@
 
 # 8.10.5 needs llvm-10
 %global llvm_major 10
-%global ghc_llvm_archs armv7hl aarch64 s390x
-
-%global ghc_unregisterized_arches s390 %{mips}
+# temporarily skip: s390x
+%global ghc_llvm_archs armv7hl aarch64
+%global ghc_unregisterized_arches s390 %{mips} s390x
 
 Name: ghc
 Version: 8.10.5
@@ -329,6 +329,7 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
+# add s390x when switching to llvm
 %ifarch %{ghc_unregisterized_arches}
 %patch15 -p1 -b .orig
 %endif
@@ -701,9 +702,10 @@ make test
 - update to 8.10.5
 - https://downloads.haskell.org/~ghc/8.10.5/docs/html/users_guide/8.10.5-notes.html
 - base, containers, and stm libraries updated
+- use llvm 10
 
 * Thu May  6 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-97
-- use llvm 10 (needed for s390x)
+- update buildpath-abi-stability.patch
 
 * Sun Feb  7 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-96
 - https://downloads.haskell.org/~ghc/8.10.4/docs/html/users_guide/8.10.4-notes.html
