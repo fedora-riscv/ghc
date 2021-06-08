@@ -403,8 +403,8 @@ export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
-# remove after Fedora default moves to 8.6
-%ifarch %{ghc_unregisterized_arches}
+# only needed for ghc < 8.8
+%ifarch %{ghc_unregisterized_arches} && 0%{?fedora} < 33
 cat > ghc-unregisterised-wrapper << EOF
 #!/usr/bin/sh
 exec /usr/bin/ghc -optc-I%{_libdir}/ghc-$(ghc --numeric-version)/include \${1+"\$@"}
@@ -426,7 +426,7 @@ ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
 %if 0%{?fedora} || 0%{?rhel} > 6
   --with-system-libffi \
 %endif
-%ifarch %{ghc_unregisterized_arches}
+%ifarch %{ghc_unregisterized_arches} && 0%{?fedora} < 33
   GHC=$PWD/ghc-unregisterised-wrapper \
 %endif
 %{nil}
