@@ -52,7 +52,7 @@ Version: 8.10.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 98%{?dist}
+Release: 99%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -69,6 +69,9 @@ Patch1:  ghc-gen_contents_index-haddock-path.patch
 Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
+# https://gitlab.haskell.org/ghc/ghc/-/issues/19763
+# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5915
+Patch7:  https://gitlab.haskell.org/ghc/ghc/-/commit/296f25fa5f0fce033b529547e0658076e26f4cda.patch
 
 # Arch dependent patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
@@ -320,6 +323,7 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
+%patch7 -p1 -b .orig
 
 %if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
@@ -698,6 +702,10 @@ make test
 
 
 %changelog
+* Sat Jun 12 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-99
+- add missing RTS functions needed for doctests etc
+  see https://gitlab.haskell.org/ghc/ghc/-/issues/19763
+
 * Sun Jun  6 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-98
 - update to 8.10.5
 - https://downloads.haskell.org/~ghc/8.10.5/docs/html/users_guide/8.10.5-notes.html

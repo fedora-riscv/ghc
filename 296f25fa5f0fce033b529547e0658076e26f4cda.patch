@@ -1,0 +1,39 @@
+From 296f25fa5f0fce033b529547e0658076e26f4cda Mon Sep 17 00:00:00 2001
+From: Adam Sandberg Ericsson <adam@sandbergericsson.se>
+Date: Wed, 28 Apr 2021 20:11:52 +0100
+Subject: [PATCH] rts: export allocateWrite, freeWrite and markExec #19763
+
+(cherry picked from commit 2d2985a79eec3d6ae9aee96b264c97c2b158f196)
+---
+ rts/RtsSymbols.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/rts/RtsSymbols.c b/rts/RtsSymbols.c
+index 9ca696c27c4..d5b8cc5fece 100644
+--- a/rts/RtsSymbols.c
++++ b/rts/RtsSymbols.c
+@@ -539,11 +539,21 @@
+ #define RTS_PROF_SYMBOLS /* empty */
+ #endif
+ 
++#if RTS_LINKER_USE_MMAP
++#define RTS_LINKER_USE_MMAP_SYMBOLS \
++      SymI_HasProto(allocateWrite)                                      \
++      SymI_HasProto(freeWrite)                                          \
++      SymI_HasProto(markExec)
++#else
++#define RTS_LINKER_USE_MMAP_SYMBOLS /* empty */
++#endif
++
+ #define RTS_SYMBOLS                                                     \
+       Maybe_Stable_Names                                                \
+       RTS_TICKY_SYMBOLS                                                 \
+       RTS_PROF_SYMBOLS                                                  \
+       RTS_LIBDW_SYMBOLS                                                 \
++      RTS_LINKER_USE_MMAP_SYMBOLS                                       \
+       SymI_HasProto(StgReturn)                                          \
+       SymI_HasProto(stg_gc_noregs)                                      \
+       SymI_HasProto(stg_ret_v_info)                                     \
+-- 
+GitLab
+
