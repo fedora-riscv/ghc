@@ -49,7 +49,7 @@ Version: 8.8.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 110%{?dist}
+Release: 111%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -63,11 +63,13 @@ Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
 # absolute haddock path (was for html/libraries -> libraries)
-Patch1:  ghc-gen_contents_index-haddock-path.patch
-Patch2:  ghc-Cabal-install-PATH-warning.patch
-Patch3:  ghc-gen_contents_index-nodocs.patch
+Patch1: ghc-gen_contents_index-haddock-path.patch
+Patch2: ghc-Cabal-install-PATH-warning.patch
+Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=1977317
+Patch7: ghc-userguide-sphinx4.patch
 
 # Arch dependent patches
 
@@ -312,6 +314,7 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
+%patch7 -p1 -b .orig
 
 rm -r libffi-tarballs
 
@@ -655,6 +658,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Wed Jun 30 2021 Jens Petersen <petersen@redhat.com> - 8.8.4-111
+- fix build with sphinx4 (#1977317)
+
 * Tue May 25 2021 Jens Petersen <petersen@redhat.com> - 8.8.4-110
 - ghc-compiler now requires ghc-filesystem for html docdirs
 
