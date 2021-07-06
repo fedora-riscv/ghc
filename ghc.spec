@@ -35,7 +35,7 @@
 %global llvm_major 7.0
 %global ghc_llvm_archs armv7hl aarch64
 
-%global ghc_unregisterized_arches s390 s390x %{mips}
+%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
 Name: ghc
 Version: 8.8.4
@@ -43,7 +43,7 @@ Version: 8.8.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 88%{?dist}
+Release: 89%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -56,11 +56,13 @@ Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
 # absolute haddock path (was for html/libraries -> libraries)
-Patch1:  ghc-gen_contents_index-haddock-path.patch
-Patch2:  ghc-Cabal-install-PATH-warning.patch
-Patch3:  ghc-gen_contents_index-nodocs.patch
+Patch1: ghc-gen_contents_index-haddock-path.patch
+Patch2: ghc-Cabal-install-PATH-warning.patch
+Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=1977317
+Patch7: ghc-userguide-sphinx4.patch
 
 # Arch dependent patches
 
@@ -175,6 +177,7 @@ Summary: GHC compiler and utilities
 License: BSD
 Requires: gcc%{?_isa}
 Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
+Requires: ghc-filesystem
 %if %{without haddock}
 # added during f31
 Obsoletes: ghc-doc-index < %{version}-%{release}
@@ -300,13 +303,14 @@ packages to be automatically installed too.
 
 
 %prep
-%setup -q -n %{name}-%{version} %{?with_testsuite:-b3}
+%setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
 
 %patch1 -p1 -b .orig
 %patch3 -p1 -b .orig
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
+%patch7 -p1 -b .orig
 
 rm -r libffi-tarballs
 
@@ -610,8 +614,6 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %{ghclibdir}/platformConstants
 %{ghclibdir}/settings
 %{ghclibdir}/template-hsc.h
-%dir %{_docdir}/ghc
-%dir %{ghc_html_dir}
 %{_mandir}/man1/ghc-pkg.1*
 %{_mandir}/man1/haddock.1*
 %{_mandir}/man1/runghc.1*
@@ -622,7 +624,6 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %{ghclibdir}/bin/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
-%dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
 %{ghc_html_dir}/libraries/prologue.txt
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
@@ -666,6 +667,11 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Wed Jul  7 2021 Jens Petersen <petersen@redhat.com> - 8.8.4-89
+- fix build with sphinx4 (#1977317)
+- ghc-compiler now requires ghc-filesystem for html docdirs
+- Add riscv64 to ghc_unregisterized_arches
+
 * Thu Jul 16 2020 Jens Petersen <petersen@redhat.com> - 8.8.4-88
 - https://downloads.haskell.org/ghc/8.8.4/docs/html/users_guide/8.8.4-notes.html
 - bytestring-0.10.10.1 and process-1.6.9.0
