@@ -1,6 +1,6 @@
 # disable prof, docs, perf build, debuginfo
 # NB This must be disabled (bcond_with) for all koji production builds
-%bcond_with quickbuild
+%bcond_without quickbuild
 
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
