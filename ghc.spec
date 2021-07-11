@@ -96,7 +96,6 @@ Patch18: Disable-unboxed-arrays.patch
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
-#Patch28: x32-use-native-x86_64-insn.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -340,7 +339,6 @@ rm -r libffi-tarballs
 # debian
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
-#%%patch28 -p1 -b .orig
 
 %global gen_contents_index gen_contents_index.orig
 %if %{with haddock}
