@@ -39,9 +39,9 @@
 
 # 8.10.5 can use llvm 9-12
 %global llvm_major 11
-%global ghc_llvm_archs armv7hl aarch64
+%global ghc_llvm_archs armv7hl aarch64 s390x
 
-%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
+%global ghc_unregisterized_arches s390 %{mips} riscv64
 
 Name: ghc
 Version: 8.10.5
@@ -49,7 +49,7 @@ Version: 8.10.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 112%{?dist}
+Release: 113%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -79,7 +79,7 @@ Patch8: ghc-userguide-sphinx4.patch
 # arm
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
-# for unregisterized (s390x)
+# for unregisterized
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 Patch16: fix-build-using-unregisterised-v8.6.patch
@@ -326,7 +326,8 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_unregisterized_arches}
+# remove s390x after switching to llvm
+%ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
 %patch16 -p1 -b .orig
 %endif
@@ -659,6 +660,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Mon Jul 12 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-113
+- enable llvm for s390x
+
 * Sun Jul 11 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-112
 - rebase to 8.10.5 from ghc:8.10 module stream
 - https://downloads.haskell.org/~ghc/8.10.5/docs/html/users_guide/8.10.1-notes.html
