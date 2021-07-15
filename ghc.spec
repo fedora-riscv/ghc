@@ -1,6 +1,6 @@
 # disable prof, docs, perf build, debuginfo
 # NB This must be disabled (bcond_with) for all koji production builds
-%bcond_without quickbuild
+%bcond_with quickbuild
 
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
@@ -39,9 +39,9 @@
 
 # 8.10 recommends llvm-9 but 10 or even 11 should work
 %global llvm_major 10
-%global ghc_llvm_archs armv7hl aarch64
+%global ghc_llvm_archs armv7hl aarch64 s390x
 
-%global ghc_unregisterized_arches s390 %{mips} riscv64 s390x
+%global ghc_unregisterized_arches s390 %{mips} riscv64
 
 Name: ghc
 Version: 8.10.4
@@ -49,7 +49,7 @@ Version: 8.10.4
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 113%{?dist}
+Release: 114%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -659,6 +659,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Thu Jul 15 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-114
+- enable llvm backend for s390x
+
 * Thu Jul 15 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-113
 - rebase to 8.10.4 from ghc:8.10 module stream
 - https://downloads.haskell.org/ghc/8.10.4/docs/html/users_guide/8.10.1-notes.html
