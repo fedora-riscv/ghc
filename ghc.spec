@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.14.2.0
+%global base_ver 4.14.1.0
 
 # build profiling libraries
 # build haddock
@@ -37,14 +37,14 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.10.5 can use llvm 9-12
-%global llvm_major 11
-%global ghc_llvm_archs armv7hl aarch64 s390x
+# 8.10 recommends llvm-9 but 10 or even 11 should work
+%global llvm_major 10
+%global ghc_llvm_archs armv7hl aarch64
 
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_unregisterized_arches s390 %{mips} riscv64 s390x
 
 Name: ghc
-Version: 8.10.5
+Version: 8.10.4
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
@@ -68,21 +68,17 @@ Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
-# https://gitlab.haskell.org/ghc/ghc/-/issues/19763
-# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5915
-Patch7:  https://gitlab.haskell.org/ghc/ghc/-/commit/296f25fa5f0fce033b529547e0658076e26f4cda.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1977317
 Patch8: ghc-userguide-sphinx4.patch
 
 # Arch dependent patches
-
 # arm
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
+Patch13: ghc-8.10-llvm10.patch
 
 # for unregisterized
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
-Patch16: fix-build-using-unregisterised-v8.6.patch
 
 # bigendian (s390x and ppc64)
 # https://gitlab.haskell.org/ghc/ghc/issues/15411
@@ -117,6 +113,7 @@ BuildRequires: ghc-process-devel
 BuildRequires: ghc-transformers-devel
 BuildRequires: alex
 BuildRequires: gmp-devel
+BuildRequires: hscolour
 BuildRequires: libffi-devel
 BuildRequires: make
 # for terminfo
@@ -134,8 +131,8 @@ BuildRequires: llvm%{llvm_major}
 %if %{with dwarf}
 BuildRequires: elfutils-devel
 %endif
-%ifarch armv7hl
-# patch12
+%ifarch armv7hl %{ghc_llvm_archs}
+# patch12, patch13
 BuildRequires: autoconf, automake
 %endif
 %if %{without quickbuild}
@@ -246,7 +243,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.12.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.4.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.4
@@ -267,7 +264,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.9.0
-%ghc_lib_subpackage -d -l BSD stm-2.5.0.1
+%ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
 %ghc_lib_subpackage -d -l BSD text-1.2.4.1
@@ -317,7 +314,6 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
-%patch7 -p1 -b .orig
 %patch8 -p1 -b .orig
 
 rm -r libffi-tarballs
@@ -326,10 +322,13 @@ rm -r libffi-tarballs
 %patch12 -p1 -b .orig
 %endif
 
+%ifarch %{ghc_llvm_archs}
+%patch13 -p1 -b .orig13
+%endif
+
 # remove s390x after switching to llvm
 %ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
-%patch16 -p1 -b .orig
 %endif
 
 # bigendian
@@ -386,8 +385,8 @@ BUILD_SPHINX_PDF = NO
 EOF
 
 %build
-# for patch12
-%ifarch armv7hl
+# for patch12 and patch13
+%ifarch armv7hl %{ghc_llvm_archs}
 autoreconf
 %endif
 
@@ -660,12 +659,10 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
-* Mon Jul 12 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-113
-- enable llvm for s390x
-
-* Sun Jul 11 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-112
-- rebase to 8.10.5 from ghc:8.10 module stream
-- https://downloads.haskell.org/~ghc/8.10.5/docs/html/users_guide/8.10.1-notes.html
+* Thu Jul 15 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-113
+- rebase to 8.10.4 from ghc:8.10 module stream
+- https://downloads.haskell.org/ghc/8.10.4/docs/html/users_guide/8.10.1-notes.html
+- use llvm10 for ARM
 
 * Wed Jun 30 2021 Jens Petersen <petersen@redhat.com> - 8.8.4-111
 - fix build with sphinx4 (#1977317)
