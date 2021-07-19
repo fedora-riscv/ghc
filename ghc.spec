@@ -39,9 +39,9 @@
 
 # 8.10 recommends llvm-9 but 10 or even 11 should work
 %global llvm_major 10
-%global ghc_llvm_archs armv7hl aarch64 s390x
+%global ghc_llvm_archs armv7hl aarch64
 
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_unregisterized_arches s390 %{mips} riscv64 s390x
 
 Name: ghc
 Version: 8.10.4
@@ -139,8 +139,8 @@ BuildRequires: autoconf, automake
 #BuildRequires: gnupg2
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
+Requires: ghc-ghc-devel = %{version}-%{release}
 %if %{with haddock}
 Suggests: ghc-doc = %{version}-%{release}
 Suggests: ghc-doc-index = %{version}-%{release}
@@ -660,7 +660,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 %changelog
 * Thu Jul 15 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-114
-- enable llvm backend for s390x
+- perf build
 
 * Thu Jul 15 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-113
 - rebase to 8.10.4 from ghc:8.10 module stream
