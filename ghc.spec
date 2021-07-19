@@ -43,9 +43,8 @@
 # 8.10.5 needs llvm-10
 %global llvm_major 10
 # temporarily skip: s390x
-%global ghc_llvm_archs armv7hl aarch64 s390x
-
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_llvm_archs armv7hl aarch64
+%global ghc_unregisterized_arches s390 %{mips} s390x
 
 Name: ghc
 Version: 8.10.5
@@ -84,6 +83,7 @@ Patch12: ghc-armv7-VFPv3D16--NEON.patch
 # for unregisterized
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+#Patch16: fix-build-using-unregisterised-v8.6.patch
 
 # bigendian (s390x and ppc64)
 # https://gitlab.haskell.org/ghc/ghc/issues/15411
@@ -669,7 +669,6 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %changelog
 * Tue Jul 13 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-100
 - sync with rawhide branch:
-- enable llvm for s390x
 - sphinx4 patch
 - use ghc-filesystem
 
