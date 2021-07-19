@@ -34,11 +34,11 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 9.0 needs llvm-9.0
-%global llvm_major 9.0
-%global ghc_llvm_archs armv7hl aarch64
+# 9.0.1 recommends llvm-9.0 but 10 should work
+%global llvm_major 10
+%global ghc_llvm_archs armv7hl aarch64 s390x
 
-%global ghc_unregisterized_arches s390 s390x %{mips}
+%global ghc_unregisterized_arches s390 %{mips} riscv64
 
 Name: ghc
 Version: 9.0.1
@@ -46,30 +46,31 @@ Version: 9.0.1
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 98%{?dist}
+Release: 99%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
 URL: https://haskell.org/ghc/
-Source0: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-src.tar.xz
+Source0: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-src.tar.xz
 %if %{with testsuite}
-Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
+Source1: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
 %endif
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
 # absolute haddock path (was for html/libraries -> libraries)
-Patch1:  ghc-gen_contents_index-haddock-path.patch
-Patch2:  ghc-Cabal-install-PATH-warning.patch
+Patch1: ghc-gen_contents_index-haddock-path.patch
+Patch2: ghc-Cabal-install-PATH-warning.patch
+Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
 
 # Arch dependent patches
+# arm
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
-Patch13: ghc-9.0.0.20201227-armv7hl-aclocal-19173.patch
-# https://gitlab.haskell.org/ghc/ghc/commit/71aca77c780dad8496054a06a7fe65704a13a742
+Patch13: ghc-8.10-llvm10.patch
 
-# for unregisterized (s390x)
+# for unregisterized
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 
@@ -85,7 +86,6 @@ Patch18: Disable-unboxed-arrays.patch
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
 Patch26: no-missing-haddock-file-warning.patch
-#Patch28: x32-use-native-x86_64-insn.patch
 
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
@@ -107,6 +107,7 @@ BuildRequires: ghc-process-devel
 BuildRequires: ghc-transformers-devel
 BuildRequires: alex
 BuildRequires: gmp-devel
+BuildRequires: hscolour
 BuildRequires: libffi-devel
 BuildRequires: make
 # for terminfo
@@ -122,7 +123,7 @@ BuildRequires: python3-sphinx
 BuildRequires: llvm%{llvm_major}
 %endif
 %ifarch armv7hl %{ghc_llvm_archs}
-# patch12 and patch13
+# patch12, patch13
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
@@ -141,7 +142,7 @@ Suggests: ghc-doc-index = %{version}-%{release}
 %if %{with manual}
 Suggests: ghc-manual = %{version}-%{release}
 %endif
-%if %{with ghc_prof} && 0%{defined ghc_devel_prof}
+%if %{with ghc_prof}
 Suggests: ghc-prof = %{version}-%{release}
 %endif
 Recommends: zlib-devel
@@ -174,6 +175,7 @@ Summary: GHC compiler and utilities
 License: BSD
 Requires: gcc%{?_isa}
 Requires: ghc-base-devel%{?_isa} = %{base_ver}-%{release}
+Requires: ghc-filesystem
 %if %{without haddock}
 # added during f31
 Obsoletes: ghc-doc-index < %{version}-%{release}
@@ -191,7 +193,6 @@ install the main ghc package.
 
 
 %if %{with haddock}
-%if %{defined ghc_devel_prof}
 %package doc
 Summary: Haskell library documentation meta package
 License: BSD
@@ -199,7 +200,7 @@ License: BSD
 %description doc
 Installing this package causes ghc-*-doc packages corresponding to ghc-*-devel
 packages to be automatically installed too.
-%endif
+
 
 %package doc-index
 Summary: GHC library documentation indexing
@@ -226,14 +227,6 @@ This package provides the User Guide and Haddock manual.
 
 # ghclibdir also needs ghc_version_override for bootstrapping
 %global ghc_version_override %{version}
-
-# EL7 rpm supports fileattrs ghc.attr
-%if 0%{?rhel} && 0%{?rhel} < 7
-# needs ghc_version_override for bootstrapping
-%global _use_internal_dependency_generator 0
-%global __find_provides /usr/lib/rpm/rpmdeps --provides
-%global __find_requires %{_rpmconfigdir}/ghc-deps.sh --requires %{buildroot}%{ghclibdir}
-%endif
 
 %global BSDHaskellReport %{quote:BSD and HaskellReport}
 
@@ -293,7 +286,6 @@ This is a meta-package for all the development library packages in GHC
 except the ghc library, which is installed by the toplevel ghc metapackage.
 
 
-%if %{defined ghc_devel_prof}
 %if %{with ghc_prof}
 %package prof
 Summary: GHC profiling libraries meta package
@@ -304,28 +296,29 @@ Requires: ghc-compiler = %{version}-%{release}
 Installing this package causes ghc-*-prof packages corresponding to ghc-*-devel
 packages to be automatically installed too.
 %endif
-%endif
 
 
 %prep
 %setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
 
 %patch1 -p1 -b .orig
+%patch3 -p1 -b .orig
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
 
-%if 0%{?fedora} || 0%{?rhel} > 6
 rm -r libffi-tarballs
-%endif
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
-# maybe needed for 9.2
-#%%patch13 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_unregisterized_arches}
+%ifarch %{ghc_llvm_archs}
+%patch13 -p1 -b .orig13
+%endif
+
+# remove s390x after switching to llvm
+%ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
 %endif
 
@@ -334,6 +327,7 @@ rm -r libffi-tarballs
 %patch18 -p1 -b .orig
 %endif
 
+#debian
 #%%patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 
@@ -376,36 +370,16 @@ BUILD_SPHINX_HTML = NO
 %endif
 BUILD_SPHINX_PDF = NO
 EOF
-## for verbose build output
-#GhcStage1HcOpts=-v4
-## enable RTS debugging:
-## (http://ghc.haskell.org/trac/ghc/wiki/Debugging/RuntimeSystem)
-#EXTRA_HC_OPTS=-debug
 
 %build
 # for patch12 and patch13
-%ifarch armv7hl
+%ifarch armv7hl %{ghc_llvm_archs}
 autoreconf
 %endif
 
-%if 0%{?fedora} > 28
 %ghc_set_gcc_flags
-%else
-export CFLAGS="${CFLAGS:-%optflags}"
-export LDFLAGS="${LDFLAGS:-%{?__global_ldflags}}"
-%endif
 # for ghc >= 8.2
 export CC=%{_bindir}/gcc
-
-# remove after Fedora default moves to 8.6
-%ifarch %{ghc_unregisterized_arches}
-cat > ghc-unregisterised-wrapper << EOF
-#!/usr/bin/sh
-exec /usr/bin/ghc -optc-I%{_libdir}/ghc-$(ghc --numeric-version)/include \${1+"\$@"}
-EOF
-chmod a+x ghc-unregisterised-wrapper
-ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
-%endif
 
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -414,14 +388,9 @@ ln -s /usr/bin/ghc-pkg ghc-pkg-unregisterised-wrapper
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
+  --with-system-libffi \
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
-%endif
-%if 0%{?fedora} || 0%{?rhel} > 6
-  --with-system-libffi \
-%endif
-%ifarch %{ghc_unregisterized_arches}
-  GHC=$PWD/ghc-unregisterised-wrapper \
 %endif
 %{nil}
 
@@ -452,11 +421,7 @@ for i in %{ghc_packages_list}; do
 name=$(echo $i | sed -e "s/\(.*\)-.*/\1/")
 ver=$(echo $i | sed -e "s/.*-\(.*\)/\1/")
 %ghc_gen_filelists $name $ver
-%if 0%{?rhel} && 0%{?rhel} < 7
-echo "%%doc libraries/$name/LICENSE" >> ghc-$name.files
-%else
 echo "%%license libraries/$name/LICENSE" >> ghc-$name.files
-%endif
 done
 
 echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
@@ -480,11 +445,8 @@ cat ghc-%1-doc.files >> ghc-%2-doc.files\
 cat ghc-%1-prof.files >> ghc-%2-prof.files\
 %endif\
 cp -p libraries/%1/LICENSE libraries/LICENSE.%1\
-%if 0%{?rhel} && 0%{?rhel} < 7\
-echo "%%doc libraries/LICENSE.%1" >> ghc-%2.files\
-%else\
 echo "%%license libraries/LICENSE.%1" >> ghc-%2.files\
-%endif
+%{nil}
 
 %merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
@@ -497,17 +459,11 @@ echo "%%dir %{ghclibdir}/rts" >> ghc-base.files
 ls -d %{buildroot}%{ghclibdir}/rts/lib*.a >> ghc-base-devel.files
 %endif
 ls %{buildroot}%{?_ghcdynlibdir}%{!?_ghcdynlibdir:%{ghclibdir}/rts}/libHSrts*.so >> ghc-base.files
-%if 0%{?rhel} && 0%{?rhel} < 7
-ls %{buildroot}%{ghclibdir}/rts/libffi.so.* >> ghc-base.files
-%endif
 %if %{defined _ghcdynlibdir}
 sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_libdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
 %endif
 
 ls -d %{buildroot}%{ghclibdir}/package.conf.d/rts.conf %{buildroot}%{ghclibdir}/include >> ghc-base-devel.files
-%if 0%{?rhel} && 0%{?rhel} < 7
-ls %{buildroot}%{ghclibdir}/rts/libffi.so >> ghc-base-devel.files
-%endif
 
 sed -i -e "s|^%{buildroot}||g" ghc-base*.files
 
@@ -593,11 +549,11 @@ make test
 
 %if %{with haddock}
 %transfiletriggerin doc-index -- %{ghc_html_libraries_dir}
-%{ghc_html_libraries_dir}/gen_contents_index
+env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %end
 
 %transfiletriggerpostun doc-index -- %{ghc_html_libraries_dir}
-%{ghc_html_libraries_dir}/gen_contents_index
+env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %end
 %endif
 %endif
@@ -607,7 +563,7 @@ make test
 
 %files compiler
 %license LICENSE
-#%%doc ANNOUNCE
+%doc README.md
 %{_bindir}/ghc
 %{_bindir}/ghc-%{version}
 %{_bindir}/ghc-pkg
@@ -631,9 +587,6 @@ make test
 %{ghclibdir}/bin/ghc-iserv-prof
 %endif
 %{ghclibdir}/bin/runghc
-%ifnarch %{ghc_unregisterized_arches}
-#%%{ghclibdir}/bin/ghc-split
-%endif
 %{ghclibdir}/bin/hp2ps
 %{ghclibdir}/bin/unlit
 %{ghclibdir}/ghc-usage.txt
@@ -646,8 +599,6 @@ make test
 %{ghclibdir}/platformConstants
 %{ghclibdir}/settings
 %{ghclibdir}/template-hsc.h
-%dir %{_docdir}/ghc
-%dir %{ghc_html_dir}
 %{_mandir}/man1/ghc-pkg.1*
 %{_mandir}/man1/haddock.1*
 %{_mandir}/man1/runghc.1*
@@ -658,7 +609,6 @@ make test
 %{ghclibdir}/bin/haddock
 %{ghclibdir}/html
 %{ghclibdir}/latex
-%dir %{ghc_html_dir}/libraries
 %{ghc_html_dir}/libraries/gen_contents_index
 %{ghc_html_dir}/libraries/prologue.txt
 %ghost %{ghc_html_dir}/libraries/doc-index*.html
@@ -681,9 +631,7 @@ make test
 %files devel
 
 %if %{with haddock}
-%if %{defined ghc_devel_prof}
 %files doc
-%endif
 
 %files doc-index
 %endif
@@ -699,14 +647,17 @@ make test
 %endif
 %endif
 
-%if %{defined ghc_devel_prof}
 %if %{with ghc_prof}
 %files prof
-%endif
 %endif
 
 
 %changelog
+* Mon Jul 19 2021 Jens Petersen <petersen@redhat.com> - 9.0.1-99
+- use llvm 10
+- enable llvm for s390x
+- sync with rawhide changes: use ghc-filesystem
+
 * Fri Feb  5 2021 Jens Petersen <petersen@redhat.com> - 9.0.1-98
 - 9.0.1 release
 - https://downloads.haskell.org/ghc/9.0.1/docs/html/users_guide/9.0.1-notes.html
