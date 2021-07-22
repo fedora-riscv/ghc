@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.14.1.0
+%global base_ver 4.14.2.0
 
 # build profiling libraries
 # build haddock
@@ -19,6 +19,7 @@
 %bcond_with perf_build
 %undefine _enable_debug_packages
 %else
+%bcond_without ghc_prof
 %bcond_without haddock
 %bcond_without perf_build
 %endif
@@ -37,19 +38,19 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.10 recommends llvm-9 but 10 or even 11 should work
-%global llvm_major 10
+# 8.10.5 can use llvm 9-12
+%global llvm_major 11
 %global ghc_llvm_archs armv7hl aarch64
 
-%global ghc_unregisterized_arches s390 %{mips} riscv64 s390x
+%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
 Name: ghc
-Version: 8.10.4
+Version: 8.10.5
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 114%{?dist}
+Release: 115%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -68,13 +69,15 @@ Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
+# https://gitlab.haskell.org/ghc/ghc/-/issues/19763
+# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5915
+Patch7:  https://gitlab.haskell.org/ghc/ghc/-/commit/296f25fa5f0fce033b529547e0658076e26f4cda.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1977317
 Patch8: ghc-userguide-sphinx4.patch
 
 # Arch dependent patches
 # arm
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
-Patch13: ghc-8.10-llvm10.patch
 
 # for unregisterized
 # https://ghc.haskell.org/trac/ghc/ticket/15689
@@ -131,8 +134,8 @@ BuildRequires: llvm%{llvm_major}
 %if %{with dwarf}
 BuildRequires: elfutils-devel
 %endif
-%ifarch armv7hl %{ghc_llvm_archs}
-# patch12, patch13
+%ifarch armv7hl
+# patch12
 BuildRequires: autoconf, automake
 %endif
 %if %{without quickbuild}
@@ -243,7 +246,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.12.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.2.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.4.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.4
@@ -264,7 +267,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.9.0
-%ghc_lib_subpackage -d -l BSD stm-2.5.0.0
+%ghc_lib_subpackage -d -l BSD stm-2.5.0.1
 %ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
 %ghc_lib_subpackage -d -l BSD text-1.2.4.1
@@ -314,16 +317,13 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
+%patch7 -p1 -b .orig
 %patch8 -p1 -b .orig
 
 rm -r libffi-tarballs
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
-%endif
-
-%ifarch %{ghc_llvm_archs}
-%patch13 -p1 -b .orig13
 %endif
 
 # remove s390x after switching to llvm
@@ -385,8 +385,8 @@ BUILD_SPHINX_PDF = NO
 EOF
 
 %build
-# for patch12 and patch13
-%ifarch armv7hl %{ghc_llvm_archs}
+# for patch12
+%ifarch armv7hl
 autoreconf
 %endif
 
@@ -487,6 +487,11 @@ mkdir -p %{buildroot}%{_mandir}/man1
 install -p -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/ghc-pkg.1
 install -p -m 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/haddock.1
 install -p -m 0644 %{SOURCE7} %{buildroot}%{_mandir}/man1/runghc.1
+
+%ifarch armv7hl
+export RPM_BUILD_NCPUS=1
+%endif
+
 
 %check
 export LANG=en_US.utf8
@@ -659,6 +664,11 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Thu Jul 22 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-115
+- update to 8.10.5 with patch for missing rts symbols
+- use llvm 11 for ARM
+- https://downloads.haskell.org/~ghc/8.10.5/docs/html/users_guide/8.10.5-notes.html
+
 * Thu Jul 15 2021 Jens Petersen <petersen@redhat.com> - 8.10.4-114
 - perf build
 
