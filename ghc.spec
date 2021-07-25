@@ -34,11 +34,11 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 9.0.1 recommends llvm-9.0 but 10 should work
-%global llvm_major 10
-%global ghc_llvm_archs armv7hl aarch64 s390x
+# 9.0 needs llvm-9.0
+%global llvm_major 9.0
+%global ghc_llvm_archs armv7hl aarch64
 
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
 Version: 9.0.1
