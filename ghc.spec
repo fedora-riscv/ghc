@@ -660,7 +660,6 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %changelog
 * Mon Jul 19 2021 Jens Petersen <petersen@redhat.com> - 9.0.1-99
 - use llvm 10
-- enable llvm for s390x
 - sync with rawhide changes: use ghc-filesystem
 
 * Fri Feb  5 2021 Jens Petersen <petersen@redhat.com> - 9.0.1-98
