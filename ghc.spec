@@ -45,7 +45,7 @@
 %else
 %global llvm_major 10
 %endif
-%global ghc_llvm_archs armv7hl aarch64
+%global ghc_llvm_archs armv7hl
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
@@ -254,7 +254,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD Cabal-3.6.0.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
-%ghc_lib_subpackage -d -l BSD binary-0.8.8.0
+%ghc_lib_subpackage -d -l BSD binary-0.8.9.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.11.1.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.5.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.6.0
@@ -721,6 +721,7 @@ make test
 * Sun Aug  8 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210806-100
 - RC1 (yet unannounced)
 - https://downloads.haskell.org/~ghc/9.2.1-rc1/docs/html/users_guide/9.2.1-notes.html
+- aarch64 NCG
 
 * Mon Apr 26 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210422-99
 - 9.2.1-alpha2
