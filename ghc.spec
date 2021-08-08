@@ -50,12 +50,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 9.2.0.20210422
+Version: 9.2.0.20210806
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 99%{?dist}
+Release: 100%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -251,37 +251,37 @@ This package provides the User Guide and Haddock manual.
 
 # use "./libraries-versions.sh" to check versions
 %if %{defined ghclibdir}
-%ghc_lib_subpackage -d -l BSD Cabal-3.5.0.0
+%ghc_lib_subpackage -d -l BSD Cabal-3.6.0.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport array-0.5.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.11.1.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.4.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.5.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.6.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.2
 %ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.4
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.1
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD ghc-bignum-1.0
+%ghc_lib_subpackage -d -l BSD ghc-bignum-1.2
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
 %ghc_lib_subpackage -d -x -l BSD ghc-compact-%{ghc_compact_ver}
 %ghc_lib_subpackage -d -x -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
 %ghc_lib_subpackage -d -x -l BSD ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.8.1.0
+%ghc_lib_subpackage -d -l BSD haskeline-0.8.2
 %ghc_lib_subpackage -d -x -l BSD hpc-%{hpc_ver}
 # see below for integer-gmp
 %ghc_lib_subpackage -d -x -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.11.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.13.2
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.18.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
-%ghc_lib_subpackage -d -l BSD text-1.2.4.2
+%ghc_lib_subpackage -d -l BSD text-1.2.5.0
 %ghc_lib_subpackage -d -l BSD time-1.11.1.1
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
@@ -333,11 +333,11 @@ rm -r libffi-tarballs
 
 %ifarch armv7hl
 %patch12 -p1 -b .orig
-# maybe needed for 9.2
 %patch13 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_unregisterized_arches}
+# remove s390x after switching to llvm
+%ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
 %endif
 
@@ -655,7 +655,6 @@ make test
 %dir %{ghclibdir}/package.conf.d
 %ghost %{ghclibdir}/package.conf.d/package.cache
 %{ghclibdir}/package.conf.d/package.cache.lock
-%{ghclibdir}/platformConstants
 %{ghclibdir}/settings
 %{ghclibdir}/template-hsc.h
 %dir %{_docdir}/ghc
@@ -719,6 +718,10 @@ make test
 
 
 %changelog
+* Sun Aug  8 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210806-100
+- RC1 (yet unannounced)
+- https://downloads.haskell.org/~ghc/9.2.1-rc1/docs/html/users_guide/9.2.1-notes.html
+
 * Mon Apr 26 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210422-99
 - 9.2.1-alpha2
 - https://downloads.haskell.org/ghc/9.2.1-alpha2/docs/html/users_guide/9.2.1-notes.html
