@@ -73,13 +73,17 @@ Patch2:  ghc-Cabal-install-PATH-warning.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
 
-# Arch dependent patches
+# armv7hl patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
 Patch13: ghc-9.0.0.20201227-armv7hl-aclocal-19173.patch
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+
+# ppc64le
+# https://gitlab.haskell.org/ghc/ghc/-/issues/20210
+Patch16: https://gitlab.haskell.org/ghc/ghc/-/commit/e25772a0a95fc9b606044e1afae31ff84790838a.patch
 
 # bigendian (s390x and ppc64)
 # https://gitlab.haskell.org/ghc/ghc/issues/15411
@@ -332,13 +336,17 @@ rm -r libffi-tarballs
 %endif
 
 %ifarch armv7hl
-%patch12 -p1 -b .orig
-%patch13 -p1 -b .orig
+#%%patch12 -p1 -b .orig
+#%%patch13 -p1 -b .orig
 %endif
 
 # remove s390x after switching to llvm
 %ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
+%endif
+
+%ifarch ppc64le
+%patch16 -p1 -b .orig
 %endif
 
 # bigendian
