@@ -45,12 +45,13 @@
 %else
 %global llvm_major 10
 %endif
+# s390x llvm backend needs hadrian
 %global ghc_llvm_archs armv7hl
 
 %global ghc_unregisterized_arches s390 s390x %{mips}
 
 Name: ghc
-Version: 9.2.0.20210806
+Version: 9.2.0.20210821
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
@@ -60,9 +61,9 @@ Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
 URL: https://haskell.org/ghc/
-Source0: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-src.tar.xz
+Source0: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-src.tar.lz
 %if %{with testsuite}
-Source1: https://downloads.haskell.org/~ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
+Source1: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.lz
 %endif
 Source5: ghc-pkg.man
 Source6: haddock.man
@@ -119,6 +120,7 @@ BuildRequires: ghc-transformers-devel
 BuildRequires: alex
 BuildRequires: gmp-devel
 BuildRequires: libffi-devel
+BuildRequires: lzip
 BuildRequires: make
 # for terminfo
 BuildRequires: ncurses-devel
@@ -673,10 +675,11 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
-* Sun Aug  8 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210806-100
-- RC1 (yet unannounced)
-- https://downloads.haskell.org/~ghc/9.2.1-rc1/docs/html/users_guide/9.2.1-notes.html
+* Tue Aug 24 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210821-100
+- 9.2.1 RC1
+- https://downloads.haskell.org/ghc/9.2.1-rc1/docs/html/users_guide/9.2.1-notes.html
 - aarch64 NCG
+- switch from xz to lz tarballs
 
 * Mon Apr 26 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210422-99
 - 9.2.1-alpha2
