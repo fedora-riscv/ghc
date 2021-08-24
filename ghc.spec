@@ -75,7 +75,7 @@ Patch3: ghc-gen_contents_index-nodocs.patch
 Patch6: ghc-8.6.3-sphinx-1.8.patch
 
 # armv7hl patches
-Patch12: ghc-armv7-VFPv3D16--NEON.patch
+#Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
@@ -136,9 +136,9 @@ BuildRequires: llvm%{llvm_major}
 BuildRequires: llvm >= 10
 %endif
 %endif
-%ifarch armv7hl %{ghc_llvm_archs}
-# patch12 and patch13
-BuildRequires: autoconf, automake
+%ifarch armv7hl
+# patch12
+#BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
@@ -386,9 +386,9 @@ BUILD_SPHINX_PDF = NO
 EOF
 
 %build
-# for patch12 and patch13
+# for patch12
 %ifarch armv7hl
-autoreconf
+#autoreconf
 %endif
 
 %ghc_set_gcc_flags
