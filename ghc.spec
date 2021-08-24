@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.14.2.0
+%global base_ver 4.14.3.0
 
 # build profiling libraries
 # build haddock
@@ -40,19 +40,19 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.10.5 needs llvm-10
+# 8.10 can use llvm 9-12
 %global llvm_major 10
-# temporarily skip: s390x
 %global ghc_llvm_archs armv7hl aarch64
-%global ghc_unregisterized_arches s390 %{mips} s390x
+
+%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
 Name: ghc
-Version: 8.10.5
+Version: 8.10.6
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 100%{?dist}
+Release: 101%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -70,11 +70,6 @@ Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
-# https://gitlab.haskell.org/ghc/ghc/-/issues/19763
-# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5915
-Patch7:  https://gitlab.haskell.org/ghc/ghc/-/commit/296f25fa5f0fce033b529547e0658076e26f4cda.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=1977317
-Patch8: ghc-userguide-sphinx4.patch
 
 # Arch dependent patches
 # arm
@@ -118,6 +113,7 @@ BuildRequires: ghc-process-devel
 BuildRequires: ghc-transformers-devel
 BuildRequires: alex
 BuildRequires: gmp-devel
+BuildRequires: hscolour
 BuildRequires: libffi-devel
 BuildRequires: make
 # for terminfo
@@ -141,8 +137,8 @@ BuildRequires: llvm >= %{llvm_major}
 BuildRequires: autoconf, automake
 %endif
 Requires: ghc-compiler = %{version}-%{release}
-Requires: ghc-ghc-devel = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
+Requires: ghc-ghc-devel = %{version}-%{release}
 %if %{with haddock}
 Suggests: ghc-doc = %{version}-%{release}
 Suggests: ghc-doc-index = %{version}-%{release}
@@ -249,7 +245,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.12.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.4.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.5.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.4
@@ -262,14 +258,14 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.8.0.1
+%ghc_lib_subpackage -d -l BSD haskeline-0.8.2
 %ghc_lib_subpackage -d -l BSD hpc-0.6.1.0
 # see below for integer-gmp
 %ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.9.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.13.2
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.1
 %ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
@@ -317,8 +313,6 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
-%patch7 -p1 -b .orig
-%patch8 -p1 -b .orig
 
 rm -r libffi-tarballs
 
@@ -672,6 +666,10 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Tue Aug 24 2021 Jens Petersen <petersen@redhat.com> - 8.10.6-101
+- update to 8.10.6 bugfix release
+- https://downloads.haskell.org/~ghc/8.10.6/docs/html/users_guide/8.10.6-notes.html
+
 * Tue Jul 13 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-100
 - sync with rawhide branch:
 - sphinx4 patch
