@@ -75,7 +75,6 @@ Patch6: ghc-8.6.3-sphinx-1.8.patch
 
 # armv7hl patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch
-Patch13: ghc-9.0.0.20201227-armv7hl-aclocal-19173.patch
 
 # for unregisterized (s390x)
 # https://ghc.haskell.org/trac/ghc/ticket/15689
@@ -337,7 +336,6 @@ rm -r libffi-tarballs
 
 %ifarch armv7hl
 #%%patch12 -p1 -b .orig
-#%%patch13 -p1 -b .orig
 %endif
 
 # remove s390x after switching to llvm
