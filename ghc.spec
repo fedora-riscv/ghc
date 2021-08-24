@@ -496,6 +496,11 @@ install -p -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/ghc-pkg.1
 install -p -m 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/haddock.1
 install -p -m 0644 %{SOURCE7} %{buildroot}%{_mandir}/man1/runghc.1
 
+%ifarch armv7hl
+export RPM_BUILD_NCPUS=1
+%endif
+
+
 %check
 export LANG=en_US.utf8
 # stolen from ghc6/debian/rules:
