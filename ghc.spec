@@ -23,10 +23,10 @@
 %else
 %bcond_without ghc_prof
 # https://gitlab.haskell.org/ghc/ghc/-/issues/19754
-%ifnarch armv7hl
-%bcond_without haddock
-%else
+%ifarch armv7hl
 %undefine with_haddock
+%else
+%bcond_without haddock
 %endif
 %bcond_without perf_build
 %endif
