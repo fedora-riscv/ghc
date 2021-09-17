@@ -14,20 +14,12 @@
 # build haddock
 # perf production build (disable for quick build)
 %if %{with quickbuild}
-# f30
-%bcond_with prof
-# f31
 %undefine with_ghc_prof
-# all
 %undefine with_haddock
 %bcond_with perf_build
 %undefine _enable_debug_packages
 %else
-# f30
-%bcond_without prof
-# f31
 %bcond_without ghc_prof
-# all
 %bcond_without haddock
 %bcond_without perf_build
 %endif
