@@ -33,7 +33,7 @@
 %bcond_with testsuite
 
 # 8.10 can use llvm 9-12
-%global llvm_major 10
+%global llvm_major 11
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips} riscv64
@@ -118,11 +118,7 @@ BuildRequires: python3
 BuildRequires: python3-sphinx
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} >= 33
 BuildRequires: llvm%{llvm_major}
-%else
-BuildRequires: llvm >= %{llvm_major}
-%endif
 %endif
 %ifarch armv7hl
 # patch12
@@ -177,11 +173,7 @@ Requires: ghc-filesystem
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
-%if 0%{?fedora} >= 33
 Requires: llvm%{llvm_major}
-%else
-Requires: llvm >= %{llvm_major}
-%endif
 %endif
 
 %description compiler
