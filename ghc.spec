@@ -154,7 +154,6 @@ Suggests: ghc-manual = %{version}-%{release}
 %if %{with ghc_prof}
 Suggests: ghc-prof = %{version}-%{release}
 %endif
-Recommends: zlib-devel
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -664,6 +663,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Fri Sep 17 2021 Jens Petersen <petersen@redhat.com>
+- move zlib-devel Recommends to cabal-install
+
 * Thu Jul 22 2021 Jens Petersen <petersen@redhat.com> - 8.10.5-115
 - update to 8.10.5 with patch for missing rts symbols
 - use llvm 11 for ARM
