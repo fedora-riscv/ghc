@@ -39,12 +39,12 @@
 %global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
 Name: ghc
-Version: 8.10.6
+Version: 8.10.7
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 101%{?dist}
+Release: 102%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -650,6 +650,11 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Fri Sep 17 2021 Jens Petersen <petersen@redhat.com> - 8.10.7-102
+- update to 8.10.7 bugfix release
+- https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/8.10.7-notes.html
+- for ARM bump llvm to 11
+
 * Tue Aug 24 2021 Jens Petersen <petersen@redhat.com> - 8.10.6-101
 - update to 8.10.6 bugfix release
 - https://downloads.haskell.org/~ghc/8.10.6/docs/html/users_guide/8.10.6-notes.html
