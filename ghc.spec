@@ -5,6 +5,9 @@
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
+# use the Hadrian buildsystem
+%bcond_with hadrian
+
 # to handle RCs
 %global ghc_release %{version}
 
@@ -45,18 +48,21 @@
 %else
 %global llvm_major 10
 %endif
-# s390x llvm backend needs hadrian
+%if %{with hadrian}
+%global ghc_llvm_archs armv7hl s390x
+%global ghc_unregisterized_arches s390 %{mips} riscv64
+%else
 %global ghc_llvm_archs armv7hl
-
-%global ghc_unregisterized_arches s390 s390x %{mips}
+%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
+%endif
 
 Name: ghc
-Version: 9.2.0.20210821
+Version: 9.2.1
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 100%{?dist}
+Release: 101%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -74,13 +80,17 @@ Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
+Patch7: hadrian-gcc-args-20578.patch
+# https://gitlab.haskell.org/ghc/ghc/-/issues/20577 (RTS environ)
+Patch8: https://gitlab.haskell.org/ghc/ghc/-/commit/12f5f036f6d219f764ee099886d25c6afd6c9a24.patch
 
 # armv7hl patches
 #Patch12: ghc-armv7-VFPv3D16--NEON.patch
 
-# for unregisterized (s390x)
+# for unregisterized
 # https://ghc.haskell.org/trac/ghc/ticket/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
+Patch16: ghc-9.2.1-hadrian-s390x-rts--qg.patch
 
 # bigendian (s390x and ppc64)
 # https://gitlab.haskell.org/ghc/ghc/issues/15411
@@ -118,6 +128,7 @@ BuildRequires: gmp-devel
 BuildRequires: libffi-devel
 BuildRequires: lzip
 BuildRequires: make
+BuildRequires: gcc-c++
 # for terminfo
 BuildRequires: ncurses-devel
 BuildRequires: perl-interpreter
@@ -131,12 +142,29 @@ BuildRequires: python3-sphinx
 %if 0%{?fedora} >= 34
 BuildRequires: llvm%{llvm_major}
 %else
-BuildRequires: llvm >= 10
+BuildRequires: llvm >= %{llvm_major}
 %endif
 %endif
 %ifarch armv7hl
 # patch12
 #BuildRequires: autoconf, automake
+%endif
+%if %{with hadrian}
+BuildRequires:  ghc-Cabal-static
+BuildRequires:  ghc-QuickCheck-static
+BuildRequires:  ghc-base-static
+BuildRequires:  ghc-bytestring-static
+BuildRequires:  ghc-containers-static
+BuildRequires:  ghc-directory-static
+BuildRequires:  ghc-extra-static
+BuildRequires:  ghc-filepath-static
+BuildRequires:  ghc-mtl-static
+BuildRequires:  ghc-parsec-static
+BuildRequires:  ghc-shake-static
+BuildRequires:  ghc-transformers-static
+BuildRequires:  ghc-unordered-containers-static
+BuildRequires:  alex
+BuildRequires:  happy
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
@@ -193,7 +221,11 @@ Requires: ghc-filesystem
 Obsoletes: ghc-doc-index < %{version}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
+%if 0%{?fedora} >= 34
 Requires: llvm%{llvm_major}
+%else
+Requires: llvm >= %{llvm_major}
+%endif
 %endif
 
 %description compiler
@@ -273,7 +305,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.13.2
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.0
 %ghc_lib_subpackage -d -l BSD template-haskell-2.18.0.0
-%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
+%ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.5
 %ghc_lib_subpackage -d -l BSD text-1.2.5.0
 %ghc_lib_subpackage -d -l BSD time-1.11.1.1
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
@@ -318,16 +350,21 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
+%patch7 -p1 -b .orig
+%patch8 -p1 -b .orig
 
+%if %{without hadrian}
 rm -r libffi-tarballs
+%endif
 
 %ifarch armv7hl
 #%%patch12 -p1 -b .orig
 %endif
 
-# remove s390x after switching to llvm
+# remove s390x after complete switching to llvm
 %ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
+%patch16 -p1 -b .orig
 %endif
 
 # bigendian
@@ -386,7 +423,6 @@ EOF
 %endif
 
 %ghc_set_gcc_flags
-# for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
 # * %%configure induces cross-build due to different target/host/build platform names
@@ -396,7 +432,9 @@ export CC=%{_bindir}/gcc
   --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/ghc \
+%if %{without hadrian}
   --with-system-libffi \
+%endif
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
@@ -404,11 +442,29 @@ export CC=%{_bindir}/gcc
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
 export LANG=C.utf8
+%if %{with hadrian}
+(
+cd hadrian
+runghc /usr/share/ghc-rpm-macros/Setup.hs configure
+runghc /usr/share/ghc-rpm-macros/Setup.hs build
+)
+%global hadrian hadrian/dist/build/hadrian/hadrian
+%ifarch %{ghc_llvm_archs}
+hadrian_llvm="+llvm"
+%endif
+%{hadrian} %{?_smp_mflags}\
+  --flavour=%{?with_quickbuild:quick}%{!?with_quickbuild:perf}${hadrian_llvm}
+%else
 make %{?_smp_mflags}
+%endif
 
 
 %install
+%if %{with hadrian}
+%hadrian install --prefix=%{buildroot}
+%else
 make DESTDIR=%{buildroot} install
+%endif
 
 %if %{defined _ghcdynlibdir}
 mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_ghcdynlibdir}/
@@ -667,6 +723,10 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Fri Oct 29 2021 Jens Petersen <petersen@redhat.com> - 9.2.1-101
+- 9.2.1 release
+- https://downloads.haskell.org/ghc/9.2.1/docs/html/users_guide/9.2.1-notes.html
+
 * Tue Aug 24 2021 Jens Petersen <petersen@redhat.com> - 9.2.0.20210821-100
 - 9.2.1 RC1
 - https://downloads.haskell.org/ghc/9.2.1-rc1/docs/html/users_guide/9.2.1-notes.html

@@ -1,0 +1,30 @@
+diff --git a/hadrian/src/Settings/Builders/Common.hs b/hadrian/src/Settings/Builders/Common.hs
+index 89735c7f399..47e3a7db997 100644
+--- a/hadrian/src/Settings/Builders/Common.hs
++++ b/hadrian/src/Settings/Builders/Common.hs
+@@ -38,8 +38,8 @@ cIncludeArgs = do
+             , arg $ "-I" ++ libPath
+             , arg $ "-I" ++ path
+             , pure . map ("-I"++) . filter (/= "") $ [iconvIncludeDir, gmpIncludeDir, numaIncludeDir, cursesIncludeDir]
+-            , flag UseSystemFfi ? arg ("-I" ++ ffiIncludeDir)
+-            , flag WithLibdw ? if not (null libdwIncludeDir) then arg ("-I" ++ libdwIncludeDir) else mempty
++            , flag UseSystemFfi ? not (null ffiIncludeDir) ? arg ("-I" ++ ffiIncludeDir)
++            , flag WithLibdw ? not (null libdwIncludeDir) ? arg ("-I" ++ libdwIncludeDir)
+             -- Add @incDirs@ in the build directory, since some files generated
+             -- with @autoconf@ may end up in the build directory.
+             , pure [ "-I" ++ path        -/- dir | dir <- incDirs ]
+diff --git a/hadrian/src/Settings/Packages.hs b/hadrian/src/Settings/Packages.hs
+index 7dcc4604747..e5a3569d36d 100644
+--- a/hadrian/src/Settings/Packages.hs
++++ b/hadrian/src/Settings/Packages.hs
+@@ -277,8 +277,8 @@ rtsPackageArgs = package rts ? do
+ 
+     let cArgs = mconcat
+           [ rtsWarnings
+-          , flag UseSystemFfi ? arg ("-I" ++ ffiIncludeDir)
+-          , flag WithLibdw ? arg ("-I" ++ libdwIncludeDir)
++          , flag UseSystemFfi ? not (null ffiIncludeDir) ? arg ("-I" ++ ffiIncludeDir)
++          , flag WithLibdw ? not (null libdwIncludeDir) ? arg ("-I" ++ libdwIncludeDir)
+           , arg "-fomit-frame-pointer"
+           -- RTS *must* be compiled with optimisations. The INLINE_HEADER macro
+           -- requires that functions are inlined to work as expected. Inlining

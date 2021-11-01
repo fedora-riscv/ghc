@@ -1,0 +1,9 @@
+--- ghc-9.2.1/hadrian/hadrian.cabal~	2021-10-29 04:41:34.000000000 +0800
++++ ghc-9.2.1/hadrian/hadrian.cabal	2021-11-01 15:02:49.625656704 +0800
+@@ -162,5 +162,5 @@
+                        --        waiting for external processes
+                        -- * -qg: Don't use parallel GC as the synchronization
+                        --        time tends to eat any benefit.
+-                       "-with-rtsopts=-I0 -qg"
++                       "-with-rtsopts=-I0"
+                        -threaded
