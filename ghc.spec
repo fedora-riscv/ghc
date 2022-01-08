@@ -50,7 +50,7 @@ Version: 8.10.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 115%{?dist}
+Release: 116%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -663,6 +663,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Sat Jan 08 2022 Miro Hrončok <mhroncok@redhat.com> - 8.10.5-116
+- Rebuilt for https://fedoraproject.org/wiki/Changes/LIBFFI34
+
 * Fri Sep 17 2021 Jens Petersen <petersen@redhat.com>
 - move zlib-devel Recommends to cabal-install
 
