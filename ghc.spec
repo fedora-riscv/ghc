@@ -8,7 +8,7 @@
 # to handle RCs
 %global ghc_release %{version}
 
-%global base_ver 4.14.2.0
+%global base_ver 4.14.3.0
 
 # build profiling libraries
 # build haddock
@@ -24,12 +24,6 @@
 %bcond_without perf_build
 %endif
 
-# to enable dwarf info (only on intel archs): overrides perf
-# default is off: bcond_with
-%ifarch x86_64 i686
-%bcond_with dwarf
-%endif
-
 # locked together since disabling haddock causes no manuals built
 # and disabling haddock still created index.html
 # https://ghc.haskell.org/trac/ghc/ticket/15190
@@ -38,19 +32,19 @@
 # no longer build testsuite (takes time and not really being used)
 %bcond_with testsuite
 
-# 8.10.5 can use llvm 9-12
+# 8.10 can use llvm 9-12
 %global llvm_major 11
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
 Name: ghc
-Version: 8.10.5
+Version: 8.10.7
 # Since library subpackages are versioned:
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 115%{?dist}
+Release: 116%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -59,7 +53,6 @@ Source0: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-src.tar
 %if %{with testsuite}
 Source1: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-testsuite.tar.xz
 %endif
-Source2: https://downloads.haskell.org/ghc/%{ghc_release}/ghc-%{version}-src.tar.xz.sig
 Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
@@ -69,11 +62,6 @@ Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 Patch6: ghc-8.6.3-sphinx-1.8.patch
-# https://gitlab.haskell.org/ghc/ghc/-/issues/19763
-# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5915
-Patch7:  https://gitlab.haskell.org/ghc/ghc/-/commit/296f25fa5f0fce033b529547e0658076e26f4cda.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=1977317
-Patch8: ghc-userguide-sphinx4.patch
 
 # Arch dependent patches
 # arm
@@ -99,7 +87,8 @@ Patch26: no-missing-haddock-file-warning.patch
 # fedora ghc has been bootstrapped on
 # %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
 # and retired arches: alpha sparcv9 armv5tel
-# see also deprecated ghc_arches defined in /etc/rpm/macros.ghc-srpm by redhat-rpm-macros
+# see also deprecated ghc_arches defined in ghc-srpm-macros
+# /usr/lib/rpm/macros.d/macros.ghc-srpm
 
 BuildRequires: ghc-compiler > 8.6
 # for ABI hash checking
@@ -113,6 +102,8 @@ BuildRequires: ghc-containers-devel
 BuildRequires: ghc-directory-devel
 BuildRequires: ghc-pretty-devel
 BuildRequires: ghc-process-devel
+BuildRequires: ghc-stm-devel
+BuildRequires: ghc-template-haskell-devel
 BuildRequires: ghc-transformers-devel
 BuildRequires: alex
 BuildRequires: gmp-devel
@@ -131,15 +122,9 @@ BuildRequires: python3-sphinx
 %ifarch %{ghc_llvm_archs}
 BuildRequires: llvm%{llvm_major}
 %endif
-%if %{with dwarf}
-BuildRequires: elfutils-devel
-%endif
 %ifarch armv7hl
 # patch12
 BuildRequires: autoconf, automake
-%endif
-%if %{without quickbuild}
-#BuildRequires: gnupg2
 %endif
 Requires: ghc-compiler = %{version}-%{release}
 Requires: ghc-devel = %{version}-%{release}
@@ -245,7 +230,7 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l %BSDHaskellReport -c gmp-devel%{?_isa},libffi-devel%{?_isa} base-%{base_ver}
 %ghc_lib_subpackage -d -l BSD binary-0.8.8.0
 %ghc_lib_subpackage -d -l BSD bytestring-0.10.12.0
-%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.4.1
+%ghc_lib_subpackage -d -l %BSDHaskellReport containers-0.6.5.1
 %ghc_lib_subpackage -d -l %BSDHaskellReport deepseq-1.4.4.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport directory-1.3.6.0
 %ghc_lib_subpackage -d -l %BSDHaskellReport exceptions-0.10.4
@@ -258,14 +243,14 @@ This package provides the User Guide and Haddock manual.
 %ghc_lib_subpackage -d -l BSD ghc-heap-%{ghc_version_override}
 # see below for ghc-prim
 %ghc_lib_subpackage -d -l BSD -x ghci-%{ghc_version_override}
-%ghc_lib_subpackage -d -l BSD haskeline-0.8.0.1
+%ghc_lib_subpackage -d -l BSD haskeline-0.8.2
 %ghc_lib_subpackage -d -l BSD hpc-0.6.1.0
 # see below for integer-gmp
 %ghc_lib_subpackage -d -l %BSDHaskellReport libiserv-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD mtl-2.2.2
 %ghc_lib_subpackage -d -l BSD parsec-3.1.14.0
 %ghc_lib_subpackage -d -l BSD pretty-1.1.3.6
-%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.9.0
+%ghc_lib_subpackage -d -l %BSDHaskellReport process-1.6.13.2
 %ghc_lib_subpackage -d -l BSD stm-2.5.0.1
 %ghc_lib_subpackage -d -l BSD template-haskell-2.16.0.0
 %ghc_lib_subpackage -d -l BSD -c ncurses-devel%{?_isa} terminfo-0.4.1.4
@@ -306,9 +291,6 @@ packages to be automatically installed too.
 
 
 %prep
-%if %{without quickbuild}
-#%%{gpgverify} --keyring='%{SOURCE3}' --signature='%{SOURCE2}' --data='%{SOURCE0}'
-%endif
 %setup -q -n %{name}-%{version} %{?with_testsuite:-b1}
 
 %patch1 -p1 -b .orig
@@ -316,13 +298,11 @@ packages to be automatically installed too.
 
 %patch2 -p1 -b .orig
 %patch6 -p1 -b .orig
-%patch7 -p1 -b .orig
-%patch8 -p1 -b .orig
 
 rm -r libffi-tarballs
 
 %ifarch armv7hl
-%patch12 -p1 -b .orig
+%patch12 -p1 -b .orig12
 %endif
 
 # remove s390x after switching to llvm
@@ -339,8 +319,8 @@ rm -r libffi-tarballs
 %patch24 -p1 -b .orig
 %patch26 -p1 -b .orig
 
-%global gen_contents_index gen_contents_index.orig
 %if %{with haddock}
+%global gen_contents_index gen_contents_index.orig
 if [ ! -f "libraries/%{gen_contents_index}" ]; then
   echo "Missing libraries/%{gen_contents_index}, needed at end of %%install!"
   exit 1
@@ -353,11 +333,7 @@ cat > mk/build.mk << EOF
 %ifarch %{ghc_llvm_archs}
 BuildFlavour = perf-llvm
 %else
-%if %{with dwarf}
-BuildFlavour = dwarf
-%else
 BuildFlavour = perf
-%endif
 %endif
 %else
 %ifarch %{ghc_llvm_archs}
@@ -390,7 +366,6 @@ autoreconf
 %endif
 
 %ghc_set_gcc_flags
-# for ghc >= 8.2
 export CC=%{_bindir}/gcc
 
 # * %%configure induces cross-build due to different target/host/build platform names
@@ -404,7 +379,6 @@ export CC=%{_bindir}/gcc
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
-  %{?with_dwarf:--enable-dwarf-unwind} \
 %{nil}
 
 # avoid "ghc: hGetContents: invalid argument (invalid byte sequence)"
@@ -447,8 +421,8 @@ done
 echo "%%dir %{ghclibdir}" >> ghc-base%{?_ghcdynlibdir:-devel}.files
 echo "%{ghclibdir}/include" >> ghc-base-devel.files
 
-%ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc %{ghc_version_override}
+%ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghci %{ghc_version_override}
 %ghc_gen_filelists ghc-prim 0.6.1
 %ghc_gen_filelists integer-gmp 1.0.3.0
@@ -461,8 +435,8 @@ for i in devel doc prof; do\
   cat ghc-%1-$i.files >> ghc-%2-$i.files\
 done
 
-%merge_filelist integer-gmp base
 %merge_filelist ghc-prim base
+%merge_filelist integer-gmp base
 
 # add rts libs
 rm -f rts.files
@@ -493,7 +467,7 @@ export RPM_BUILD_NCPUS=1
 
 
 %check
-export LANG=en_US.utf8
+export LANG=C.utf8
 # stolen from ghc6/debian/rules:
 GHC=inplace/bin/ghc-stage2
 # Do some very simple tests that the compiler actually works
@@ -502,8 +476,6 @@ mkdir testghc
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo
 [ "$(testghc/foo)" = "Foo" ]
-# doesn't seem to work inplace:
-#[ "$(inplace/bin/runghc testghc/foo.hs)" = "Foo" ]
 rm testghc/*
 echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -O2
@@ -513,6 +485,8 @@ echo 'main = putStrLn "Foo"' > testghc/foo.hs
 $GHC testghc/foo.hs -o testghc/foo -dynamic
 [ "$(testghc/foo)" = "Foo" ]
 rm testghc/*
+
+$GHC --info
 
 # check the ABI hashes
 %if %{with abicheck}
@@ -663,6 +637,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Tue Mar 29 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-116
+- https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/8.10.7-notes.html
+
 * Fri Sep 17 2021 Jens Petersen <petersen@redhat.com>
 - move zlib-devel Recommends to cabal-install
 
