@@ -50,7 +50,7 @@ Version: 8.10.7
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 118%{?dist}
+Release: 119%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -669,6 +669,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 8.10.7-119
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
 * Tue Jun 14 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-118
 - https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/8.10.7-notes.html
 - add filesystem subpackage
