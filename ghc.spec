@@ -190,6 +190,7 @@ Obsoletes: %{name}-filesystem < %{version}-%{release}
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
 %endif
+Conflicts: ghc8.10 = %{version}
 
 %description compiler
 The package contains the GHC compiler, tools and utilities.
@@ -671,6 +672,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 %changelog
 * Sat Aug  6 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-120
+- conflicts with ghc8.10-compiler-8.10.7
 - add ghc-filesystem obsoletes to help dnf
 
 * Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 8.10.7-119
