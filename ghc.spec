@@ -5,6 +5,8 @@
 # make sure ghc libraries' ABI hashes unchanged
 %bcond_without abicheck
 
+%global ghc_major 8.10
+
 # to handle RCs
 %global ghc_release %{version}
 
@@ -50,7 +52,7 @@ Version: 8.10.7
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 120%{?dist}
+Release: 121%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -190,7 +192,7 @@ Obsoletes: %{name}-filesystem < %{version}-%{release}
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
 %endif
-Conflicts: ghc8.10 = %{version}
+Conflicts: ghc%{ghc_major}-compiler = %{version}
 
 %description compiler
 The package contains the GHC compiler, tools and utilities.
@@ -671,8 +673,11 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Sat Aug  6 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-121
+- ghc-compiler conflicts with ghc8.10-compiler-8.10.7
+
 * Sat Aug  6 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-120
-- conflicts with ghc8.10-compiler-8.10.7
+- conflicts with ghc8.10-8.10.7
 - add ghc-filesystem obsoletes to help dnf
 
 * Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 8.10.7-119
