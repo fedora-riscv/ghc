@@ -50,7 +50,7 @@ Version: 8.10.7
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 119%{?dist}
+Release: 120%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -223,6 +223,7 @@ The package enables re-indexing of installed library documention.
 %package filesystem
 Summary: Shared directories for Haskell documentation
 BuildArch: noarch
+Obsoletes: %{name}-filesystem < %{version}-%{release}
 
 %description filesystem
 This package provides some common directories used for
@@ -669,6 +670,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Sat Aug  6 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-120
+- add ghc-filesystem obsoletes to help dnf
+
 * Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 8.10.7-119
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
