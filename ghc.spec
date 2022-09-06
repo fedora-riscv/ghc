@@ -41,7 +41,7 @@
 %bcond_with testsuite
 
 # 8.10 can use llvm 9-12
-%global llvm_major 11
+%global llvm_major 12
 %global ghc_llvm_archs armv7hl aarch64
 
 %global ghc_unregisterized_arches s390 s390x %{mips} riscv64
@@ -52,7 +52,7 @@ Version: 8.10.7
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 121%{?dist}
+Release: 122%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -673,6 +673,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Wed Sep 28 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-122
+- use llvm 12 (for ARM)
+
 * Sat Aug  6 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-121
 - ghc-compiler conflicts with ghc8.10-compiler-8.10.7
 
