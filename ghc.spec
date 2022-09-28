@@ -46,6 +46,11 @@
 
 %global ghc_unregisterized_arches s390 s390x %{mips} riscv64
 
+%global obsoletes_ghcXY() \
+Obsoletes: ghc%{ghc_major}%{?1:-%1} < %{version}-%{release}\
+Provides: ghc%{ghc_major}%{?1:-%1} = %{version}-%{release}\
+%{nil}
+
 Name: ghc
 Version: 8.10.7
 # Since library subpackages are versioned:
@@ -154,6 +159,7 @@ Suggests: %{name}-manual = %{version}-%{release}
 %if %{with ghc_prof}
 Suggests: %{name}-prof = %{version}-%{release}
 %endif
+%obsoletes_ghcXY
 
 %description
 GHC is a state-of-the-art, open source, compiler and interactive environment
@@ -192,7 +198,7 @@ Obsoletes: %{name}-filesystem < %{version}-%{release}
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
 %endif
-Conflicts: ghc%{ghc_major}-compiler = %{version}
+%obsoletes_ghcXY compiler
 
 %description compiler
 The package contains the GHC compiler, tools and utilities.
@@ -206,6 +212,7 @@ install the main ghc package.
 %package doc
 Summary: Haskell library documentation meta package
 License: BSD
+%obsoletes_ghcXY doc
 
 %description doc
 Installing this package causes %{name}-*-doc packages corresponding to
@@ -218,6 +225,7 @@ License: BSD
 Obsoletes: ghc-doc-cron < %{version}-%{release}
 Requires: %{name}-compiler = %{version}-%{release}
 BuildArch: noarch
+%obsoletes_ghcXY doc-index
 
 %description doc-index
 The package enables re-indexing of installed library documention.
@@ -227,6 +235,7 @@ The package enables re-indexing of installed library documention.
 Summary: Shared directories for Haskell documentation
 BuildArch: noarch
 Obsoletes: %{name}-filesystem < %{version}-%{release}
+%obsoletes_ghcXY filesystem
 
 %description filesystem
 This package provides some common directories used for
@@ -240,6 +249,7 @@ Summary: GHC manual
 License: BSD
 BuildArch: noarch
 Requires: %{name}-filesystem = %{version}-%{release}
+%obsoletes_ghcXY manual
 
 %description manual
 This package provides the User Guide and Haddock manual.
@@ -300,6 +310,7 @@ Requires: %{name}-compiler = %{version}-%{release}
 Obsoletes: ghc-libraries < %{version}-%{release}
 Provides: ghc-libraries = %{version}-%{release}
 %{?ghc_packages_list:Requires: %(echo %{ghc_packages_list} | sed -e "s/\([^ ]*\)-\([^ ]*\)/%{name}-\1-devel = \2-%{release},/g")}
+%obsoletes_ghcXY devel
 
 %description devel
 This is a meta-package for all the development library packages in GHC
@@ -311,6 +322,7 @@ except the ghc library, which is installed by the toplevel ghc metapackage.
 Summary: GHC profiling libraries meta package
 License: BSD
 Requires: %{name}-compiler = %{version}-%{release}
+%obsoletes_ghcXY prof
 
 %description prof
 Installing this package causes %{name}-*-prof packages corresponding to
@@ -674,6 +686,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 %changelog
 * Wed Sep 28 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-122
+- obsoletes ghc8.10
 - use llvm 12 (for ARM)
 
 * Sat Aug  6 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-121
