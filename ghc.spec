@@ -89,9 +89,10 @@ Patch15: ghc-warnings.mk-CC-Wall.patch
 # https://gitlab.haskell.org/ghc/ghc/issues/15411
 # https://gitlab.haskell.org/ghc/ghc/issues/16505
 # https://bugzilla.redhat.com/show_bug.cgi?id=1651448
-# https://ghc.haskell.org/trac/ghc/ticket/15914
+# https://gitlab.haskell.org/ghc/ghc/-/issues/15914
 # https://gitlab.haskell.org/ghc/ghc/issues/16973
 # https://bugzilla.redhat.com/show_bug.cgi?id=1733030
+# https://gitlab.haskell.org/ghc/ghc/-/issues/16998
 Patch18: Disable-unboxed-arrays.patch
 
 # Debian patches:
@@ -370,7 +371,7 @@ if [ ! -f "libraries/%{gen_contents_index}" ]; then
 fi
 %endif
 
-# http://ghc.haskell.org/trac/ghc/wiki/Platforms
+# https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 cat > mk/build.mk << EOF
 %if %{with perf_build}
 %ifarch %{ghc_llvm_archs}
@@ -685,7 +686,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
-* Wed Sep 28 2022 Jens Petersen <petersen@redhat.com> - 8.10.7-122
+* Fri Jan  6 2023 Jens Petersen <petersen@redhat.com> - 8.10.7-122
 - obsoletes ghc8.10
 - use llvm 12 (for ARM)
 
