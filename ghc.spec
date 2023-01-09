@@ -26,6 +26,7 @@
 %global base_ver 4.16.4.0
 %global ghc_compact_ver 0.1.0.0
 %global hpc_ver 0.6.1.0
+%global rts_ver 1.0.2
 
 %undefine with_ghc_prof
 %undefine with_haddock
@@ -618,7 +619,7 @@ echo "%%dir %{ghclibdir}" >> %{name}-base%{?_ghcdynlibdir:-devel}.files
 %ghc_gen_filelists ghc-prim 0.8.0
 %ghc_gen_filelists integer-gmp 1.1
 %if %{with hadrian}
-%ghc_gen_filelists rts 1.0.2
+%ghc_gen_filelists rts %{rts_ver}
 %endif
 
 %define merge_filelist()\
@@ -644,7 +645,9 @@ fi\
 # add rts libs
 %if %{with hadrian}
 for i in %{buildroot}%{ghclibplatform}/libHSrts*ghc%{ghc_version}.so; do
+if [ "$(basename $i)" != "libHSrts-%{rts_ver}-ghc%{ghc_version}.so" ]; then
 echo $i >> %{name}-base.files
+fi
 done
 echo "%{_sysconfdir}/ld.so.conf.d/%{name}.conf" >> %{name}-base.files
 %else
