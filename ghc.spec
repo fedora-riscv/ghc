@@ -27,15 +27,16 @@
 %global ghc_compact_ver 0.1.0.0
 %global hpc_ver 0.6.1.0
 
+%undefine with_ghc_prof
+%undefine with_haddock
+
 # build profiling libraries and haddock documentation
 # perf production build (disable for quick build)
 %if %{with prodbuild}
 %bcond ghc_prof 1
 # https://gitlab.haskell.org/ghc/ghc/-/issues/19754
 # https://github.com/haskell/haddock/issues/1384
-%ifarch armv7hl
-%undefine with_haddock
-%else
+%ifnarch armv7hl
 %bcond haddock 1
 %endif
 %if %{with hadrian}
@@ -43,8 +44,9 @@
 %endif
 %bcond perf_build 1
 %else
-%undefine with_ghc_prof
-%undefine with_haddock
+# Quick build
+%bcond ghc_prof 0
+%bcond haddock 0
 %if %{with hadrian}
 %bcond manual 0
 %endif
