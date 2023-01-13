@@ -1,4 +1,4 @@
-# turn off for quick build to disable prof, docs, debuginfo
+# turn off for quick build to disable prof, docs
 # This must be enabled 1 for all koji production builds
 %bcond prodbuild 1
 
@@ -10,13 +10,6 @@
 
 # build hadrian for production builds:
 %bcond build_hadrian 1
-
-# enable debuginfo for production builds
-%bcond ghc_debuginfo 1
-
-%if %{without ghc_debuginfo}
-%undefine _enable_debug_packages
-%endif
 
 %global ghc_major 9.2
 
@@ -536,10 +529,8 @@ export LANG=C.utf8
 %endif
 
 %if %{with build_hadrian}
-%if %{with ghc_debuginfo}
 # do not disable debuginfo with ghc_bin_build
 %global ghc_debuginfo 1
-%endif
 (
 cd hadrian
 %ghc_bin_build
