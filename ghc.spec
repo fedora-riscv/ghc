@@ -663,7 +663,7 @@ ls -d %{buildroot}%{ghclibdir}/include >> %{name}-base-devel.files
 %if %{with ghc_prof}
 ls %{buildroot}%{ghclibdir}/bin/ghc-iserv-prof* >> %{name}-base-prof.files
 %if %{with hadrian}
-ls %{buildroot}%{ghclibdir}/lib/bin/ghc-iserv-prof >> %{name}-base-prof.files
+ls %{buildroot}%{ghcliblib}/bin/ghc-iserv-prof >> %{name}-base-prof.files
 %endif
 %endif
 
@@ -704,10 +704,10 @@ export RPM_BUILD_NCPUS=1
 %endif
 
 %if %{with hadrian}
-rm %{buildroot}%{ghclibdir}/lib/package.conf.d/.stamp
-rm %{buildroot}%{ghclibdir}/lib/package.conf.d/*.conf.copy
+rm %{buildroot}%{ghcliblib}/package.conf.d/.stamp
+rm %{buildroot}%{ghcliblib}/package.conf.d/*.conf.copy
 
-(cd %{buildroot}%{ghclibdir}/lib/bin
+(cd %{buildroot}%{ghcliblib}/bin
 for i in *; do
 if [ -f %{buildroot}%{ghclibdir}/bin/$i ]; then
 ln -sf ../../bin/$i
@@ -871,13 +871,16 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %{ghclibdir}/bin/runhaskell
 %{ghclibdir}/bin/runhaskell-%{version}
 %{ghclibdir}/bin/unlit-ghc-%{version}
-%{ghclibdir}/lib/bin/ghc-iserv
-%{ghclibdir}/lib/bin/ghc-iserv-dyn
-%{ghclibdir}/lib/bin/unlit
-%{ghclibdir}/lib/DerivedConstants.h
-%{ghclibdir}/lib/ghcautoconf.h
-%{ghclibdir}/lib/ghcplatform.h
-%{ghclibdir}/lib/ghcversion.h
+%dir %{ghcliblib}
+%dir %{ghcliblib}/bin
+%{ghcliblib}/bin/ghc-iserv
+%{ghcliblib}/bin/ghc-iserv-dyn
+%{ghcliblib}/bin/unlit
+%{ghcliblib}/DerivedConstants.h
+%{ghcliblib}/ghcautoconf.h
+%{ghcliblib}/ghcplatform.h
+%{ghcliblib}/ghcversion.h
+%dir %ghclibplatform
 %endif
 %{ghcliblib}/ghc-usage.txt
 %{ghcliblib}/ghci-usage.txt
