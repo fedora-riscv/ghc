@@ -576,8 +576,8 @@ cd _build/bindist/ghc-%{version}-*
 ./configure --prefix=%{buildroot}%{ghclibdir} --bindir=%{buildroot}%{_bindir} --libdir=%{buildroot}%{_libdir} --mandir=%{buildroot}%{_mandir} --docdir=%{buildroot}%{_docdir}/%{name}
 make install
 )
-mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
-echo "%{ghclibplatform}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
+%dnl mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
+%dnl echo "%{ghclibplatform}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
 %else
 make DESTDIR=%{buildroot} install
 %if %{defined _ghcdynlibdir}
@@ -642,6 +642,10 @@ fi\
 %merge_filelist rts base
 %endif
 
+%if %{with hadrian}
+%dnl echo "%{_sysconfdir}/ld.so.conf.d/%{name}.conf" >> %{name}-base.files
+%endif
+
 # add rts libs
 %if %{with hadrian}
 for i in %{buildroot}%{ghclibplatform}/libHSrts*ghc%{ghc_version}.so; do
@@ -649,7 +653,6 @@ if [ "$(basename $i)" != "libHSrts-%{rts_ver}-ghc%{ghc_version}.so" ]; then
 echo $i >> %{name}-base.files
 fi
 done
-echo "%{_sysconfdir}/ld.so.conf.d/%{name}.conf" >> %{name}-base.files
 %else
 %if %{defined _ghcdynlibdir}
 echo "%{ghclibdir}/rts" >> %{name}-base-devel.files
