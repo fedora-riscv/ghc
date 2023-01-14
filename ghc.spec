@@ -12,6 +12,7 @@
 %bcond build_hadrian 1
 
 %global ghc_major 9.2
+%global ghc_obsoletes_name ghc%{ghc_major}
 
 # to handle RCs
 %global ghc_release %{version}
@@ -76,8 +77,8 @@
 %endif
 
 %global obsoletes_ghcXY() \
-Obsoletes: ghc%{ghc_major}%{?1:-%1} < %{version}-%{release}\
-Provides: ghc%{ghc_major}%{?1:-%1} = %{version}-%{release}\
+Obsoletes: %{ghc_obsoletes_name}%{?1:-%1} < %{version}-%{release}\
+Provides: %{ghc_obsoletes_name}%{?1:-%1} = %{version}-%{release}\
 %{nil}
 
 Name: ghc
@@ -149,7 +150,7 @@ BuildRequires: ghc-compiler > 8.10
 %if %{with abicheck}
 BuildRequires: %{name}
 %endif
-BuildRequires: ghc-rpm-macros-extra
+BuildRequires: ghc-rpm-macros-extra >= 2.5.0
 BuildRequires: ghc-binary-devel
 BuildRequires: ghc-bytestring-devel
 BuildRequires: ghc-containers-devel
@@ -978,6 +979,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %changelog
 * Mon Jan 30 2023 Jens Petersen <petersen@redhat.com> - 9.2.5-125
 - rebase to ghc-9.2.5 from ghc9.2
+- fully Obsoletes ghc9.2*
 
 * Sun Jan 15 2023 Jens Petersen <petersen@redhat.com> - 9.0.2-124
 - rebase to 9.0.2 from ghc9.0
