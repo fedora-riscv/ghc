@@ -20,6 +20,7 @@
 %global ghc_compact_ver 0.1.0.0
 %global hpc_ver 0.6.1.0
 %global rts_ver 1.0.2
+%global xhtml_ver 3000.2.2.1
 
 %undefine with_ghc_prof
 %undefine with_haddock
@@ -264,6 +265,10 @@ Requires: %{name}-filesystem = %{version}-%{release}
 %else
 Obsoletes: %{name}-doc-index < %{version}-%{release}
 Obsoletes: %{name}-filesystem < %{version}-%{release}
+Obsoletes: %{name}-xhtml < %{xhtml_ver}-%{release}
+Obsoletes: %{name}-xhtml-devel < %{xhtml_ver}-%{release}
+Obsoletes: %{name}-xhtml-doc < %{xhtml_ver}-%{release}
+Obsoletes: %{name}-xhtml-prof < %{xhtml_ver}-%{release}
 %endif
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
@@ -378,7 +383,7 @@ This provides the hadrian tool which can be used to build ghc.
 %ghc_lib_subpackage -d -l BSD transformers-0.5.6.2
 %ghc_lib_subpackage -d -l BSD unix-2.7.2.2
 %if %{with haddock} || %{with hadrian}
-%ghc_lib_subpackage -d -l BSD xhtml-3000.2.2.1
+%ghc_lib_subpackage -d -l BSD xhtml-%{xhtml_ver}
 %endif
 %endif
 
