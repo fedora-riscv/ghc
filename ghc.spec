@@ -572,20 +572,26 @@ cd _build/bindist/ghc-%{version}-*
 ./configure --prefix=%{buildroot}%{ghclibdir} --bindir=%{buildroot}%{_bindir} --libdir=%{buildroot}%{_libdir} --mandir=%{buildroot}%{_mandir} --docdir=%{buildroot}%{_docdir}/%{name}
 make install
 )
-%dnl mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
-%dnl echo "%{ghclibplatform}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
 %else
 make DESTDIR=%{buildroot} install
 %if %{defined _ghcdynlibdir}
 mv %{buildroot}%{ghclibdir}/*/libHS*ghc%{ghc_version}.so %{buildroot}%{_ghcdynlibdir}/
-for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
-  chrpath -d $i
-done
 for i in %{buildroot}%{ghclibdir}/package.conf.d/*.conf; do
   sed -i -e 's!^dynamic-library-dirs: .*!dynamic-library-dirs: %{_ghcdynlibdir}!' $i
 done
 sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_ghcdynlibdir}!' %{buildroot}%{ghclibdir}/package.conf.d/rts.conf
 %endif
+%endif
+
+%if %{defined _ghcdynlibdir}
+%if "%_ghcdynlibdir" != "%_libdir"
+mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
+echo "%{ghclibplatform}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
+%endif
+# avoid 'E: binary-or-shlib-defines-rpath'
+for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
+  chrpath -d $i
+done
 %endif
 
 # containers src moved to a subdir
@@ -638,8 +644,10 @@ fi\
 %merge_filelist rts base
 %endif
 
-%if %{with hadrian}
-%dnl echo "%{_sysconfdir}/ld.so.conf.d/%{name}.conf" >> %{name}-base.files
+%if %{defined _ghcdynlibdir}
+%if "%_ghcdynlibdir" != "%_libdir"
+echo "%{_sysconfdir}/ld.so.conf.d/%{name}.conf" >> %{name}-base.files
+%endif
 %endif
 
 # add rts libs
