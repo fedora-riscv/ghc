@@ -743,6 +743,10 @@ for i in *; do
 done
 )
 
+# bash completion
+mkdir -p %{buildroot}%{_datadir}/bash-completion/completions/
+cp -p utils/completion/ghc.bash %{buildroot}%{_datadir}/bash-completion/completions/%{name}
+
 
 %check
 export LANG=C.utf8
@@ -905,6 +909,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %{ghcliblib}/package.conf.d/package.cache.lock
 %{ghcliblib}/settings
 %{ghcliblib}/template-hsc.h
+%{_datadir}/bash-completion/completions/%{name}
 %{_mandir}/man1/ghc-pkg.1*
 %{_mandir}/man1/haddock.1*
 %{_mandir}/man1/runghc.1*
@@ -980,6 +985,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 * Mon Jan 30 2023 Jens Petersen <petersen@redhat.com> - 9.2.5-125
 - rebase to ghc-9.2.5 from ghc9.2
 - fully Obsoletes ghc9.2*
+- install bash-completion file
 
 * Sun Jan 15 2023 Jens Petersen <petersen@redhat.com> - 9.0.2-124
 - rebase to 9.0.2 from ghc9.0
