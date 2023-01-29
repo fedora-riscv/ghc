@@ -18,6 +18,7 @@
 %global ghc_release %{version}
 
 %global base_ver 4.16.4.0
+%global ghc_bignum_ver 1.2
 %global ghc_compact_ver 0.1.0.0
 %global hpc_ver 0.6.1.0
 %global rts_ver 1.0.2
@@ -361,7 +362,7 @@ This provides the hadrian tool which can be used to build ghc.
 %ghc_lib_subpackage -d -l BSD filepath-1.4.2.2
 # in ghc not ghc-libraries:
 %ghc_lib_subpackage -d -x ghc-%{ghc_version_override}
-# see below for ghc-bignum
+%ghc_lib_subpackage -d -x -l BSD ghc-bignum-%{ghc_bignum_ver}
 %ghc_lib_subpackage -d -x -l BSD ghc-boot-%{ghc_version_override}
 %ghc_lib_subpackage -d -l BSD ghc-boot-th-%{ghc_version_override}
 %ghc_lib_subpackage -d -x -l BSD ghc-compact-%{ghc_compact_ver}
@@ -611,6 +612,7 @@ done
 echo "%%dir %{ghclibdir}" >> %{name}-base%{?_ghcdynlibdir:-devel}.files
 
 %ghc_gen_filelists ghc %{ghc_version_override}
+%ghc_gen_filelists ghc-bignum %{ghc_bignum_ver}
 %ghc_gen_filelists ghc-boot %{ghc_version_override}
 %ghc_gen_filelists ghc-compact %{ghc_compact_ver}
 %ghc_gen_filelists ghc-heap %{ghc_version_override}
@@ -618,7 +620,6 @@ echo "%%dir %{ghclibdir}" >> %{name}-base%{?_ghcdynlibdir:-devel}.files
 %ghc_gen_filelists hpc %{hpc_ver}
 %ghc_gen_filelists libiserv %{ghc_version_override}
 
-%ghc_gen_filelists ghc-bignum 1.2
 %ghc_gen_filelists ghc-prim 0.8.0
 %ghc_gen_filelists integer-gmp 1.1
 %if %{with hadrian}
@@ -638,7 +639,6 @@ echo "%%license libraries/LICENSE.%1" >> %{name}-%2.files\
 fi\
 %{nil}
 
-%merge_filelist ghc-bignum base
 %merge_filelist ghc-prim base
 %merge_filelist integer-gmp base
 %if %{with hadrian}
