@@ -692,6 +692,11 @@ sh %{gen_contents_index} --intree --verbose
 cd ..
 %endif
 
+mkdir -p %{buildroot}%{_mandir}/man1
+install -p -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/ghc-pkg.1
+install -p -m 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/haddock.1
+install -p -m 0644 %{SOURCE7} %{buildroot}%{_mandir}/man1/runghc.1
+
 %if %{with hadrian}
 %if %{with haddock}
 rm %{buildroot}%{_pkgdocdir}/archives/libraries.html.tar.xz
@@ -699,6 +704,7 @@ rm %{buildroot}%{_pkgdocdir}/archives/libraries.html.tar.xz
 %if %{with manual}
 rm %{buildroot}%{_pkgdocdir}/archives/Haddock.html.tar.xz
 rm %{buildroot}%{_pkgdocdir}/archives/users_guide.html.tar.xz
+mv %{buildroot}%{ghc_html_dir}/users_guide/build-man/ghc.1 %{buildroot}%{_mandir}/man1/
 %endif
 %endif
 
@@ -706,11 +712,6 @@ rm %{buildroot}%{_pkgdocdir}/archives/users_guide.html.tar.xz
 %if %{without hadrian}
 find %{buildroot}%{ghc_html_libraries_dir} -name LICENSE -exec rm '{}' ';'
 %endif
-
-mkdir -p %{buildroot}%{_mandir}/man1
-install -p -m 0644 %{SOURCE5} %{buildroot}%{_mandir}/man1/ghc-pkg.1
-install -p -m 0644 %{SOURCE6} %{buildroot}%{_mandir}/man1/haddock.1
-install -p -m 0644 %{SOURCE7} %{buildroot}%{_mandir}/man1/runghc.1
 
 %ifarch armv7hl
 export RPM_BUILD_NCPUS=1
