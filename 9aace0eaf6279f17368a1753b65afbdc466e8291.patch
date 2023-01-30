@@ -1,0 +1,93 @@
+From 9aace0eaf6279f17368a1753b65afbdc466e8291 Mon Sep 17 00:00:00 2001
+From: Sylvain Henry <sylvain@haskus.fr>
+Date: Sat, 10 Apr 2021 14:48:16 +0200
+Subject: [PATCH] Produce constant file atomically (#19684)
+
+---
+ utils/deriveConstants/Main.hs               | 21 ++++++++++++++++-----
+ utils/deriveConstants/deriveConstants.cabal |  3 ++-
+ 2 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/utils/deriveConstants/Main.hs b/utils/deriveConstants/Main.hs
+index 8bf8ae7b44d..9db673a9852 100644
+--- a/utils/deriveConstants/Main.hs
++++ b/utils/deriveConstants/Main.hs
+@@ -34,9 +34,10 @@ import Data.Maybe (catMaybes, mapMaybe, fromMaybe)
+ import Numeric (readHex)
+ import System.Environment (getArgs)
+ import System.Exit (ExitCode(ExitSuccess), exitFailure)
+-import System.FilePath ((</>))
++import System.FilePath ((</>),(<.>))
+ import System.IO (stderr, hPutStrLn)
+ import System.Process (showCommandForUser, readProcess, rawSystem)
++import System.Directory (renameFile)
+ 
+ main :: IO ()
+ main = do opts <- parseArgs
+@@ -79,6 +80,16 @@ data Options = Options {
+                    o_targetOS :: Maybe String
+                }
+ 
++-- | Write a file atomically
++--
++-- This avoids other processes seeing the file while it is being written into.
++atomicWriteFile :: FilePath -> String -> IO ()
++atomicWriteFile fn s = do
++  let tmp = fn <.> "tmp"
++  writeFile tmp s
++  renameFile tmp fn
++
++
+ parseArgs :: IO Options
+ parseArgs = do args <- getArgs
+                opts <- f emptyOptions args
+@@ -670,7 +681,7 @@ getWanted verbose os tmpdir gccProgram gccFlags nmProgram mobjdumpProgram
+     = do let cStuff = unlines (headers ++ concatMap (doWanted . snd) (wanteds os))
+              cFile = tmpdir </> "tmp.c"
+              oFile = tmpdir </> "tmp.o"
+-         writeFile cFile cStuff
++         atomicWriteFile cFile cStuff
+          execute verbose gccProgram (gccFlags ++ ["-c", cFile, "-o", oFile])
+          xs <- case os of
+                  "openbsd" -> readProcess objdumpProgam ["--syms", oFile] ""
+@@ -855,7 +866,7 @@ getWanted verbose os tmpdir gccProgram gccFlags nmProgram mobjdumpProgram
+               = return (w, FieldTypeGcptrMacro name)
+ 
+ writeHaskellType :: FilePath -> [What Fst] -> IO ()
+-writeHaskellType fn ws = writeFile fn xs
++writeHaskellType fn ws = atomicWriteFile fn xs
+     where xs = unlines [header, body, footer, parser]
+           header = "module GHC.Platform.Constants where\n\n\
+                    \import Prelude\n\
+@@ -920,7 +931,7 @@ writeHaskellType fn ws = writeFile fn xs
+ 
+ 
+ writeHaskellValue :: FilePath -> [What Snd] -> IO ()
+-writeHaskellValue fn rs = writeFile fn xs
++writeHaskellValue fn rs = atomicWriteFile fn xs
+     where xs = unlines [header, body, footer]
+           header = "PlatformConstants {"
+           footer = "  }"
+@@ -937,7 +948,7 @@ writeHaskellValue fn rs = writeFile fn xs
+           doWhat (FieldTypeGcptrMacro {}) = []
+ 
+ writeHeader :: FilePath -> [(Where, What Snd)] -> IO ()
+-writeHeader fn rs = writeFile fn xs
++writeHeader fn rs = atomicWriteFile fn xs
+     where xs = headers ++ hs ++ unlines body
+           headers = "/* This file is created automatically.  Do not edit by hand.*/\n\n"
+           haskellRs = fmap snd $ filter (\r -> fst r `elem` [Haskell,Both]) rs
+diff --git a/utils/deriveConstants/deriveConstants.cabal b/utils/deriveConstants/deriveConstants.cabal
+index 50b5b695c30..36ba7ebe1f7 100644
+--- a/utils/deriveConstants/deriveConstants.cabal
++++ b/utils/deriveConstants/deriveConstants.cabal
+@@ -20,4 +20,5 @@ Executable deriveConstants
+     Build-Depends: base       >= 4   && < 5,
+                    containers,
+                    process,
+-                   filepath
++                   filepath,
++                   directory
+-- 
+GitLab
+

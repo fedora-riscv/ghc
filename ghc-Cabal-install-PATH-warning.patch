@@ -1,5 +1,5 @@
---- ghc-8.2.2/libraries/Cabal/Cabal/Distribution/Simple/Install.hs~	2017-05-05 23:51:43.000000000 +0900
-+++ ghc-8.2.2/libraries/Cabal/Cabal/Distribution/Simple/Install.hs	2018-02-27 12:22:13.159432104 +0900
+--- ghc/libraries/Cabal/Cabal/src/Distribution/Simple/Install.hs~	2017-05-05 23:51:43.000000000 +0900
++++ ghc/libraries/Cabal/Cabal/src/Distribution/Simple/Install.hs	2018-02-27 12:22:13.159432104 +0900
 @@ -215,8 +215,7 @@
                        ++ " in " ++ binPref)
      inPath <- isInSearchPath binPref
