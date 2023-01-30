@@ -929,7 +929,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %verify(not size mtime) %{ghc_html_libraries_dir}/quick-jump.css
 %verify(not size mtime) %{ghc_html_libraries_dir}/synopsis.png
 %endif
-%if %{with manual} && %{without hadrian}
+%if %{with manual}
 %{_mandir}/man1/ghc.1*
 %endif
 
