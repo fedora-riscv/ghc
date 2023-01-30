@@ -33,7 +33,7 @@
 %bcond ghc_prof 1
 # https://gitlab.haskell.org/ghc/ghc/-/issues/19754
 # https://github.com/haskell/haddock/issues/1384
-%ifnarch armv7hl
+%ifnarch armv7hl %{ix86}
 %bcond haddock 1
 %endif
 %if %{with hadrian}
