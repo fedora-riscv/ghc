@@ -1,0 +1,256 @@
+From 18d7007e0cd1140936b803df4816110cee0ed086 Mon Sep 17 00:00:00 2001
+From: Ben Gamari <ben@smart-cactus.org>
+Date: Tue, 1 Mar 2022 13:49:57 -0500
+Subject: [PATCH 1/2] rts: Factor out built-in GC roots
+
+---
+ rts/RtsStartup.c | 76 ++++++++++++++++++++++++++----------------------
+ 1 file changed, 41 insertions(+), 35 deletions(-)
+
+diff --git a/rts/RtsStartup.c b/rts/RtsStartup.c
+index 347434420b02..e412715cdf55 100644
+--- a/rts/RtsStartup.c
++++ b/rts/RtsStartup.c
+@@ -174,6 +174,45 @@ hs_restoreConsoleCP (void)
+    Starting up the RTS
+    -------------------------------------------------------------------------- */
+ 
++static void initBuiltinGcRoots(void)
++{
++    /* Add some GC roots for things in the base package that the RTS
++     * knows about.  We don't know whether these turn out to be CAFs
++     * or refer to CAFs, but we have to assume that they might.
++     *
++     * Because these stable pointers will retain any CAF references in
++     * these closures `Id`s of these can be safely marked as non-CAFFY
++     * in the compiler.
++     */
++    getStablePtr((StgPtr)runIO_closure);
++    getStablePtr((StgPtr)runNonIO_closure);
++    getStablePtr((StgPtr)flushStdHandles_closure);
++
++    getStablePtr((StgPtr)runFinalizerBatch_closure);
++
++    getStablePtr((StgPtr)stackOverflow_closure);
++    getStablePtr((StgPtr)heapOverflow_closure);
++    getStablePtr((StgPtr)unpackCString_closure);
++    getStablePtr((StgPtr)blockedIndefinitelyOnMVar_closure);
++    getStablePtr((StgPtr)nonTermination_closure);
++    getStablePtr((StgPtr)blockedIndefinitelyOnSTM_closure);
++    getStablePtr((StgPtr)allocationLimitExceeded_closure);
++    getStablePtr((StgPtr)cannotCompactFunction_closure);
++    getStablePtr((StgPtr)cannotCompactPinned_closure);
++    getStablePtr((StgPtr)cannotCompactMutable_closure);
++    getStablePtr((StgPtr)nestedAtomically_closure);
++    getStablePtr((StgPtr)runSparks_closure);
++    getStablePtr((StgPtr)ensureIOManagerIsRunning_closure);
++    getStablePtr((StgPtr)interruptIOManager_closure);
++    getStablePtr((StgPtr)ioManagerCapabilitiesChanged_closure);
++#if !defined(mingw32_HOST_OS)
++    getStablePtr((StgPtr)blockedOnBadFD_closure);
++    getStablePtr((StgPtr)runHandlersPtr_closure);
++#else
++    getStablePtr((StgPtr)processRemoteCompletion_closure);
++#endif
++}
++
+ void
+ hs_init(int *argc, char **argv[])
+ {
+@@ -311,41 +350,8 @@ hs_init_ghc(int *argc, char **argv[], RtsConfig rts_config)
+     /* initialise the stable name table */
+     initStableNameTable();
+ 
+-    /* Add some GC roots for things in the base package that the RTS
+-     * knows about.  We don't know whether these turn out to be CAFs
+-     * or refer to CAFs, but we have to assume that they might.
+-     *
+-     * Because these stable pointers will retain any CAF references in
+-     * these closures `Id`s of these can be safely marked as non-CAFFY
+-     * in the compiler.
+-     */
+-    getStablePtr((StgPtr)runIO_closure);
+-    getStablePtr((StgPtr)runNonIO_closure);
+-    getStablePtr((StgPtr)flushStdHandles_closure);
+-
+-    getStablePtr((StgPtr)runFinalizerBatch_closure);
+-
+-    getStablePtr((StgPtr)stackOverflow_closure);
+-    getStablePtr((StgPtr)heapOverflow_closure);
+-    getStablePtr((StgPtr)unpackCString_closure);
+-    getStablePtr((StgPtr)blockedIndefinitelyOnMVar_closure);
+-    getStablePtr((StgPtr)nonTermination_closure);
+-    getStablePtr((StgPtr)blockedIndefinitelyOnSTM_closure);
+-    getStablePtr((StgPtr)allocationLimitExceeded_closure);
+-    getStablePtr((StgPtr)cannotCompactFunction_closure);
+-    getStablePtr((StgPtr)cannotCompactPinned_closure);
+-    getStablePtr((StgPtr)cannotCompactMutable_closure);
+-    getStablePtr((StgPtr)nestedAtomically_closure);
+-    getStablePtr((StgPtr)runSparks_closure);
+-    getStablePtr((StgPtr)ensureIOManagerIsRunning_closure);
+-    getStablePtr((StgPtr)interruptIOManager_closure);
+-    getStablePtr((StgPtr)ioManagerCapabilitiesChanged_closure);
+-#if !defined(mingw32_HOST_OS)
+-    getStablePtr((StgPtr)blockedOnBadFD_closure);
+-    getStablePtr((StgPtr)runHandlersPtr_closure);
+-#else
+-    getStablePtr((StgPtr)processRemoteCompletion_closure);
+-#endif
++    /* create StablePtrs for builtin GC roots*/
++    initBuiltinGcRoots();
+ 
+     /*
+      * process any foreign exports which were registered while loading the
+-- 
+GitLab
+
+
+From 2ac45ba0ff0ab2911ecfe443e54df6f30eec5ff5 Mon Sep 17 00:00:00 2001
+From: Ben Gamari <ben@smart-cactus.org>
+Date: Tue, 1 Mar 2022 13:50:20 -0500
+Subject: [PATCH 2/2] Ensure that wired-in exception closures aren't GC'd
+
+As described in Note [Wired-in exceptions are not CAFfy], a small set of
+built-in exception closures get special treatment in the code generator,
+being declared as non-CAFfy despite potentially containing CAF
+references. The original intent of this treatment for the RTS to then
+add StablePtrs for each of the closures, ensuring that they are not
+GC'd. However, this logic was not applied consistently and eventually
+removed entirely in 951c1fb0. This lead to #21141.
+
+Here we fix this bug by reintroducing the StablePtrs and document the
+status quo.
+
+Closes #21141.
+---
+ compiler/GHC/Core/Make.hs                | 25 ++++++++++++++++++++++--
+ libraries/ghc-prim/GHC/Prim/Exception.hs |  3 ++-
+ rts/Prelude.h                            | 10 ++++++++++
+ rts/RtsStartup.c                         |  6 ++++++
+ 4 files changed, 41 insertions(+), 3 deletions(-)
+
+diff --git a/compiler/GHC/Core/Make.hs b/compiler/GHC/Core/Make.hs
+index 619b7adaf403..ff824158c3de 100644
+--- a/compiler/GHC/Core/Make.hs
++++ b/compiler/GHC/Core/Make.hs
+@@ -816,7 +816,9 @@ tYPE_ERROR_ID                   = mkRuntimeErrorId typeErrorName
+ --       argument would require allocating a thunk.
+ --
+ --    4. it can't be CAFFY because that would mean making some non-CAFFY
+---       definitions that use unboxed sums CAFFY in unarise.
++--       definitions that use unboxed sums CAFFY in unarise. We work around
++--       this by declaring the absentSumFieldError as non-CAFfy, as described
++--       in Note [Wired-in exceptions are not CAFfy].
+ --
+ --       Getting this wrong causes hard-to-debug runtime issues, see #15038.
+ --
+@@ -850,6 +852,21 @@ tYPE_ERROR_ID                   = mkRuntimeErrorId typeErrorName
+ --   error. That's why it is OK for it to be un-catchable.
+ --
+ 
++-- Note [Wired-in exceptions are not CAFfy]
++-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++-- mkExceptionId claims that all exceptions are not CAFfy, despite the fact
++-- that their closures' code may in fact contain CAF references. We get away
++-- with this lie because the RTS ensures that all exception closures are
++-- considered live by the GC by creating StablePtrs during initialization.
++-- The lie is necessary to avoid unduly growing SRTs as these exceptions are
++-- sufficiently common to warrant special treatment.
++--
++-- At some point we could consider removing this optimisation as it is quite
++-- fragile, but we do want to be careful to avoid adding undue cost. Unboxed
++-- sums in particular are intended to be used in performance-critical contexts.
++--
++-- See #15038, #21141.
++
+ absentSumFieldErrorName
+    = mkWiredInIdName
+       gHC_PRIM_PANIC
+@@ -884,6 +901,9 @@ rAISE_UNDERFLOW_ID        = mkExceptionId raiseUnderflowName
+ rAISE_DIVZERO_ID          = mkExceptionId raiseDivZeroName
+ 
+ -- | Exception with type \"forall a. a\"
++--
++-- Any exceptions added via this function needs to be added to
++-- the RTS's initBuiltinGcRoots() function.
+ mkExceptionId :: Name -> Id
+ mkExceptionId name
+   = mkVanillaGlobalWithInfo name
+@@ -891,7 +911,8 @@ mkExceptionId name
+       (vanillaIdInfo `setStrictnessInfo` mkClosedStrictSig [] botDiv
+                      `setCprInfo` mkCprSig 0 botCpr
+                      `setArityInfo` 0
+-                     `setCafInfo` NoCafRefs) -- #15038
++                     `setCafInfo` NoCafRefs)
++                        -- See Note [Wired-in exceptions are not CAFfy]
+ 
+ mkRuntimeErrorId :: Name -> Id
+ -- Error function
+diff --git a/libraries/ghc-prim/GHC/Prim/Exception.hs b/libraries/ghc-prim/GHC/Prim/Exception.hs
+index 36889dc1e325..0ab17946150e 100644
+--- a/libraries/ghc-prim/GHC/Prim/Exception.hs
++++ b/libraries/ghc-prim/GHC/Prim/Exception.hs
+@@ -20,13 +20,14 @@ default () -- Double and Integer aren't available yet
+ 
+ -- Note [Arithmetic exceptions]
+ -- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---
+ -- ghc-prim provides several functions to raise arithmetic exceptions
+ -- (raiseDivZero, raiseUnderflow, raiseOverflow) that are wired-in the RTS.
+ -- These exceptions are meant to be used by the package implementing arbitrary
+ -- precision numbers (Natural,Integer). It can't depend on `base` package to
+ -- raise exceptions in a normal way because it would create a dependency
+ -- cycle (base <-> bignum package). See #14664
++--
++-- See also: Note [Wired-in exceptions are not CAFfy] in GHC.Core.Make.
+ 
+ foreign import prim "stg_raiseOverflowzh" raiseOverflow# :: State# RealWorld -> (# State# RealWorld, Void# #)
+ foreign import prim "stg_raiseUnderflowzh" raiseUnderflow# :: State# RealWorld -> (# State# RealWorld, Void# #)
+diff --git a/rts/Prelude.h b/rts/Prelude.h
+index d2511b2fc3b6..5f1e070e331f 100644
+--- a/rts/Prelude.h
++++ b/rts/Prelude.h
+@@ -19,6 +19,12 @@
+ #define PRELUDE_CLOSURE(i)    extern StgClosure DLL_IMPORT_DATA_VARNAME(i)
+ #endif
+ 
++/* See Note [Wired-in exceptions are not CAFfy] in GHC.Core.Make. */
++PRELUDE_CLOSURE(ghczmprim_GHCziPrimziPanic_absentSumFieldError_closure);
++PRELUDE_CLOSURE(ghczmprim_GHCziPrimziException_raiseUnderflow_closure);
++PRELUDE_CLOSURE(ghczmprim_GHCziPrimziException_raiseOverflow_closure);
++PRELUDE_CLOSURE(ghczmprim_GHCziPrimziException_raiseDivZZero_closure);
++
+ /* Define canonical names so we can abstract away from the actual
+  * modules these names are defined in.
+  */
+@@ -111,6 +117,10 @@ PRELUDE_INFO(base_GHCziStable_StablePtr_con_info);
+ #define nonTermination_closure    DLL_IMPORT_DATA_REF(base_ControlziExceptionziBase_nonTermination_closure)
+ #define nestedAtomically_closure  DLL_IMPORT_DATA_REF(base_ControlziExceptionziBase_nestedAtomically_closure)
+ #define doubleReadException  DLL_IMPORT_DATA_REF(base_GHCziIOPort_doubleReadException_closure)
++#define absentSumFieldError_closure DLL_IMPORT_DATA_REF(ghczmprim_GHCziPrimziPanic_absentSumFieldError_closure)
++#define raiseUnderflowException_closure DLL_IMPORT_DATA_REF(ghczmprim_GHCziPrimziException_raiseUnderflow_closure)
++#define raiseOverflowException_closure DLL_IMPORT_DATA_REF(ghczmprim_GHCziPrimziException_raiseOverflow_closure)
++#define raiseDivZeroException_closure DLL_IMPORT_DATA_REF(ghczmprim_GHCziPrimziException_raiseDivZZero_closure)
+ 
+ #define blockedOnBadFD_closure    DLL_IMPORT_DATA_REF(base_GHCziEventziThread_blockedOnBadFD_closure)
+ 
+diff --git a/rts/RtsStartup.c b/rts/RtsStartup.c
+index e412715cdf55..79c6e3f6b88a 100644
+--- a/rts/RtsStartup.c
++++ b/rts/RtsStartup.c
+@@ -211,6 +211,12 @@ static void initBuiltinGcRoots(void)
+ #else
+     getStablePtr((StgPtr)processRemoteCompletion_closure);
+ #endif
++
++    /* See Note [Wired-in exceptions are not CAFfy] in GHC.Core.Make. */
++    getStablePtr((StgPtr)absentSumFieldError_closure);
++    getStablePtr((StgPtr)raiseUnderflowException_closure);
++    getStablePtr((StgPtr)raiseOverflowException_closure);
++    getStablePtr((StgPtr)raiseDivZeroException_closure);
+ }
+ 
+ void
+-- 
+GitLab
+
