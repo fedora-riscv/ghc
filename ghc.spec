@@ -114,8 +114,9 @@ Patch3: ghc-gen_contents_index-nodocs.patch
 # DerivedConstants.h not produced atomically
 Patch10: https://gitlab.haskell.org/ghc/ghc/-/commit/9aace0eaf6279f17368a1753b65afbdc466e8291.patch
 
-Patch11: ghc-configure-c99.patch
-
+# https://fedoraproject.org/wiki/Toolchain/PortingToModernC
+# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/9394
+Patch11: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/9394.patch
 
 # armv7hl patches
 Patch12: ghc-armv7-VFPv3D16--NEON.patch

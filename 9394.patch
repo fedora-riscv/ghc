@@ -1,0 +1,43 @@
+From 480b5d6440bbbd0b89dabdb2dc957333056aa2a7 Mon Sep 17 00:00:00 2001
+From: Florian Weimer <fweimer@redhat.com>
+Date: Tue, 22 Nov 2022 15:23:50 +0100
+Subject: [PATCH] m4/fp_leading_underscore.m4: Avoid implicit exit function
+ declaration
+
+And switch to a new-style function definition.
+
+Fixes build issues with compilers that do not accept implicit function
+declarations.
+---
+ m4/fp_leading_underscore.m4 | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/m4/fp_leading_underscore.m4 b/m4/fp_leading_underscore.m4
+index fde57c7625d..939cee3b69f 100644
+--- a/m4/fp_leading_underscore.m4
++++ b/m4/fp_leading_underscore.m4
+@@ -32,17 +32,15 @@ struct nlist xYzzY1[] = {{"xYzzY1", 0},{0}};
+ struct nlist xYzzY2[] = {{"_xYzzY2", 0},{0}};
+ #endif
+ 
+-int main(argc, argv)
+-int argc;
+-char **argv;
++int main(int argc, char **argv)
+ {
+ #if defined(HAVE_NLIST_H)
+     if(nlist(argv[0], xYzzY1) == 0 && xYzzY1[0].n_value != 0)
+-        exit(1);
++        return 1;
+     if(nlist(argv[0], xYzzY2) == 0 && xYzzY2[0].n_value != 0)
+-        exit(0);
++        return 0;
+ #endif
+-    exit(1);
++    return 1;
+ }]])],[fptools_cv_leading_underscore=yes],[fptools_cv_leading_underscore=no],[fptools_cv_leading_underscore=no])
+ ;;
+ esac]);
+-- 
+GitLab
+
