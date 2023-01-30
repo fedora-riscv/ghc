@@ -169,6 +169,10 @@ BuildRequires: gcc-c++
 # for terminfo
 BuildRequires: ncurses-devel
 BuildRequires: perl-interpreter
+# needed for:
+# - binary-dist-dir
+# - patch11 and patch12
+BuildRequires:  autoconf automake
 %if %{with testsuite}
 BuildRequires: python3
 %endif
@@ -185,8 +189,6 @@ BuildRequires: elfutils-devel
 #BuildRequires: gnupg2
 %endif
 %if %{with hadrian}
-# needed for binary-dist-dir
-BuildRequires:  autoconf automake
 %if %{with build_hadrian}
 BuildRequires:  ghc-Cabal-static
 BuildRequires:  ghc-QuickCheck-static
@@ -206,11 +208,6 @@ BuildRequires:  alex
 BuildRequires:  happy
 %else
 BuildRequires: %{name}-hadrian
-%endif
-%else
-%ifarch armv7hl
-# patch12
-BuildRequires: autoconf automake
 %endif
 %endif
 Requires: %{name}-compiler = %{version}-%{release}
@@ -501,10 +498,8 @@ EOF
 
 
 %build
-# for patch12
-%ifarch armv7hl
+# for patch11
 autoreconf
-%endif
 
 %ghc_set_gcc_flags
 export CC=%{_bindir}/gcc
