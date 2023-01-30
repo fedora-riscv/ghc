@@ -626,11 +626,14 @@ echo "%%dir %{ghclibdir}" >> %{name}-base%{?_ghcdynlibdir:-devel}.files
 %ghc_gen_filelists rts %{rts_ver}
 %endif
 
+# move to ghc-rpm-macro
 %define merge_filelist()\
 cat %{name}-%1.files >> %{name}-%2.files\
 cat %{name}-%1-devel.files >> %{name}-%2-devel.files\
-%if %{defined ghc_devel_prof}\
+%if %{with haddock}\
 cat %{name}-%1-doc.files >> %{name}-%2-doc.files\
+%endif\
+%if %{with ghc_prof}\
 cat %{name}-%1-prof.files >> %{name}-%2-prof.files\
 %endif\
 if [ "%1" != "rts" ]; then\
