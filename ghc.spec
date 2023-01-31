@@ -309,7 +309,8 @@ The package enables re-indexing of installed library documention.
 
 %package filesystem
 Summary: Shared directories for Haskell documentation
-BuildArch: noarch
+# due to disabled haddock archs
+#BuildArch: noarch
 Obsoletes: %{name}-filesystem < %{version}-%{release}
 %obsoletes_ghcXY filesystem
 
