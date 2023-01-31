@@ -299,7 +299,8 @@ Summary: GHC library documentation indexing
 License: BSD
 Obsoletes: ghc-doc-cron < %{version}-%{release}
 Requires: %{name}-compiler = %{version}-%{release}
-BuildArch: noarch
+# due to disabled haddock archs
+#BuildArch: noarch
 %obsoletes_ghcXY doc-index
 
 %description doc-index
