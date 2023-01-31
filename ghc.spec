@@ -704,7 +704,7 @@ rm %{buildroot}%{_pkgdocdir}/archives/libraries.html.tar.xz
 %if %{with manual}
 rm %{buildroot}%{_pkgdocdir}/archives/Haddock.html.tar.xz
 rm %{buildroot}%{_pkgdocdir}/archives/users_guide.html.tar.xz
-mv %{buildroot}%{ghc_html_dir}/users_guide/build-man/ghc.1 %{buildroot}%{_mandir}/man1/
+mv %{buildroot}%{_ghc_doc_dir}/users_guide/build-man/ghc.1 %{buildroot}%{_mandir}/man1/
 %endif
 %endif
 
