@@ -270,6 +270,9 @@ Obsoletes: %{name}-xhtml-devel < %{xhtml_ver}-%{release}
 Obsoletes: %{name}-xhtml-doc < %{xhtml_ver}-%{release}
 Obsoletes: %{name}-xhtml-prof < %{xhtml_ver}-%{release}
 %endif
+%if %{without manual}
+Obsoletes: %{name}-manual < %{version}-%{release}
+%endif
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
 %endif
