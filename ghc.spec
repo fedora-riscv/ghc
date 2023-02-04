@@ -591,14 +591,14 @@ sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_ghcdynl
 mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
 echo "%{_ghcdynlibdir}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
 %endif
-for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
-  chrpath -d $i
-done
 %else
 # https://bugzilla.redhat.com/show_bug.cgi?id=2166028
 mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
 echo "%{ghclibplatform}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
 %endif
+for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
+  chrpath -d $i
+done
 
 # containers src moved to a subdir
 cp -p libraries/containers/containers/LICENSE libraries/containers/LICENSE
@@ -990,6 +990,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %changelog
 * Sat Feb  4 2023 Jens Petersen <petersen@redhat.com> - 9.2.5-126
 - add back ld.so.conf.d file to workaround mock install issue (#2166028)
+- remove the RUNPATHs again since they are covered by the ld.so.conf.d file
 
 * Mon Jan 30 2023 Jens Petersen <petersen@redhat.com> - 9.2.5-125
 - rebase to ghc-9.2.5 from ghc9.2
