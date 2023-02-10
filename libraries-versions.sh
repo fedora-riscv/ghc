@@ -7,4 +7,4 @@ fi
 
 cd libraries
 
-grep -i ^version: Cabal/Cabal/Cabal.cabal */*.cabal | grep -v -e "\(Win32\|gmp.old\|gmp2\|integer-simple\)" | sed -e "s!/.*: \+!-!"
+grep -i ^version: Cabal/Cabal/Cabal.cabal containers/containers/containers.cabal template-haskell/template-haskell.cabal.in */*.cabal | grep -v -e "\(Win32\|gmp.old\|gmp2\|integer-simple\)" | sed -e "s!/.*: \+!-!" | sort
