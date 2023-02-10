@@ -190,6 +190,7 @@ BuildRequires: elfutils-devel
 #BuildRequires: gnupg2
 %endif
 %if %{with hadrian}
+BuildRequires:  happy
 %if %{with build_hadrian}
 BuildRequires:  ghc-Cabal-static
 BuildRequires:  ghc-QuickCheck-static
@@ -206,9 +207,8 @@ BuildRequires:  ghc-stm-static
 BuildRequires:  ghc-transformers-static
 BuildRequires:  ghc-unordered-containers-static
 BuildRequires:  alex
-BuildRequires:  happy
 %else
-BuildRequires: %{name}-hadrian
+BuildRequires:  %{name}-hadrian
 %endif
 %endif
 Requires: %{name}-compiler = %{version}-%{release}
