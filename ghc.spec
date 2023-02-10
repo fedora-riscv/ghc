@@ -586,15 +586,10 @@ sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_ghcdynl
 %endif
 %endif
 
-%if %{defined _ghcdynlibdir}
-%if "%_ghcdynlibdir" != "%_libdir"
-mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
-echo "%{_ghcdynlibdir}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
-%endif
-%else
 # https://bugzilla.redhat.com/show_bug.cgi?id=2166028
+%if "%{?_ghcdynlibdir}" != "%_libdir"
 mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
-echo "%{ghclibplatform}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
+echo "%{?_ghcdynlibdir}%{!?_ghcdynlibdir:%{ghclibplatform}}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
 %endif
 for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
   chrpath -d $i
@@ -815,9 +810,10 @@ make test
 
 
 %if %{defined ghclibdir}
+%if "%{?_ghcdynlibdir}" != "%_libdir"
 %post base -p /sbin/ldconfig
 %postun base -p /sbin/ldconfig
-
+%endif
 
 %transfiletriggerin compiler -- %{ghcliblib}/package.conf.d
 %ghc_pkg_recache
