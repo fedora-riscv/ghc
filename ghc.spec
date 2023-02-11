@@ -590,10 +590,11 @@ sed -i -e 's!^library-dirs: %{ghclibdir}/rts!&\ndynamic-library-dirs: %{_ghcdynl
 %if "%{?_ghcdynlibdir}" != "%_libdir"
 mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
 echo "%{?_ghcdynlibdir}%{!?_ghcdynlibdir:%{ghclibplatform}}" > %{buildroot}%{_sysconfdir}/ld.so.conf.d/%{name}.conf
-%endif
+%else
 for i in $(find %{buildroot} -type f -executable -exec sh -c "file {} | grep -q 'dynamically linked'" \; -print); do
   chrpath -d $i
 done
+%endif
 
 # containers src moved to a subdir
 cp -p libraries/containers/containers/LICENSE libraries/containers/LICENSE
@@ -986,6 +987,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %changelog
 * Sat Feb 11 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-127
 - https://downloads.haskell.org/~ghc/9.2.6/docs/html/users_guide/9.2.6-notes.html
+- restore RUNPATHs to help dependency generation
 
 * Sat Feb  4 2023 Jens Petersen <petersen@redhat.com> - 9.2.5-126
 - add back ld.so.conf.d file to workaround mock install issue (#2166028)
