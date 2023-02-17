@@ -138,6 +138,7 @@ Patch18: Disable-unboxed-arrays.patch
 
 # ppc64le
 # enable smp with hadrian
+# https://gitlab.haskell.org/ghc/ghc/-/issues/19825
 Patch20: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5725.patch
 
 # Debian patches:
@@ -447,6 +448,11 @@ rm libffi-tarballs/libffi-*.tar.gz
 # remove s390x after complete switching to llvm
 %ifarch %{ghc_unregisterized_arches} s390x
 %patch15 -p1 -b .orig
+%patch16 -p1 -b .orig
+%endif
+# workaround before 5725 hadrian fix
+# https://gitlab.haskell.org/ghc/ghc/-/issues/19825
+%ifarch ppc64le
 %patch16 -p1 -b .orig
 %endif
 
