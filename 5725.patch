@@ -1,0 +1,35 @@
+From 7cfa6f3114168797cf1fa7faa4ffe6c06b73f149 Mon Sep 17 00:00:00 2001
+From: Peter Trommler <ptrommler@acm.org>
+Date: Tue, 11 May 2021 20:52:01 +0200
+Subject: [PATCH] Hadrian: Enable SMP on powerpc64{le}
+
+Fixes #19825
+---
+ hadrian/src/Oracles/Flag.hs | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/hadrian/src/Oracles/Flag.hs b/hadrian/src/Oracles/Flag.hs
+index 86521e4aa8a..1b3aff693eb 100644
+--- a/hadrian/src/Oracles/Flag.hs
++++ b/hadrian/src/Oracles/Flag.hs
+@@ -70,7 +70,16 @@ targetSupportsSMP :: Action Bool
+ targetSupportsSMP = do
+   unreg <- flag GhcUnregisterised
+   armVer <- targetArmVersion
+-  goodArch <- anyTargetArch ["i386", "x86_64", "sparc", "powerpc", "arm", "aarch64", "s390x", "riscv64"]
++  goodArch <- anyTargetArch ["i386"
++                            , "x86_64"
++                            , "sparc"
++                            , "powerpc"
++                            , "powerpc64"
++                            , "powerpc64le"
++                            , "arm"
++                            , "aarch64"
++                            , "s390x"
++                            , "riscv64"]
+   if   -- The THREADED_RTS requires `BaseReg` to be in a register and the
+        -- Unregisterised mode doesn't allow that.
+      | unreg                -> return False
+-- 
+GitLab
+

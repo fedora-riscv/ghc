@@ -88,7 +88,7 @@ Version: 9.2.6
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 128%{?dist}
+Release: 129%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD and HaskellReport
@@ -135,6 +135,10 @@ Patch16: ghc-9.2.1-hadrian-s390x-rts--qg.patch
 # https://bugzilla.redhat.com/show_bug.cgi?id=1733030
 # https://gitlab.haskell.org/ghc/ghc/-/issues/16998
 Patch18: Disable-unboxed-arrays.patch
+
+# ppc64le
+# enable smp with hadrian
+Patch20: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/5725.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
@@ -450,6 +454,9 @@ rm libffi-tarballs/libffi-*.tar.gz
 %ifarch s390x
 %patch18 -p1 -b .orig
 %endif
+
+# ppc64le
+%patch20 -p1 -b .orig
 
 # debian
 %patch24 -p1 -b .orig
@@ -985,6 +992,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Fri Feb 17 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-129
+- upstream patch to enable SMP rts for ppc64le
+
 * Thu Feb 16 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-128
 - rebuild to fix prof deps
 
