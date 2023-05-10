@@ -114,6 +114,9 @@ ExcludeArch: armv7hl
 Patch1: ghc-gen_contents_index-haddock-path.patch
 Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
+# https://gitlab.haskell.org/ghc/ghc/-/issues/23286
+Patch9: https://gitlab.haskell.org/ghc/ghc/-/commit/00dc51060881df81258ba3b3bdf447294618a4de.patch
+
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
 # https://gitlab.haskell.org/ghc/ghc/-/issues/19684
 # DerivedConstants.h not produced atomically
@@ -441,6 +444,7 @@ Installing this package causes %{name}-*-prof packages corresponding to
 %patch -P3 -p1 -b .orig
 
 %patch -P2 -p1 -b .orig
+%patch -P9 -p1 -b .orig
 %patch -P10 -p1 -b .orig
 %patch -P11 -p1 -b .orig11
 
