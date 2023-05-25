@@ -93,7 +93,7 @@ Version: 9.2.6
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 130%{?dist}
+Release: 131%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-clause and HaskellReport
@@ -110,11 +110,13 @@ Source7: runghc.man
 # cannot until i686 is disabled for koji noarch builds at least (pandoc etc)
 #ExcludeArch: %%{ix86}
 
+# https://gitlab.haskell.org/ghc/ghc/-/issues/19421 (m32_allocator_init)
+Patch0: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/10453.patch
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1: ghc-gen_contents_index-haddock-path.patch
 Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
-# https://gitlab.haskell.org/ghc/ghc/-/issues/23286
+# https://gitlab.haskell.org/ghc/ghc/-/issues/23286 (sphinx modern extlinks)
 Patch9: https://gitlab.haskell.org/ghc/ghc/-/commit/00dc51060881df81258ba3b3bdf447294618a4de.patch
 
 # https://phabricator.haskell.org/rGHC4eebc8016f68719e1ccdf460754a97d1f4d6ef05
@@ -440,6 +442,7 @@ Installing this package causes %{name}-*-prof packages corresponding to
 %endif
 %setup -q -n ghc-%{version} %{?with_testsuite:-b1}
 
+%patch -P0 -p1 -b .orig
 %patch -P1 -p1 -b .orig
 %patch -P3 -p1 -b .orig
 
@@ -1007,6 +1010,10 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Thu May 25 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-131
+- include backport of 9.4 m32_allocator_init changes by Sylvain Henry (#2209162)
+- SPDX migration of license tags
+
 * Mon Mar 13 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-130
 - allow parallel installing ghc9.2-9.2.7
 
