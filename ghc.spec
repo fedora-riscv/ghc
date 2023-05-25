@@ -107,8 +107,8 @@ Source5: ghc-pkg.man
 Source6: haddock.man
 Source7: runghc.man
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=2142238
-ExcludeArch: armv7hl
+# cannot until i686 is disabled for koji noarch builds at least (pandoc etc)
+#ExcludeArch: %%{ix86}
 
 # absolute haddock path (was for html/libraries -> libraries)
 Patch1: ghc-gen_contents_index-haddock-path.patch
@@ -155,8 +155,8 @@ Patch26: no-missing-haddock-file-warning.patch
 Patch27: haddock-remove-googleapis-fonts.patch
 
 # fedora ghc has been bootstrapped on
-# %%{ix86} x86_64 ppc ppc64 armv7hl s390 s390x ppc64le aarch64
-# and retired arches: alpha sparcv9 armv5tel
+# %%{ix86} x86_64 s390x ppc64le aarch64
+# and retired arches: alpha sparcv9 armv5tel ppc ppc64 s390 armv7hl
 # see also deprecated ghc_arches defined in ghc-srpm-macros
 # /usr/lib/rpm/macros.d/macros.ghc-srpm
 
