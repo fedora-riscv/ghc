@@ -1,0 +1,37 @@
+From 2e6447e073144b9b1352d5167f67ccd07460444a Mon Sep 17 00:00:00 2001
+From: Jens Petersen <petersen@redhat.com>
+Date: Thu, 20 Jul 2023 13:16:03 +0800
+Subject: [PATCH] user_guide/flags.py: python-3.12 no longer includes distutils
+
+packaging.version seems able to handle this fine
+---
+ docs/users_guide/flags.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/docs/users_guide/flags.py b/docs/users_guide/flags.py
+index f6927d59817..474d1b65d4b 100644
+--- a/docs/users_guide/flags.py
++++ b/docs/users_guide/flags.py
+@@ -50,7 +50,7 @@ import sphinx
+ from sphinx import addnodes
+ from sphinx.domains.std import GenericObject
+ from sphinx.errors import SphinxError
+-from distutils.version import LooseVersion
++from packaging.version import parse
+ from utils import build_table_from_list
+ 
+ import os.path
+@@ -628,8 +628,8 @@ def purge_flags(app, env, docname):
+ 
+ def setup(app):
+     # The override argument to add_directive_to_domain is only supported by >= 1.8
+-    sphinx_version = LooseVersion(sphinx.__version__)
+-    override_arg = {'override': True} if sphinx_version >= LooseVersion('1.8') else {}
++    sphinx_version = parse(sphinx.__version__)
++    override_arg = {'override': True} if sphinx_version >= parse('1.8') else {}
+ 
+     # Add ghc-flag directive, and override the class with our own
+     app.add_object_type('ghc-flag', 'ghc-flag')
+-- 
+GitLab
+
