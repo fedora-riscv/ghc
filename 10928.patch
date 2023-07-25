@@ -1,0 +1,42 @@
+From 5ce7496dba3368faa5088c88168f0f4d69cff32b Mon Sep 17 00:00:00 2001
+From: Jens Petersen <petersen@redhat.com>
+Date: Fri, 21 Jul 2023 15:26:16 +0800
+Subject: [PATCH] make hadrian buildable with Cabal-3.8
+
+---
+ hadrian/hadrian.cabal                      | 2 +-
+ hadrian/src/Hadrian/Haskell/Cabal/Parse.hs | 4 ++++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/hadrian/hadrian.cabal b/hadrian/hadrian.cabal
+index c37974914a9..eb5690bbd1a 100644
+--- a/hadrian/hadrian.cabal
++++ b/hadrian/hadrian.cabal
+@@ -147,7 +147,7 @@ executable hadrian
+                        , BangPatterns
+     other-extensions:    MultiParamTypeClasses
+                        , TypeFamilies
+-    build-depends:       Cabal                >= 3.2     && < 3.7
++    build-depends:       Cabal                >= 3.2     && < 3.9
+                        , base                 >= 4.8     && < 5
+                        , bytestring           >= 0.10    && < 0.12
+                        , containers           >= 0.5     && < 0.7
+diff --git a/hadrian/src/Hadrian/Haskell/Cabal/Parse.hs b/hadrian/src/Hadrian/Haskell/Cabal/Parse.hs
+index 079f675b6ea..2d262a36445 100644
+--- a/hadrian/src/Hadrian/Haskell/Cabal/Parse.hs
++++ b/hadrian/src/Hadrian/Haskell/Cabal/Parse.hs
+@@ -23,7 +23,11 @@ import qualified Distribution.ModuleName                       as C
+ import qualified Distribution.Package                          as C
+ import qualified Distribution.PackageDescription               as C
+ import qualified Distribution.PackageDescription.Configuration as C
++#if MIN_VERSION_Cabal(3,8,0)
++import qualified Distribution.Simple.PackageDescription        as C
++#else
+ import qualified Distribution.PackageDescription.Parsec        as C
++#endif
+ import qualified Distribution.Simple.Compiler                  as C
+ import qualified Distribution.Simple.Program.Db                as C
+ import qualified Distribution.Simple                           as C
+-- 
+GitLab
+

@@ -1,0 +1,12 @@
+--- ghc-9.4.0.20220501/libraries/text/text.cabal~	2022-04-30 02:50:06.000000000 +0800
++++ ghc-9.4.0.20220501/libraries/text/text.cabal	2022-05-06 23:55:56.091521266 +0800
+@@ -121,9 +121,6 @@
+   if os(windows) && impl(ghc >= 8.2 && < 8.4 || == 8.6.3 || == 8.10.1)
+     build-depends: base < 0
+ 
+-  -- GHC 8.10 has linking issues (probably TH-related) on ARM.
+-  if (arch(aarch64) || arch(arm)) && impl(ghc == 8.10.*)
+-    build-depends: base < 0
+ 
+   -- Subword primitives in GHC 9.2.1 are broken on ARM platforms.
+   if (arch(aarch64) || arch(arm)) && impl(ghc == 9.2.1)

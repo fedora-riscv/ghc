@@ -1,0 +1,11 @@
+--- ghc-9.4.1/compiler/GHC/Driver/Pipeline/Execute.hs~	2022-08-07 12:00:38.000000000 +0800
++++ ghc-9.4.1/compiler/GHC/Driver/Pipeline/Execute.hs	2022-08-16 18:31:48.638516201 +0800
+@@ -1161,7 +1161,7 @@
+       -- suppress the generation of the .note.gnu.build-id section,
+       -- which we don't need and sometimes causes ld to emit a
+       -- warning:
+-      ld_build_id | toolSettings_ldSupportsBuildId toolSettings' = ["--build-id=none"]
++      ld_build_id {-| toolSettings_ldSupportsBuildId toolSettings' = ["--build-id=none"]-}
+                   | otherwise                                    = []
+ 
+   if ldIsGnuLd
