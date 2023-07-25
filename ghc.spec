@@ -462,7 +462,7 @@ rm libffi-tarballs/libffi-*.tar.gz
 %endif
 
 # remove s390x after complete switching to llvm
-%ifarch %{ghc_unregisterized_arches} s390x
+%ifarch %{ghc_unregisterized_arches}
 %patch -P15 -p1 -b .orig
 %patch -P16 -p1 -b .orig
 %endif
@@ -1016,6 +1016,7 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 %changelog
 * Tue Jul 25 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-133
 - base subpkg now owns ghcliblib and ghclibplatform dirs (#2185357)
+- s390x: no longer apply unregisterized patches
 
 * Wed Jul 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 9.2.6-132
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
