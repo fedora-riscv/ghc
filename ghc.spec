@@ -1020,6 +1020,8 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 * Wed Jul 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 9.2.6-132
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
+- fix sphinx flags.py: python 3.12 dropped distutils (petersen)
+- fix BSD3 SPDX tags (petersen)
 
 * Thu May 25 2023 Jens Petersen <petersen@redhat.com> - 9.2.6-131
 - include backport of 9.4 m32_allocator_init changes by Sylvain Henry (#2209162)
