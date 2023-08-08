@@ -418,7 +418,7 @@ Installing this package causes %{name}-*-prof packages corresponding to
 
 %prep
 %if %{with prodbuild}
-#%%{gpgverify} --keyring='%{SOURCE3}' --signature='%{SOURCE2}' --data='%{SOURCE0}'
+#%%{gpgverify} --keyring='%%{SOURCE3}' --signature='%%{SOURCE2}' --data='%%{SOURCE0}'
 %endif
 %setup -q -n ghc-%{version} %{?with_testsuite:-b1}
 
