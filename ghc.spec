@@ -87,7 +87,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 135%{?dist}
+Release: 136%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -1005,6 +1005,10 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Mon Sep 11 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-136
+- sync with ghc9.4: add sphinx7 patch
+- user_guide: update external links patch in line with final upstream
+
 * Tue Aug  8 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-135
 - disable ghc9.4 obsoletes due to 9.4.6 release
 
