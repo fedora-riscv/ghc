@@ -17,7 +17,7 @@
 %undefine with_haddock
 %endif
 
-# use Hadrian buildsystem for production builds
+# use Hadrian buildsystem for production builds: seems redundant
 %bcond hadrian 1
 
 # disabled to allow parallel install of ghcX.Y-X.Y.(Z+1) and ghc-X.Y.Z
@@ -449,7 +449,6 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P13 -p1 -b .orig
 %endif
 
-# remove s390x after complete switching to llvm
 %ifarch %{ghc_unregisterized_arches}
 %patch -P15 -p1 -b .orig
 %patch -P16 -p1 -b .orig
