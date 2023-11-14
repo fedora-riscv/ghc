@@ -20,6 +20,10 @@
 # use Hadrian buildsystem for production builds: seems redundant
 %bcond hadrian 1
 
+%ifarch riscv64
+%global _lto_cflags %{nil}
+%endif
+
 # disabled to allow parallel install of ghcX.Y-X.Y.(Z+1) and ghc-X.Y.Z
 %if 0
 %global ghc_major 9.4
@@ -67,11 +71,11 @@
 # 9.4 needs llvm 10-14
 %global llvm_major 14
 %if %{with hadrian}
-%global ghc_llvm_archs armv7hl s390x
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_llvm_archs armv7hl s390x riscv64
+%global ghc_unregisterized_arches s390 %{mips}
 %else
-%global ghc_llvm_archs armv7hl
-%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
+%global ghc_llvm_archs armv7hl riscv64
+%global ghc_unregisterized_arches s390 s390x %{mips}
 %endif
 
 %global obsoletes_ghcXY() \
@@ -87,7 +91,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 136%{?dist}
+Release: 136.0.riscv64%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -449,7 +453,7 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P13 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_unregisterized_arches}
+%ifarch %{ghc_unregisterized_arches} riscv64
 %patch -P15 -p1 -b .orig
 %patch -P16 -p1 -b .orig
 %endif
@@ -520,7 +524,9 @@ export CC=%{_bindir}/gcc
 # /usr/bin/debugedit: Cannot handle 8-byte build ID
 # https://bugzilla.redhat.com/show_bug.cgi?id=2116508
 # https://gitlab.haskell.org/ghc/ghc/-/issues/22195
+%ifnarch riscv64
 export LD=%{_bindir}/ld.gold
+%endif
 
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -561,15 +567,15 @@ cd hadrian
 %define hadrian_docs %{!?with_haddock:--docs=no-haddocks} --docs=%[%{?with_manual} ? "no-sphinx-pdfs" : "no-sphinx"]
 # aarch64 with 224 cpus: _build/stage0/bin/ghc: createProcess: pipe: resource exhausted (Too many open files)
 # https://koji.fedoraproject.org/koji/taskinfo?taskID=105428124
-%global _smp_ncpus_max 64
+%global _smp_ncpus_max 1
 # quickest does not build shared libs
 # try release instead of perf
-%{hadrian} %{?_smp_mflags} --flavour=%[%{?with_perfbuild} ? "perf" : "quick"]%{!?with_ghc_prof:+no_profiled_libs}%{?hadrian_llvm} %{hadrian_docs} binary-dist-dir
+%{hadrian} -j1 --flavour=%[%{?with_perfbuild} ? "perf" : "quick"]%{!?with_ghc_prof:+no_profiled_libs}%{?hadrian_llvm} %{hadrian_docs} binary-dist-dir
 %else
 # https://gitlab.haskell.org/ghc/ghc/-/issues/22099
 # 48 cpus breaks build: Error: ghc-cabal: Encountered missing or private dependencies: rts >=1.0 && <1.1
-%global _smp_ncpus_max 16
-make %{?_smp_mflags}
+%global _smp_ncpus_max 1
+make -j1
 %endif
 
 
@@ -1005,6 +1011,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Tue Nov 14 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.0.riscv64
+- Add support for riscv64
+
 * Mon Sep 11 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-136
 - sync with ghc9.4: add sphinx7 patch
 - user_guide: update external links patch in line with final upstream
