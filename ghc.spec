@@ -91,7 +91,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 136.0.riscv64%{?dist}
+Release: 136.1.riscv64%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -567,15 +567,15 @@ cd hadrian
 %define hadrian_docs %{!?with_haddock:--docs=no-haddocks} --docs=%[%{?with_manual} ? "no-sphinx-pdfs" : "no-sphinx"]
 # aarch64 with 224 cpus: _build/stage0/bin/ghc: createProcess: pipe: resource exhausted (Too many open files)
 # https://koji.fedoraproject.org/koji/taskinfo?taskID=105428124
-%global _smp_ncpus_max 1
+%global _smp_ncpus_max 64
 # quickest does not build shared libs
 # try release instead of perf
-%{hadrian} -j1 --flavour=%[%{?with_perfbuild} ? "perf" : "quick"]%{!?with_ghc_prof:+no_profiled_libs}%{?hadrian_llvm} %{hadrian_docs} binary-dist-dir
+%{hadrian} %{?_smp_mflags} --flavour=%[%{?with_perfbuild} ? "perf" : "quick"]%{!?with_ghc_prof:+no_profiled_libs}%{?hadrian_llvm} %{hadrian_docs} binary-dist-dir
 %else
 # https://gitlab.haskell.org/ghc/ghc/-/issues/22099
 # 48 cpus breaks build: Error: ghc-cabal: Encountered missing or private dependencies: rts >=1.0 && <1.1
-%global _smp_ncpus_max 1
-make -j1
+%global _smp_ncpus_max 16
+make %{?_smp_mflags}
 %endif
 
 
