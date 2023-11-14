@@ -67,11 +67,11 @@
 # 9.4 needs llvm 10-14
 %global llvm_major 14
 %if %{with hadrian}
-%global ghc_llvm_archs armv7hl s390x
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_llvm_archs armv7hl s390x riscv64
+%global ghc_unregisterized_arches s390 %{mips}
 %else
-%global ghc_llvm_archs armv7hl
-%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
+%global ghc_llvm_archs armv7hl riscv64
+%global ghc_unregisterized_arches s390 s390x %{mips}
 %endif
 
 %global obsoletes_ghcXY() \
@@ -454,7 +454,7 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P13 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_unregisterized_arches}
+%ifarch %{ghc_unregisterized_arches} riscv64
 %patch -P15 -p1 -b .orig
 %patch -P16 -p1 -b .orig
 %endif
@@ -527,7 +527,9 @@ export CC=%{_bindir}/gcc
 # /usr/bin/debugedit: Cannot handle 8-byte build ID
 # https://bugzilla.redhat.com/show_bug.cgi?id=2116508
 # https://gitlab.haskell.org/ghc/ghc/-/issues/22195
+%ifnarch riscv64
 export LD=%{_bindir}/ld.gold
+%endif
 
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
