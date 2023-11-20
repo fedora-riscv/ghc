@@ -91,7 +91,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 136.2.riscv64%{?dist}
+Release: 136.3.riscv64%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -1015,6 +1015,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Mon Nov 20 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.3.riscv64
+- Build with a new ghc-rpm-macros
+
 * Mon Nov 20 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.2.riscv64
 - Add RISCV64 to Cabal
 
