@@ -91,7 +91,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 136.1.riscv64%{?dist}
+Release: 136.2.riscv64%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -143,6 +143,10 @@ Patch26: no-missing-haddock-file-warning.patch
 Patch27: haddock-remove-googleapis-fonts.patch
 
 Patch30: https://src.opensuse.org/rpm/ghc/raw/branch/factory/sphinx7.patch
+
+# RISCV64 added to Cabal
+# See: https://github.com/haskell/cabal/pull/9062
+Patch40: cabal-add-riscv64.patch
 
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
@@ -1011,6 +1015,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Mon Nov 20 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.2.riscv64
+- Add RISCV64 to Cabal
+
 * Tue Nov 14 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.0.riscv64
 - Add support for riscv64
 
