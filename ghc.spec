@@ -145,6 +145,10 @@ Patch27: haddock-remove-googleapis-fonts.patch
 
 Patch30: https://src.opensuse.org/rpm/ghc/raw/branch/factory/sphinx7.patch
 
+# RISCV64 added to Cabal
+# See: https://github.com/haskell/cabal/pull/9062
+Patch40: cabal-add-riscv64.patch
+
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
 # fedora ghc has been bootstrapped on
