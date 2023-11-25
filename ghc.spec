@@ -197,20 +197,20 @@ BuildRequires: elfutils-devel
 # needed for binary-dist-dir
 BuildRequires:  autoconf automake
 %if %{with build_hadrian}
-BuildRequires:  ghc-Cabal-static
-BuildRequires:  ghc-QuickCheck-static
-BuildRequires:  ghc-base-static
-BuildRequires:  ghc-bytestring-static
-BuildRequires:  ghc-containers-static
-BuildRequires:  ghc-directory-static
-BuildRequires:  ghc-extra-static
-BuildRequires:  ghc-filepath-static
-BuildRequires:  ghc-mtl-static
-BuildRequires:  ghc-parsec-static
-BuildRequires:  ghc-shake-static
-BuildRequires:  ghc-stm-static
-BuildRequires:  ghc-transformers-static
-BuildRequires:  ghc-unordered-containers-static
+BuildRequires:  ghc-Cabal-devel
+BuildRequires:  ghc-QuickCheck-devel
+BuildRequires:  ghc-base-devel
+BuildRequires:  ghc-bytestring-devel
+BuildRequires:  ghc-containers-devel
+BuildRequires:  ghc-directory-devel
+BuildRequires:  ghc-extra-devel
+BuildRequires:  ghc-filepath-devel
+BuildRequires:  ghc-mtl-devel
+BuildRequires:  ghc-parsec-devel
+BuildRequires:  ghc-shake-devel
+BuildRequires:  ghc-stm-devel
+BuildRequires:  ghc-transformers-devel
+BuildRequires:  ghc-unordered-containers-devel
 %else
 BuildRequires:  %{name}-hadrian
 %endif
