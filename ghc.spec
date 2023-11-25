@@ -87,7 +87,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 136%{?dist}
+Release: 137%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -132,6 +132,11 @@ Patch13: text2-allow-ghc8-arm.patch
 # https://gitlab.haskell.org/ghc/ghc/-/issues/15689
 Patch15: ghc-warnings.mk-CC-Wall.patch
 Patch16: ghc-hadrian-s390x-rts--qg.patch
+
+# s390x
+# https://gitlab.haskell.org/ghc/ghc/-/issues/24163
+# https://gitlab.haskell.org/ghc/ghc/-/merge_requests/11662
+Patch17: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/11662.patch
 
 # Debian patches:
 Patch24: buildpath-abi-stability.patch
@@ -452,6 +457,10 @@ rm libffi-tarballs/libffi-*.tar.gz
 %ifarch %{ghc_unregisterized_arches}
 %patch -P15 -p1 -b .orig
 %patch -P16 -p1 -b .orig
+%endif
+
+%ifarch s390x
+%patch -P17 -p1 -b .orig
 %endif
 
 #debian
@@ -1005,6 +1014,10 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Sat Nov 25 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-137
+- s390x: patch from @stefansf (IBM) to fix llvm alignment in data sections
+  which should fix certain runtime crashes (#2248097)
+
 * Mon Sep 11 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-136
 - sync with ghc9.4: add sphinx7 patch
 - user_guide: update external links patch in line with final upstream
