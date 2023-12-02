@@ -20,6 +20,10 @@
 # use Hadrian buildsystem for production builds: seems redundant
 %bcond hadrian 1
 
+%ifarch riscv64
+%global _lto_cflags %{nil}
+%endif
+
 # disabled to allow parallel install of ghcX.Y-X.Y.(Z+1) and ghc-X.Y.Z
 %if 0
 %global ghc_major 9.4
@@ -67,11 +71,11 @@
 # 9.4 needs llvm 10-14
 %global llvm_major 14
 %if %{with hadrian}
-%global ghc_llvm_archs armv7hl s390x
-%global ghc_unregisterized_arches s390 %{mips} riscv64
+%global ghc_llvm_archs armv7hl s390x riscv64
+%global ghc_unregisterized_arches s390 %{mips}
 %else
-%global ghc_llvm_archs armv7hl
-%global ghc_unregisterized_arches s390 s390x %{mips} riscv64
+%global ghc_llvm_archs armv7hl riscv64
+%global ghc_unregisterized_arches s390 s390x %{mips}
 %endif
 
 %global obsoletes_ghcXY() \
@@ -87,7 +91,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 137%{?dist}
+Release: 137.rv64%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -144,6 +148,10 @@ Patch26: no-missing-haddock-file-warning.patch
 Patch27: haddock-remove-googleapis-fonts.patch
 
 Patch30: https://src.opensuse.org/rpm/ghc/raw/branch/factory/sphinx7.patch
+
+# RISCV64 added to Cabal
+# See: https://github.com/haskell/cabal/pull/9062
+Patch40: cabal-add-riscv64.patch
 
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
@@ -454,7 +462,7 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P13 -p1 -b .orig
 %endif
 
-%ifarch %{ghc_unregisterized_arches}
+%ifarch %{ghc_unregisterized_arches} riscv64
 %patch -P15 -p1 -b .orig
 %patch -P16 -p1 -b .orig
 %endif
@@ -529,7 +537,9 @@ export CC=%{_bindir}/gcc
 # /usr/bin/debugedit: Cannot handle 8-byte build ID
 # https://bugzilla.redhat.com/show_bug.cgi?id=2116508
 # https://gitlab.haskell.org/ghc/ghc/-/issues/22195
+%ifnarch riscv64
 export LD=%{_bindir}/ld.gold
+%endif
 
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -1017,6 +1027,15 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 * Sat Nov 25 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-137
 - s390x: patch from @stefansf (IBM) to fix llvm alignment in data sections
   which should fix certain runtime crashes (#2248097)
+
+* Mon Nov 20 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.3.riscv64
+- Build with a new ghc-rpm-macros
+
+* Mon Nov 20 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.2.riscv64
+- Add RISCV64 to Cabal
+
+* Tue Nov 14 2023 David Abdurachmanov <davidlt@rivosinc.com> - 9.4.5-136.0.riscv64
+- Add support for riscv64
 
 * Mon Sep 11 2023 Jens Petersen <petersen@redhat.com> - 9.4.5-136
 - sync with ghc9.4: add sphinx7 patch
