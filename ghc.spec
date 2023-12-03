@@ -2,7 +2,7 @@
 # all *bcond_without* for production builds:
 # - performance build (disable for quick build)
 %bcond perfbuild 1
-%bcond build_hadrian 1
+%bcond build_hadrian 0
 %global with_hadrian 1
 %if %{with hadrian}
 %bcond manual 1
