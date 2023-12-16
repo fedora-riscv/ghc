@@ -459,9 +459,7 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P16 -p1 -b .orig
 %endif
 
-%ifarch s390x
 %patch -P17 -p1 -b .orig
-%endif
 
 #debian
 #%%patch -P24 -p1 -b .orig
