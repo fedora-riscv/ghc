@@ -149,6 +149,10 @@ Patch30: https://src.opensuse.org/rpm/ghc/raw/branch/factory/sphinx7.patch
 # See: https://github.com/haskell/cabal/pull/9062
 Patch40: cabal-add-riscv64.patch
 
+# Enable GHCi support on riscv64
+# Upstream in >= 9.9.
+Patch41: https://gitlab.haskell.org/ghc/ghc/-/commit/dd38aca95ac25adc9888083669b32ff551151259.patch
+
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
 # fedora ghc has been bootstrapped on
@@ -474,6 +478,9 @@ rm libffi-tarballs/libffi-*.tar.gz
 %if 0%{?fedora} >= 40
 %patch -P30 -p1 -b .orig
 %endif
+
+#GHCi support
+%patch -P41 -p1 -b .orig
 
 %if %{with haddock} && %{without hadrian}
 %global gen_contents_index gen_contents_index.orig
