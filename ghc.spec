@@ -479,11 +479,12 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P30 -p1 -b .orig
 %endif
 
+%ifarch riscv64
 #RISCV64 cabal support
 %patch -P40 -p1 -b .orig
-
 #GHCi support
 %patch -P41 -p1 -b .orig
+%endif
 
 %if %{with haddock} && %{without hadrian}
 %global gen_contents_index gen_contents_index.orig
