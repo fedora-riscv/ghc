@@ -479,6 +479,9 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P30 -p1 -b .orig
 %endif
 
+#RISCV64 cabal support
+%patch -P40 -p1 -b .orig
+
 #GHCi support
 %patch -P41 -p1 -b .orig
 
