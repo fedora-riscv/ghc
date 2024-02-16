@@ -155,7 +155,7 @@ Patch41: https://gitlab.haskell.org/ghc/ghc/-/commit/dd38aca95ac25adc9888083669b
 
 # https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/message/SKVM4NSFZRWUT5MJKBS6IRUXCG3SCD34/
 # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/12079
-Patch42: ghc-modern-c-fix.txt
+Patch42: ghc-modern-c-fix.patch
 
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
