@@ -17,6 +17,8 @@
 %undefine with_haddock
 %endif
 
+%bcond ld_gold 1
+
 # use Hadrian buildsystem for production builds: seems redundant
 %bcond hadrian 1
 
@@ -87,7 +89,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 140%{?dist}
+Release: 141%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -184,6 +186,9 @@ BuildRequires: ghc-text-devel
 %endif
 BuildRequires: ghc-transformers-devel
 BuildRequires: alex
+%if %{with ld_gold}
+BuildRequires: binutils-gold
+%endif
 BuildRequires: gmp-devel
 BuildRequires: happy
 BuildRequires: libffi-devel
@@ -288,6 +293,9 @@ Obsoletes: %{name}-xhtml-prof < %{xhtml_ver}-%{release}
 %endif
 %if %{without manual}
 Obsoletes: %{name}-manual < %{version}-%{release}
+%endif
+%if %{with ld_gold}
+Requires: binutils-gold
 %endif
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
@@ -1036,6 +1044,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Fri Jun 14 2024 Jens Petersen <petersen@redhat.com> - 9.4.5-141
+- explicitly require binutils-gold
+
 * Thu Feb 15 2024 Richard W.M. Jones <rjones@redhat.com> - 9.4.5-140
 - Fix generated C for Modern C Initiative
 
