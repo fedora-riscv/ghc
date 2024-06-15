@@ -92,7 +92,7 @@ Version: 9.4.5
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 141%{?dist}
+Release: 142%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -149,6 +149,10 @@ Patch26: no-missing-haddock-file-warning.patch
 Patch27: haddock-remove-googleapis-fonts.patch
 
 Patch30: https://src.opensuse.org/rpm/ghc/raw/branch/factory/sphinx7.patch
+
+# ppc64le FFI miscompilation
+# https://gitlab.haskell.org/ghc/ghc/-/issues/23034
+Patch35: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/12885.patch
 
 # RISCV64 added to Cabal
 # See: https://github.com/haskell/cabal/pull/9062
@@ -488,6 +492,10 @@ rm libffi-tarballs/libffi-*.tar.gz
 #sphinx 7
 %if 0%{?fedora} >= 40
 %patch -P30 -p1 -b .orig
+%endif
+
+%ifarch ppc64le
+%patch -P 35 -p1 -b .orig
 %endif
 
 %ifarch riscv64
@@ -1051,6 +1059,9 @@ env -C %{ghc_html_libraries_dir} ./gen_contents_index
 
 
 %changelog
+* Sat Jun 15 2024 Jens Petersen <petersen@redhat.com> - 9.4.5-142
+- ppc64le: NCG fix for ccall target hints (Peter Trommler, #2172771)
+
 * Fri Jun 14 2024 Jens Petersen <petersen@redhat.com> - 9.4.5-141
 - explicitly require binutils-gold
 
