@@ -17,8 +17,6 @@
 %undefine with_haddock
 %endif
 
-%bcond ld_gold 1
-
 # use Hadrian buildsystem for production builds: seems redundant
 %bcond hadrian 1
 
@@ -65,6 +63,14 @@
 
 # no longer build testsuite (takes time and not really being used)
 %bcond testsuite 0
+
+# ld
+%ifnarch riscv64
+# FIXME turn off for 9.6
+%bcond ld_gold 1
+%else
+%bcond ld_gold 0
+%endif
 
 # 9.4 needs llvm 10-14
 %global llvm_major 14
@@ -186,9 +192,7 @@ BuildRequires: ghc-text-devel
 %endif
 BuildRequires: ghc-transformers-devel
 BuildRequires: alex
-%if %{with ld_gold}
-BuildRequires: binutils-gold
-%endif
+BuildRequires: binutils%{?with_ld_gold:-gold}
 BuildRequires: gmp-devel
 BuildRequires: happy
 BuildRequires: libffi-devel
@@ -294,9 +298,7 @@ Obsoletes: %{name}-xhtml-prof < %{xhtml_ver}-%{release}
 %if %{without manual}
 Obsoletes: %{name}-manual < %{version}-%{release}
 %endif
-%if %{with ld_gold}
-Requires: binutils-gold
-%endif
+Requires: binutils%{?with_ld_gold:-gold}
 %ifarch %{ghc_llvm_archs}
 Requires: llvm%{llvm_major}
 %endif
@@ -553,13 +555,14 @@ autoupdate
 
 %ghc_set_gcc_flags
 export CC=%{_bindir}/gcc
-# lld breaks build-id
+%if %{with ld_gold}
+export LD=%{_bindir}/ld.gold
+%endif
+
+# note lld breaks build-id
 # /usr/bin/debugedit: Cannot handle 8-byte build ID
 # https://bugzilla.redhat.com/show_bug.cgi?id=2116508
 # https://gitlab.haskell.org/ghc/ghc/-/issues/22195
-%ifnarch riscv64
-export LD=%{_bindir}/ld.gold
-%endif
 
 # * %%configure induces cross-build due to different target/host/build platform names
 ./configure --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
@@ -569,6 +572,9 @@ export LD=%{_bindir}/ld.gold
   --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
   --docdir=%{_docdir}/%{name} \
   --with-system-libffi \
+%if %{without ld_gold}
+  --disable-ld-override \
+%endif
 %ifarch %{ghc_unregisterized_arches}
   --enable-unregisterised \
 %endif
@@ -625,7 +631,11 @@ cp -p LICENSE ../LICENSE.hadrian
 # https://gitlab.haskell.org/ghc/ghc/-/issues/20120#note_366872
 (
 cd _build/bindist/ghc-%{version}-*
-./configure --prefix=%{buildroot}%{ghclibdir} --bindir=%{buildroot}%{_bindir} --libdir=%{buildroot}%{_libdir} --mandir=%{buildroot}%{_mandir} --docdir=%{buildroot}%{_docdir}/%{name}
+./configure --prefix=%{buildroot}%{ghclibdir} --bindir=%{buildroot}%{_bindir} --libdir=%{buildroot}%{_libdir} --mandir=%{buildroot}%{_mandir} --docdir=%{buildroot}%{_docdir}/%{name} \
+%if %{without ld_gold}
+  --disable-ld-override
+%endif
+%{nil}
 make install
 )
 %else
