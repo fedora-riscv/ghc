@@ -1,9 +1,9 @@
 # Start: prod settings
-# all *bcond_without* for production builds:
+# all bcond 1 for production builds:
 # - performance build (disable for quick build)
 %bcond perfbuild 1
 %bcond build_hadrian 1
-%global with_hadrian 1
+%bcond hadrian 1
 %if %{with hadrian}
 %bcond manual 1
 %endif
@@ -16,9 +16,6 @@
 # disable haddock documentation (overriding macros.ghc-os)
 %undefine with_haddock
 %endif
-
-# use Hadrian buildsystem for production builds: seems redundant
-%bcond hadrian 1
 
 # disabled to allow parallel install of ghcX.Y-X.Y.(Z+1) and ghc-X.Y.Z
 %if 0
@@ -363,7 +360,7 @@ This package provides the User Guide and Haddock manual.
 # ghclibdir also needs ghc_version_override for bootstrapping
 %global ghc_version_override %{version}
 
-%if %{with hadrian}
+%if %{with build_hadrian}
 %package hadrian
 Summary: GHC Hadrian buildsystem tool
 License: MIT
