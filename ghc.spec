@@ -138,7 +138,7 @@ Patch13: text2-allow-ghc8-arm.patch
 Patch15: ghc-warnings.mk-CC-Wall.patch
 Patch16: ghc-hadrian-s390x-rts--qg.patch
 
-# s390x
+# llvm (s390x)
 # https://gitlab.haskell.org/ghc/ghc/-/issues/24163
 # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/11662
 Patch17: https://gitlab.haskell.org/ghc/ghc/-/merge_requests/11662.patch
@@ -169,8 +169,8 @@ Patch42: ghc-modern-c-fix.patch
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
 # fedora ghc has been bootstrapped on
-# %%{ix86} x86_64 s390x ppc64le aarch64
-# and retired arches: alpha sparcv9 armv5tel ppc ppc64 s390 armv7hl
+# %%{ix86} x86_64 s390x ppc64le aarch64 riscv64
+# and previously: alpha sparcv9 armv5tel ppc ppc64 s390 armv7hl
 # see also deprecated ghc_arches defined in ghc-srpm-macros
 # /usr/lib/rpm/macros.d/macros.ghc-srpm
 
