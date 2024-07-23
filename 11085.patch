@@ -1,0 +1,66 @@
+From a8b05de5718aae4b48c1bf65772ba989c2ec5fe2 Mon Sep 17 00:00:00 2001
+From: Matthew Pickering <matthewtpickering@gmail.com>
+Date: Fri, 11 Aug 2023 12:52:14 +0100
+Subject: [PATCH] packaging: Build manpage in separate directory to other
+ documentation
+
+We were installing two copies of the manpage:
+
+* One useless one in the `share/doc` folder, because we copy the doc/
+  folder into share/
+* The one we deliberately installed into `share/man` etc
+
+The solution is to build the manpage into the `manpage` directory when
+building the bindist, and then just install it separately.
+
+Fixes #23707
+---
+ hadrian/bindist/Makefile           | 2 +-
+ hadrian/src/Rules/BinaryDist.hs    | 4 ++++
+ hadrian/src/Rules/Documentation.hs | 2 +-
+ 3 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/hadrian/bindist/Makefile b/hadrian/bindist/Makefile
+index 671fc322beb..32fa695d649 100644
+--- a/hadrian/bindist/Makefile
++++ b/hadrian/bindist/Makefile
+@@ -201,7 +201,7 @@ install_docs:
+ 	fi
+ 
+ MAN_SECTION := 1
+-MAN_PAGES := doc/users_guide/build-man/ghc.1
++MAN_PAGES := manpage/ghc.1
+ 
+ .PHONY: install_man
+ install_man:
+diff --git a/hadrian/src/Rules/BinaryDist.hs b/hadrian/src/Rules/BinaryDist.hs
+index e40891f3781..3ceb1539395 100644
+--- a/hadrian/src/Rules/BinaryDist.hs
++++ b/hadrian/src/Rules/BinaryDist.hs
+@@ -246,6 +246,10 @@ bindistRules = do
+         -- reference. See #20802.
+         copyDirectory ("utils" -/- "completion") bindistFilesDir
+ 
++        -- Copy the manpage into the binary distribution
++        whenM (liftIO (IO.doesDirectoryExist (root -/- "manpage"))) $ do
++          copyDirectory (root -/- "manpage") bindistFilesDir
++
+         -- These scripts are only necessary in the configure/install
+         -- workflow which is not supported on windows.
+         -- TODO: Instead of guarding against windows, we could offer the
+diff --git a/hadrian/src/Rules/Documentation.hs b/hadrian/src/Rules/Documentation.hs
+index bfc47b278b2..311a1593e34 100644
+--- a/hadrian/src/Rules/Documentation.hs
++++ b/hadrian/src/Rules/Documentation.hs
+@@ -43,7 +43,7 @@ archiveRoot :: FilePath
+ archiveRoot = docRoot -/- "archives"
+ 
+ manPageBuildPath :: FilePath
+-manPageBuildPath = docRoot -/- "users_guide/build-man/ghc.1"
++manPageBuildPath = "manpage" -/- "ghc.1"
+ 
+ -- TODO: Get rid of this hack.
+ docContext :: Context
+-- 
+GitLab
+
