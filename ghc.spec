@@ -75,6 +75,7 @@ Source7: runghc.man
 Patch1: ghc-gen_contents_index-haddock-path.patch
 Patch2: ghc-Cabal-install-PATH-warning.patch
 Patch3: ghc-gen_contents_index-nodocs.patch
+Patch4: disable-Cabal-upperbounds-check-warning.patch
 Patch8: ghc-configure-c99.patch
 # https://gitlab.haskell.org/ghc/ghc/-/merge_requests/9604
 # needs more backporting to 9.6
@@ -392,6 +393,7 @@ Installing this package causes %{name}-*-prof packages corresponding to
 
 %patch -P1 -p1 -b .orig
 %patch -P3 -p1 -b .orig
+%patch -P4 -p1 -b .orig
 
 %patch -P2 -p1 -b .orig
 %patch -P8 -p1 -b .orig
@@ -840,6 +842,7 @@ make test
 - enable obsoletes for ghc9.6
 - support for non-Hadrian (make) builds is gone
 - remaining mentions of armv7hl removed
+- disable Cabal check warnings about missing upperbounds
 
 * Thu Jul 18 2024 Fedora Release Engineering <releng@fedoraproject.org> - 9.4.5-143
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
