@@ -427,6 +427,9 @@ rm libffi-tarballs/libffi-*.tar.gz
 %patch -P41 -p1 -b .orig
 %endif
 
+# https://github.com/haskell/directory/pull/184
+rm libraries/directory/directory.buildinfo
+
 
 %build
 # patch8
