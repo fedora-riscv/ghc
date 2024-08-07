@@ -390,6 +390,10 @@ Installing this package causes %{name}-*-prof packages corresponding to
 #%%{gpgverify} --keyring='%%{SOURCE3}' --signature='%%{SOURCE2}' --data='%%{SOURCE0}'
 %endif
 %setup -q -n ghc-%{version} %{?with_testsuite:-b1}
+(
+cd hadrian
+cabal-tweak-dep-ver Cabal '< 3.9' '< 3.11'
+)
 
 %patch -P1 -p1 -b .orig
 %patch -P3 -p1 -b .orig
