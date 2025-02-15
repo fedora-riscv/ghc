@@ -57,7 +57,7 @@ Version: 9.6.6
 # - release can only be reset if *all* library versions get bumped simultaneously
 #   (sometimes after a major release)
 # - minor release numbers for a branch should be incremented monotonically
-Release: 145%{?dist}
+Release: 145.1%{?dist}
 Summary: Glasgow Haskell Compiler
 
 License: BSD-3-Clause AND HaskellReport
@@ -103,6 +103,8 @@ Patch40: cabal-add-riscv64.patch
 # Enable GHCi support on riscv64
 # Upstream in >= 9.9.
 Patch41: https://gitlab.haskell.org/ghc/ghc/-/commit/dd38aca95ac25adc9888083669b32ff551151259.patch
+
+Patch50: fix-gcc-15.patch
 
 # https://gitlab.haskell.org/ghc/ghc/-/wikis/platforms
 
@@ -426,6 +428,8 @@ rm libffi-tarballs/libffi-*.tar.gz
 #GHCi support
 %patch -P41 -p1 -b .orig
 %endif
+
+%patch -P50 -p1 -b .orig
 
 # https://github.com/haskell/directory/pull/184
 rm libraries/directory/directory.buildinfo
